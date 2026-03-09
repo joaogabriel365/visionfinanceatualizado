@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Vision Finance - Assuma o controle</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <header class="navbar">
+        <div class="logo-container">
+            <img src="unnamed.png" alt="Logo" class="logo-img">
+            <span class="logo-text">Vision Finance</span>
+        </div>
+        <nav class="nav-links">
+            <a href="#" class="btn-login" id="openLoginNav">Entrar</a>
+            <button class="btn-primary" id="openBtnNav">Criar Conta</button>
+        </nav>
+    </header>
+
+    <main class="hero-section">
+        <div class="hero-content">
+            <h1 class="hero-title">Assuma o controle das suas finanças com <span class="highlight">simplicidade</span></h1>
+            <p class="hero-description">Acompanhe despesas, gerencie formas de pagamento e visualize seus gastos tudo em um painel intuitivo.</p>
+            <div class="cta-group">
+                <button class="btn-primary-large" id="openBtnHero">Comece grátis →</button>
+                <button class="btn-secondary-large">Saiba mais</button>
+            </div>
+        </div>
+        <div class="hero-image-container">
+            <img src="moeda.png" class="hero-img-floating" alt="Moeda Vision Finance">
+        </div>
+    </main>
+
+    <section class="features-section">
+        <div class="features-header">
+            <h2>Tudo que você precisa para gerenciar seu dinheiro</h2>
+            <p>Funcionalidades poderosas para dar visibilidade e controle total sobre suas finanças.</p>
+        </div>
+        <div class="features-grid">
+            <div class="feature-card">
+                <div class="feature-icon">📑</div>
+                <h3>Controle de Despesas</h3>
+                <p>Registre cada gasto com categorias, métodos de pagamento e detalhamentos completos.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">💳</div>
+                <h3>Métodos de Pagamento</h3>
+                <p>Gerencie cartão de crédito, débito, VR, VA, dinheiro e contas bancárias em um só lugar.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">🎯</div>
+                <h3>Planejamento Financeiro</h3>
+                <p>Defina orçamentos mensais e metas financeiras para manter o controle.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon">📊</div>
+                <h3>Relatórios Visuais</h3>
+                <p>Gráficos e análises bonitas para entender seus padrões de gastos.</p>
+            </div>
+        </div>
+    </section>
+
+    <section class="showcase-section">
+        <div class="showcase-container">
+            <div class="showcase-text">
+                <h2 class="showcase-title">Veja suas finanças de relance</h2>
+                <p class="showcase-description">Nosso painel oferece uma visão completa com gráficos bonitos e dados em tempo real.</p>
+                <button class="btn-primary-large" id="openBtnShowcase">Comece agora ></button>
+            </div>
+            <div class="showcase-image">
+                <div class="showcase-bg-card">
+                    <img src="daaa93eb-36fe-48d9-b489-ab6c0c7c6e47.jpg" alt="Dashboard Vision Finance">
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="final-cta">
+        <div class="final-cta-content">
+            <h2 class="cta-title">Pronto para assumir o controle?</h2>
+            <button class="btn-primary-large" id="openBtnFinal">Crie sua conta gratuita →</button>
+        </div>
+    </section>
+
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <div class="logo-container">
+                    <div class="logo-icon-circle">VF</div>
+                    <span class="logo-text">Vision Finance</span>
+                </div>
+                <p class="footer-tagline">Seu companheiro de finanças pessoais.</p>
+            </div>
+
+            <div class="footer-links-group">
+                <div class="footer-column">
+                    <h4>Links</h4>
+                    <nav class="footer-nav">
+                        <a href="#">Funcionalidades</a>
+                        <a href="#">Preços</a>
+                        <a href="#">Contato</a>
+                    </nav>
+                </div>
+                <div class="footer-column">
+                    <h4>Legal</h4>
+                    <nav class="footer-nav">
+                        <a href="#">Política de Privacidade</a>
+                        <a href="#">Termos de Uso</a>
+                    </nav>
+                </div>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>© 2026 Vision Finance. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <div id="registerModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="closeBtn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-image-container">
+                    <img src="unnamed.png" alt="App Logo" class="modal-app-logo">
+                </div>
+                <h2>Crie sua conta</h2>
+                <p>Comece a gerenciar suas finanças hoje</p>
+            </div>
+            <form class="register-form" id="registrationForm">
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Nome</label>
+                        <input type="text" placeholder="Ex: João" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Sobrenome</label>
+                        <input type="text" placeholder="Ex: Silva" required>
+                    </div>
+                </div>
+
+                <div class="input-group">
+                    <label>Estado</label>
+                    <select id="estado" required>
+                        <option value="" disabled selected>Selecione seu estado</option>
+                        <option value="SP">São Paulo</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="MG">Minas Gerais</option>
+                    </select>
+                </div>
+
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" placeholder="voce@exemplo.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>CPF (apenas números)</label>
+                    <input type="text" id="cpfInput" placeholder="000.000.000-00" maxlength="14" required>
+                </div>
+
+                <div class="input-row">
+                    <div class="input-group">
+                        <label>Senha</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                    <div class="input-group">
+                        <label>Confirmar Senha</label>
+                        <input type="password" placeholder="••••••••" required>
+                    </div>
+                </div>
+
+                <button type="submit" class="btn-primary-large" style="width: 100%; margin-top: 25px;">Criar conta</button>
+                <p class="login-footer" style="margin-top: 20px; font-size: 0.9rem;">Já tem uma conta? <a href="#" class="link-entrar" id="switchToLogin">Entrar</a></p>
+            </form>
+        </div>
+    </div>
+
+    <div id="loginModal" class="modal-overlay">
+        <div class="modal-content">
+            <button class="close-modal" id="closeLoginBtn">&times;</button>
+            <div class="modal-header">
+                <div class="modal-image-container">
+                    <img src="unnamed.png" alt="Vision Finance Logo" class="modal-app-logo">
+                </div>
+                <h2>Bem-vindo de volta</h2>
+                <p>Entre na sua conta</p>
+            </div>
+            <form class="login-form" id="loginForm">
+                <div class="input-group">
+                    <label>E-mail</label>
+                    <input type="email" placeholder="voce@exemplo.com" required>
+                </div>
+
+                <div class="input-group">
+                    <label>Senha</label>
+                    <input type="password" placeholder="••••••••" required>
+                </div>
+
+                <button type="submit" class="btn-primary-large" style="width: 100%; margin-top: 10px;">Entrar</button>
+                
+                <div style="display: flex; justify-content: space-between; margin-top: 20px; font-size: 0.85rem;">
+                    <a href="#" class="link-entrar">Esqueceu a senha?</a>
+                    <a href="#" id="switchToRegister" class="link-entrar">Criar conta</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+   
+    <script src="script.js"></script>
+</body>
+</html>
