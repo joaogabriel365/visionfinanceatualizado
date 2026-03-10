@@ -80,7 +80,7 @@
                             <th>Pagamento</th>
                             <th>Valor</th>
                             <th>Data</th>
-                            <th>Observação</th>
+                            <th style="text-align: center;">Observação</th>
                         </tr>
                     </thead>
                     <tbody id="expenseTableBody"></tbody>
@@ -136,8 +136,8 @@
                             <th>Pagamento</th>
                             <th>Valor</th>
                             <th>Data</th>
-                            <th>Observação</th>
-                            <th>Ações</th>
+                            <th style="text-align: center;">Observação</th>
+                            <th style="text-align: center;">Ações</th>
                         </tr>
                     </thead>
                     <tbody id="fullExpenseTableBody"></tbody>
@@ -194,27 +194,29 @@
         </div>
     </div>
 
-    <!-- MODAL: NOVA DESPESA -->
+    <!-- MODAL: NOVA DESPESA (TAMBÉM USADO PARA EDITAR) -->
     <div class="modal-overlay" id="modalDespesa">
         <div class="modal-box">
-            <h3 style="margin-bottom: 1.5rem;">Nova Despesa</h3>
+            <h3 id="modalDespesaTituloPrincipal" style="margin-bottom: 1.5rem;">Nova Despesa</h3>
             
             <form id="formDespesa">
+                <!-- Campo oculto para saber se estamos editando um ID existente -->
+                <input type="hidden" id="editIndex" value="">
+
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Título da despesa</label>
-                    <input type="text" id="despesaTitulo" placeholder="Ex: Supermercado" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                    <input type="text" id="despesaTitulo" placeholder="Ex: Supermercado" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
                 </div>
 
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Valor</label>
-                    <!-- Trocado para type text para a máscara de moeda funcionar -->
-                    <input type="text" id="despesaValor" placeholder="0,00" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                    <input type="text" id="despesaValor" placeholder="0,00" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
                 </div>
 
                 <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                     <div style="flex: 1;">
                         <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Categoria</label>
-                        <select id="despesaCategoria" class="filter-select" style="min-width: auto; width: 100%;">
+                        <select id="despesaCategoria" required class="filter-select" style="min-width: auto; width: 100%;">
                             <option value="">Selecione</option>
                             <option value="Alimentação">Alimentação</option>
                             <option value="Transporte">Transporte</option>
@@ -226,7 +228,7 @@
                     </div>
                     <div style="flex: 1;">
                         <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Método</label>
-                        <select id="despesaMetodo" class="filter-select" style="min-width: auto; width: 100%;">
+                        <select id="despesaMetodo" required class="filter-select" style="min-width: auto; width: 100%;">
                             <option value="">Selecione</option>
                             <option value="Cartão de Crédito">Cartão de Crédito</option>
                             <option value="Cartão de Débito">Cartão de Débito</option>
@@ -240,17 +242,16 @@
 
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Data</label>
-                    <!-- Trocado para type text para a máscara de data DD/MM/AAAA funcionar -->
-                    <input type="text" id="despesaData" placeholder="00/00/0000" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                    <input type="text" id="despesaData" placeholder="00/00/0000" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Descrição</label>
-                    <textarea id="despesaDescricao" placeholder="Observações opcionais..." style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white; height: 80px; resize: none;"></textarea>
+                    <textarea id="despesaDescricao" maxlength="150" placeholder="Observações opcionais (máx 150 caracteres)..." style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white; height: 80px; resize: none;"></textarea>
                 </div>
 
                 <div style="display: flex; gap: 10px;">
-                    <button type="submit" class="btn-save">Salvar Despesa</button>
+                    <button type="submit" id="btnSalvarDespesa" class="btn-save">Salvar Despesa</button>
                     <button type="button" class="btn-cancel" id="btnFecharModalDespesa">Cancelar</button>
                 </div>
             </form>
