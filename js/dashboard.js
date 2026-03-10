@@ -145,10 +145,10 @@ function renderizarTabelas() {
             <td style="vertical-align: middle;">
                 <div style="display: flex; gap: 10px; justify-content: center; align-items: center;">
                     <button onclick="editarDespesa(${indexOriginal})" style="background:none; border:none; cursor:pointer; padding: 0;">
-                        <img src="lapis.png" alt="Editar" style="width: 18px; height: 18px; object-fit: contain;"/>
+                        <img src="./img/lapis.png" alt="Editar" style="width: 18px; height: 18px; object-fit: contain;"/>
                     </button>
                     <button onclick="removerDespesa(${indexOriginal})" style="background:none; border:none; cursor:pointer; padding: 0;">
-                        <img src="lixeira.png" alt="Excluir" style="width: 18px; height: 18px; object-fit: contain;"/>
+                        <img src="./img/lixeira.png" alt="Excluir" style="width: 18px; height: 18px; object-fit: contain;"/>
                     </button>
                 </div>
             </td>` : ''}
