@@ -516,3 +516,164 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
 .stat-icon, .wallet-icon-bg {
     overflow: hidden; /* Evita que o ícone ao crescer vaze */
 }
+
+/* --- ESTADO VAZIO (Empty State) --- */
+.empty-state {
+    grid-column: 1 / -1; /* Faz a box ocupar toda a largura disponível do grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(34, 211, 238, 0.02); /* Fundo ciano super transparente */
+    border: 2px dashed #1e293b; /* Borda tracejada moderna */
+    border-radius: 16px;
+    color: #94a3b8;
+    transition: 0.3s ease;
+}
+
+.empty-state .empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+    filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.2));
+}
+
+.empty-state h3 {
+    color: white;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    max-width: 400px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Estilos para o Modal de Confirmação */
+.confirmation-box {
+    text-align: center;
+    border: 1px solid #22d3ee; /* Borda ciano para destacar */
+}
+
+.confirm-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.confirm-details {
+    background: rgba(34, 211, 238, 0.05);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    text-align: left; /* Alinha os detalhes à esquerda para facilitar leitura */
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #94a3b8;
+}
+
+.confirm-details strong {
+    color: #22d3ee;
+}
+
+/* Filtros */
+/* Estilização dos Filtros */
+.filters-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.filter-select {
+    background: #0b1118;
+    border: 1px solid #1e293b;
+    color: #ffffff; /* Texto em branco para destacar o negrito */
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    min-width: 180px;
+    font-weight: 700; /* Deixa o título em negrito */
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave */
+}
+
+/* Efeito ao passar o mouse (Hover) */
+.filter-select:hover {
+    border-color: #22d3ee; /* Borda azul padrão do site */
+    transform: scale(1.05); /* Aumenta levemente o tamanho da box */
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); /* Brilho leve em azul */
+}
+
+/* Ajuste das opções dentro do select (Dica: alguns browsers limitam o estilo aqui) */
+.filter-select option {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 400; /* Opções internas com peso normal para contraste */
+}
+
+/* Tabela de Despesas */
+.full-width-table {
+    margin-top: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.btn-action:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.btn-edit { color: #94a3b8; }
+.btn-delete { color: #ef4444; }
+
+/* Reutilizando as tags que já criamos */
+/* Estilo Base das Tags */
+.tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Cores por Categoria (Layout com fundo opaco) */
+.tag.alimentacao { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.tag.transporte { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.tag.lazer { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+.tag.saude { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+.tag.outros { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.tag.moradia { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+
+/* Estilo para inputs de formulário dentro do modal */
+#formDespesa input, 
+#formDespesa textarea,
+#formDespesa select {
+    font-family: 'Montserrat', sans-serif !important;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#formDespesa input:focus, 
+#formDespesa textarea:focus {
+    border-color: #22d3ee !important;
+}
+
+/* Garante que o ícone do calendário no input date seja visível/estilizado */
+::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Torna o ícone branco no tema escuro */
+    cursor: pointer;
+}
