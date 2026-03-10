@@ -4,20 +4,18 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vision Finance - Dashboard</title>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css"> 
-    <link rel="stylesheet" href="dashboard.css">
-    <head>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     
+    <!-- Fontes e Ícones -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
+    <!-- Seus Arquivos CSS -->
     <link rel="stylesheet" href="style.css"> 
     <link rel="stylesheet" href="dashboard.css">
-</head>
 </head>
 <body class="dashboard-body">
 
+    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="unnamed.png" alt="Logo" class="sidebar-logo">
@@ -25,20 +23,21 @@
         </div>
         
         <nav class="sidebar-nav">
-            <a href="#" class="nav-item active" id="nav-painel" onclick="showSection('painel')">Painel</a>
-            <a href="#" class="nav-item" id="nav-despesas" onclick="showSection('despesas')">Despesas</a>
-            <a href="#" class="nav-item" id="nav-carteiras" onclick="showSection('carteiras')">Carteiras</a>
-            <a href="#" class="nav-item">Planejamento</a>
-            <a href="#" class="nav-item">Relatórios</a>
-            <a href="#" class="nav-item">Perfil</a>
-            <a href="#" class="nav-item">Configurações</a>
+            <a href="#" class="nav-item active" id="nav-painel" onclick="showSection('painel')">📊 Painel</a>
+            <a href="#" class="nav-item" id="nav-despesas" onclick="showSection('despesas')">💸 Despesas</a>
+            <a href="#" class="nav-item" id="nav-carteiras" onclick="showSection('carteiras')">💳 Carteiras</a>
+            <a href="#" class="nav-item">🎯 Planejamento</a>
+            <a href="#" class="nav-item">📈 Relatórios</a>
+            <a href="#" class="nav-item">👤 Perfil</a>
+            <a href="#" class="nav-item">⚙️ Configurações</a>
         </nav>
 
         <div class="sidebar-footer">
-            <a href="index.html" class="nav-item logout">Sair</a>
+            <a href="index.html" class="nav-item logout">🚪 Sair</a>
         </div>
     </aside>
 
+    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         <header class="dash-header">
             <h1 id="sectionTitle">Painel</h1>
@@ -50,9 +49,11 @@
             </div>
         </header>
 
+        <!-- SEÇÃO: PAINEL -->
         <div id="section-painel" class="content-section active">
             <section class="stats-grid">
-                </section>
+                <!-- Preenchido via JS -->
+            </section>
 
             <section class="charts-grid">
                 <div class="chart-card">
@@ -79,14 +80,72 @@
                             <th>Pagamento</th>
                             <th>Valor</th>
                             <th>Data</th>
+                            <th>Observação</th>
                         </tr>
                     </thead>
-                    <tbody id="expenseTableBody">
-                        </tbody>
+                    <tbody id="expenseTableBody"></tbody>
                 </table>
             </section>
         </div>
 
+        <!-- SEÇÃO: DESPESAS -->
+        <div id="section-despesas" class="content-section" style="display: none;">
+            <div class="section-header-row">
+                <h2>Gerenciar Despesas</h2>
+                <button class="btn-primary" id="btnNewExpense">+ Nova Despesa</button>
+            </div>
+
+            <div class="filters-bar">
+                <select id="filterMonth" class="filter-select">
+                    <option value="">📅 Mês</option>
+                    <option value="01">📅 Janeiro</option><option value="02">📅 Fevereiro</option>
+                    <option value="03">📅 Março</option><option value="04">📅 Abril</option>
+                    <option value="05">📅 Maio</option><option value="06">📅 Junho</option>
+                    <option value="07">📅 Julho</option><option value="08">📅 Agosto</option>
+                    <option value="09">📅 Setembro</option><option value="10">📅 Outubro</option>
+                    <option value="11">📅 Novembro</option><option value="12">📅 Dezembro</option>
+                </select>
+
+                <select id="filterCategory" class="filter-select">
+                    <option value="">Categoria </option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Outros">Outros</option>
+                </select>
+
+                <select id="filterMethod" class="filter-select">
+                    <option value="">Pagamento</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="PIX">Pix</option>
+                    <option value="VR">VR</option>
+                    <option value="VA">VA</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                </select>
+            </div>
+
+            <div class="table-card full-width-table">
+                <table class="dash-table">
+                    <thead>
+                        <tr>
+                            <th>Título</th>
+                            <th>Categoria</th>
+                            <th>Pagamento</th>
+                            <th>Valor</th>
+                            <th>Data</th>
+                            <th>Observação</th>
+                            <th>Ações</th>
+                        </tr>
+                    </thead>
+                    <tbody id="fullExpenseTableBody"></tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- SEÇÃO: CARTEIRAS -->
         <div id="section-carteiras" class="content-section" style="display: none;">
             <div class="section-header-row">
                 <h2>Carteiras e Métodos de Pagamento</h2>
@@ -94,10 +153,16 @@
             </div>
 
             <div class="wallets-grid" id="walletsGrid">
+                <div id="empty-wallet-state" class="empty-state">
+                    <div class="empty-icon">💳</div>
+                    <h3>Nenhuma carteira por aqui... ainda!</h3>
+                    <p>Adicione um cartão ou carteira para assumir o controle dos seus gastos.</p>
                 </div>
+            </div>
         </div>
     </main>
 
+    <!-- MODAL: NOVA CARTEIRA -->
     <div class="modal-overlay" id="walletModal">
         <div class="modal-box">
             <h3>Nova Carteira</h3>
@@ -111,6 +176,7 @@
                     <select id="walletType" required>
                         <option value="Cartão de Crédito">Cartão de Crédito</option>
                         <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="PIX">Pix</option>
                         <option value="VR">VR</option>
                         <option value="VA">VA</option>
                         <option value="Dinheiro">Dinheiro</option>
@@ -128,6 +194,83 @@
         </div>
     </div>
 
+    <!-- MODAL: NOVA DESPESA -->
+    <div class="modal-overlay" id="modalDespesa">
+        <div class="modal-box">
+            <h3 style="margin-bottom: 1.5rem;">Nova Despesa</h3>
+            
+            <form id="formDespesa">
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Título da despesa</label>
+                    <input type="text" id="despesaTitulo" placeholder="Ex: Supermercado" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Valor</label>
+                    <!-- Trocado para type text para a máscara de moeda funcionar -->
+                    <input type="text" id="despesaValor" placeholder="0,00" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                </div>
+
+                <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Categoria</label>
+                        <select id="despesaCategoria" class="filter-select" style="min-width: auto; width: 100%;">
+                            <option value="">Selecione</option>
+                            <option value="Alimentação">Alimentação</option>
+                            <option value="Transporte">Transporte</option>
+                            <option value="Moradia">Moradia</option>
+                            <option value="Lazer">Lazer</option>
+                            <option value="Saúde">Saúde</option>
+                            <option value="Outros">Outros</option>
+                        </select>
+                    </div>
+                    <div style="flex: 1;">
+                        <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Método</label>
+                        <select id="despesaMetodo" class="filter-select" style="min-width: auto; width: 100%;">
+                            <option value="">Selecione</option>
+                            <option value="Cartão de Crédito">Cartão de Crédito</option>
+                            <option value="Cartão de Débito">Cartão de Débito</option>
+                            <option value="Pix">Pix</option>
+                            <option value="VR">VR</option>
+                            <option value="VA">VA</option>
+                            <option value="Dinheiro">Dinheiro</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div style="margin-bottom: 1rem;">
+                    <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Data</label>
+                    <!-- Trocado para type text para a máscara de data DD/MM/AAAA funcionar -->
+                    <input type="text" id="despesaData" placeholder="00/00/0000" style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                </div>
+
+                <div style="margin-bottom: 1.5rem;">
+                    <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Descrição</label>
+                    <textarea id="despesaDescricao" placeholder="Observações opcionais..." style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white; height: 80px; resize: none;"></textarea>
+                </div>
+
+                <div style="display: flex; gap: 10px;">
+                    <button type="submit" class="btn-save">Salvar Despesa</button>
+                    <button type="button" class="btn-cancel" id="btnFecharModalDespesa">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: CONFIRMAÇÃO CARTEIRA -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box confirmation-box">
+            <div class="confirm-icon">✨</div>
+            <h3>Confirmar nova carteira?</h3>
+            <div id="confirmDetails" class="confirm-details"></div>
+            <div class="modal-actions" style="margin-top: 25px; display: flex; justify-content: center; gap: 15px;">
+                <button id="btnConfirmFinal" class="btn-save">Sim, Confirmar</button>
+                <button id="btnCancelFinal" class="btn-cancel" style="margin: 0;">Corrigir</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="dashboard.js"></script>
 </body>
