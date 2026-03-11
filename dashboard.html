@@ -1,5 +1,3 @@
-<!-- GABYS CHEGOU!! -->
-
 <!DOCTYPE html>
 <html lang="pt-br">
 <head>
@@ -7,17 +5,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Vision Finance - Dashboard</title>
     
-    <!-- Fontes e Ícones -->
     <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-    <!-- Seus Arquivos CSS -->
     <link rel="stylesheet" href="./css/style.css"> 
     <link rel="stylesheet" href="./css/dashboard.css">
 </head>
 <body class="dashboard-body">
 
-    <!-- SIDEBAR -->
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="./img/logo.png" alt="Logo" class="sidebar-logo">
@@ -28,7 +23,7 @@
             <a href="#" class="nav-item active" id="nav-painel" onclick="showSection('painel')"> Painel</a>
             <a href="#" class="nav-item" id="nav-despesas" onclick="showSection('despesas')"> Despesas</a>
             <a href="#" class="nav-item" id="nav-carteiras" onclick="showSection('carteiras')"> Carteiras</a>
-            <a href="#" class="nav-item"> Planejamento</a>
+            <a href="#" class="nav-item" id="nav-planejamento" onclick="showSection('planejamento')"> Planejamento</a>
             <a href="#" class="nav-item"> Relatórios</a>
             <a href="#" class="nav-item"> Perfil</a>
             <a href="#" class="nav-item"> Configurações</a>
@@ -39,7 +34,6 @@
         </div>
     </aside>
 
-    <!-- CONTEÚDO PRINCIPAL -->
     <main class="main-content">
         <header class="dash-header">
             <h1 id="sectionTitle">Painel</h1>
@@ -51,11 +45,8 @@
             </div>
         </header>
 
-        <!-- SEÇÃO: PAINEL -->
         <div id="section-painel" class="content-section active">
-            <section class="stats-grid">
-                <!-- Preenchido via JS -->
-            </section>
+            <section class="stats-grid"></section>
 
             <section class="charts-grid">
                 <div class="chart-card">
@@ -90,7 +81,6 @@
             </section>
         </div>
 
-        <!-- SEÇÃO: DESPESAS -->
         <div id="section-despesas" class="content-section" style="display: none;">
             <div class="section-header-row">
                 <h2>Gerenciar Despesas</h2>
@@ -147,7 +137,6 @@
             </div>
         </div>
 
-        <!-- SEÇÃO: CARTEIRAS -->
         <div id="section-carteiras" class="content-section" style="display: none;">
             <div class="section-header-row">
                 <h2>Carteiras e Métodos de Pagamento</h2>
@@ -162,9 +151,69 @@
                 </div>
             </div>
         </div>
+
+        <div id="section-planejamento" class="content-section" style="display: none;">
+            <div class="planning-card-prof">
+                <div class="planning-header-row">
+                    <div>
+                        <h3>Orçamento Mensal</h3>
+                        <p>Defina seu teto de gastos e monitore a alocação em metas.</p>
+                    </div>
+                    <div id="display-orcamento-container" class="orcamento-badge">
+                        <span class="label">LIMITE ESTABELECIDO:</span>
+                        <span id="valor-limite-display" class="value">R$ 0,00</span>
+                    </div>
+                </div>
+                
+                <div class="orcamento-controls">
+                    <div class="input-group">
+                        <input type="text" id="orcamentoMensal" placeholder="R$ 0,00" oninput="aplicarMascaraValor(this)">
+                        <button class="btn-save-orcamento" onclick="salvarOrcamento()">Salvar</button>
+                    </div>
+
+                    <div class="budget-usage-wrapper">
+                        <div class="usage-info">
+                            <span>Uso do Orçamento (Alocado em Metas)</span>
+                            <span id="usage-percentage-text">0%</span>
+                        </div>
+                        <div class="progress-bar-main">
+                            <div id="budget-progress-fill" class="progress-fill-cyan" style="width: 0%;"></div>
+                        </div>
+                        <div class="usage-footer">
+                            <span id="usage-amount-text">R$ 0,00 alocados</span>
+                            <span id="remaining-amount-text">Disponível: R$ 0,00</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="planning-card-prof" style="margin-top: 2rem;">
+                <div class="planning-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem;">
+                    <div class="confirm-header-prof" style="text-align: left;">
+                        <h3>Metas Financeiras</h3>
+                        <p class="subtitle-prof">Acompanhe seus objetivos de médio e longo prazo.</p>
+                    </div>
+                    <button class="btn-new-goal" onclick="abrirModalMeta()" style="background: #22d3ee; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer;">+ Nova Meta</button>
+                </div>
+
+                <div class="table-container-prof">
+                    <table class="full-table" style="width: 100%; border-collapse: collapse;">
+                        <thead>
+                            <tr style="text-align: left; border-bottom: 1px solid #1e293b; color: #64748b; font-size: 0.85rem;">
+                                <th style="padding: 15px;">META</th>
+                                <th>VALOR ALVO</th>
+                                <th>PRAZO</th>
+                                <th>PROGRESSO</th>
+                                <th style="text-align: center;">AÇÕES</th>
+                            </tr>
+                        </thead>
+                        <tbody id="goalsTableBody"></tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
     </main>
 
-    <!-- MODAL: NOVA CARTEIRA -->
     <div class="modal-overlay" id="walletModal">
         <div class="modal-box">
             <h3>Nova Carteira</h3>
@@ -196,25 +245,47 @@
         </div>
     </div>
 
-    <!-- MODAL: NOVA DESPESA (TAMBÉM USADO PARA EDITAR) -->
+    <div class="modal-overlay" id="confirmModal">
+        <div class="modal-box confirmation-box-professional">
+            <div class="confirm-header-prof" style="text-align: center;">
+                <h3 style="margin-top: 0;">Confirmar Dados da Carteira</h3>
+                <p class="subtitle-prof">Revise as informações abaixo antes de salvar.</p>
+            </div>
+            <div id="confirmDetails" class="confirm-details-prof"></div>
+            <div class="modal-actions-prof">
+                <button id="btnConfirmFinal" class="btn-save btn-prof-main">Salvar Carteira</button>
+                <button id="btnCancelFinal" class="btn-cancel btn-prof-alt">Corrigir</button>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="deleteWalletModal">
+        <div class="modal-box confirmation-box-professional">
+            <div class="confirm-header-prof" style="text-align: center;">
+                <h3 style="margin-top: 0; color: #ef4444;">Excluir Carteira?</h3>
+                <p class="subtitle-prof">Esta ação não pode ser desfeita.</p>
+            </div>
+            <div id="deleteDetails" class="confirm-details-prof" style="border-left: 4px solid #ef4444;"></div>
+            <div class="modal-actions-prof">
+                <button id="btnConfirmDelete" class="btn-save" style="background: #ef4444; border-color: #ef4444;">Sim, Excluir</button>
+                <button id="btnCancelDelete" class="btn-cancel btn-prof-alt">Manter Carteira</button>
+            </div>
+        </div>
+    </div>
+
     <div class="modal-overlay" id="modalDespesa">
         <div class="modal-box">
             <h3 id="modalDespesaTituloPrincipal" style="margin-bottom: 1.5rem;">Nova Despesa</h3>
-            
             <form id="formDespesa">
-                <!-- Campo oculto para saber se estamos editando um ID existente -->
                 <input type="hidden" id="editIndex" value="">
-
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Título da despesa</label>
                     <input type="text" id="despesaTitulo" placeholder="Ex: Supermercado" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
                 </div>
-
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Valor</label>
                     <input type="text" id="despesaValor" placeholder="0,00" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
                 </div>
-
                 <div style="display: flex; gap: 1rem; margin-bottom: 1rem;">
                     <div style="flex: 1;">
                         <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Categoria</label>
@@ -241,21 +312,15 @@
                         </select>
                     </div>
                 </div>
-
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Data</label>
                     <input type="text" id="despesaData" placeholder="00/00/0000" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;" autocomplete="off">
-                    <!-- AVISO DE ERRO LOCALIZADO -->
-                    <span id="erro-data" style="color: #ef4444; font-size: 0.75rem; display: none; margin-top: 5px; font-weight: 500;">
-                        ⚠️ Data inválida ou inexistente.
-                    </span>
+                    <span id="erro-data" style="color: #ef4444; font-size: 0.75rem; display: none; margin-top: 5px; font-weight: 500;">⚠️ Data inválida.</span>
                 </div>
-
                 <div style="margin-bottom: 1.5rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Descrição</label>
-                    <textarea id="despesaDescricao" maxlength="40" placeholder="Observações opcionais (máx 40 caracteres)..." style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white; height: 80px; resize: none;"></textarea>
+                    <textarea id="despesaDescricao" maxlength="40" placeholder="Observações..." style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white; height: 80px; resize: none;"></textarea>
                 </div>
-
                 <div style="display: flex; gap: 10px;">
                     <button type="submit" id="btnSalvarDespesa" class="btn-save">Salvar Despesa</button>
                     <button type="button" class="btn-cancel" id="btnFecharModalDespesa">Cancelar</button>
@@ -264,57 +329,70 @@
         </div>
     </div>
 
-    <!-- MODAL: CONFIRMAÇÃO CARTEIRA -->
-    <div class="modal-overlay" id="confirmModal">
-    <div class="modal-box confirmation-box-professional">
-        
-        
-<div class="confirm-header-prof" style="text-align: center;">
-            <h3 style="margin-top: 0;">Confirmar Dados da Carteira</h3>
-            <p class="subtitle-prof">Por favor, revise as informações abaixo antes de salvar.</p>
-        </div>
-
-        
-<div id="confirmDetails" class="confirm-details-prof">
-            
-        </div>
-
-        
-<div class="modal-actions-prof">
-            <button id="btnConfirmFinal" class="btn-save btn-prof-main">
-                Salvar Carteira
-            </button>
-            <button id="btnCancelFinal" class="btn-cancel btn-prof-alt">
-                Corrigir
-            </button>
-        </div>
-    </div>
-</div>
-
-<!-- MODAL: EXCLUIR CARTEIRA -->
-<div class="modal-overlay" id="deleteWalletModal">
-    <div class="modal-box confirmation-box-professional">
-        <div class="confirm-header-prof" style="text-align: center;">
-            <h3 style="margin-top: 0; color: #ef4444;">Excluir Carteira?</h3>
-            <p class="subtitle-prof">Esta ação não pode ser desfeita. Todos os dados vinculados a esta carteira serão removidos.</p>
-        </div>
-
-        <div id="deleteDetails" class="confirm-details-prof" style="border-left: 4px solid #ef4444;">
-            <!-- Nome da carteira aparecerá aqui via JS -->
-        </div>
-
-        <div class="modal-actions-prof">
-            <button id="btnConfirmDelete" class="btn-save" style="background: #ef4444; border-color: #ef4444;">
-                Sim, Excluir
-            </button>
-            <button id="btnCancelDelete" class="btn-cancel btn-prof-alt">
-                Manter Carteira
-            </button>
+    <div class="modal-overlay" id="modalMeta">
+        <div class="modal-box goal-modal-styled">
+            <div class="confirm-header-prof">
+                <h3>Criar Nova Meta</h3>
+                <p class="subtitle-prof">Estipule um valor e um prazo.</p>
+            </div>
+            <form id="formMeta" class="form-professional">
+                <div class="input-container-main">
+                    <label class="detail-label-prof">NOME DA META</label>
+                    <input type="text" id="metaNome" class="input-prof-styled" placeholder="Ex: Reserva" required>
+                </div>
+                <div class="input-row-flex">
+                    <div class="input-container-main">
+                        <label class="detail-label-prof">VALOR ALVO</label>
+                        <input type="text" id="metaValor" class="input-prof-styled" placeholder="R$ 0,00" required>
+                    </div>
+                    <div class="input-container-main">
+                        <label class="detail-label-prof">PRAZO</label>
+                        <input type="text" id="metaPrazo" class="input-prof-styled" placeholder="00/00/0000" maxlength="10" required>
+                        <span id="erro-data-meta" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 5px;">⚠️ Data inválida.</span>
+                    </div>
+                </div>
+                <div class="modal-actions-professional">
+                    <button type="submit" class="btn-create-goal">Criar Meta</button>
+                    <button type="button" id="btnCancelarMeta" class="btn-cancel-goal">Cancelar</button>
+                </div>
+            </form>
         </div>
     </div>
-</div>
 
-    <!-- Scripts -->
+    <div class="modal-overlay" id="modalAporteMeta">
+        <div class="modal-box goal-modal-styled">
+            <div class="confirm-header-prof">
+                <h3>Atualizar Progresso</h3>
+                <p class="subtitle-prof">Quanto você guardou hoje?</p>
+            </div>
+            <form id="formAporteMeta" class="form-professional">
+                <input type="hidden" id="aporteMetaIndex">
+                <div class="input-container-main">
+                    <label class="detail-label-prof">VALOR DO APORTE</label>
+                    <input type="text" id="aporteValor" class="input-prof-styled" placeholder="R$ 0,00" oninput="aplicarMascaraValor(this)" required>
+                </div>
+                <div class="modal-actions-professional">
+                    <button type="submit" class="btn-create-goal">Confirmar Aporte</button>
+                    <button type="button" onclick="fecharModalAporte()" class="btn-cancel-goal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalExcluirMeta">
+        <div class="modal-box goal-modal-styled" style="border-color: #ef4444;">
+            <div class="confirm-header-prof" style="text-align: center;">
+                <h3 style="color: #ef4444;">Excluir Meta?</h3>
+                <p class="subtitle-prof">Esta ação não pode ser desfeita.</p>
+            </div>
+            <input type="hidden" id="excluirMetaIndex">
+            <div class="modal-actions-professional">
+                <button id="btnConfirmarExclusaoMeta" class="btn-create-goal" style="background: #ef4444; color: white;">Sim, Excluir</button>
+                <button type="button" onclick="fecharModalExcluirMeta()" class="btn-cancel-goal">Manter Meta</button>
+            </div>
+        </div>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./js/dashboard.js"></script>
 </body>
