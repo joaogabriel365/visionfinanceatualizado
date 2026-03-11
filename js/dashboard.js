@@ -20,19 +20,34 @@ function getHojeFormatado() {
     return hoje.toLocaleDateString('pt-BR');
 }
 
-// Limita o texto da observação
 function truncarTexto(texto, limite = 150) {
     if (!texto) return '-';
     if (texto.length <= limite) return texto;
     return texto.slice(0, limite) + '...';
 }
 
-// --- FUNÇÕES DE MÁSCARA ---
+// --- VALIDAÇÃO E MÁSCARAS ---
+
+function validarData(dataString) {
+    const regex = /^(\d{2})\/(\d{2})\/(\d{4})$/;
+    if (!regex.test(dataString)) return false;
+
+    const parts = dataString.split("/");
+    const dia = parseInt(parts[0], 10);
+    const mes = parseInt(parts[1], 10);
+    const ano = parseInt(parts[2], 10);
+
+    if (mes < 1 || mes > 12) return false;
+    const ultimoDiaMes = new Date(ano, mes, 0).getDate();
+    if (dia < 1 || dia > ultimoDiaMes) return false;
+    if (ano < 2000 || ano > 2100) return false;
+
+    return true;
+}
 
 function aplicarMascaraValor(input) {
     let value = input.value.replace(/\D/g, ''); 
     if (value.length > 8) value = value.slice(0, 8); 
-    
     let valorFloat = (parseFloat(value) / 100).toFixed(2);
     
     if (isNaN(valorFloat)) {
@@ -55,6 +70,11 @@ function aplicarMascaraData(input) {
         v = v.replace(/^(\d{2})(\d{0,2})/, "$1/$2");
     }
     input.value = v;
+
+    // Reset visual ao digitar
+    const erroSpan = document.getElementById('erro-data');
+    input.style.borderColor = ""; 
+    if (erroSpan) erroSpan.style.display = "none";
 }
 
 // 2. ESTATÍSTICAS E GRÁFICOS
@@ -64,19 +84,15 @@ function renderizarStats() {
     statsGrid.innerHTML = `
         <div class="stat-card">
             <div class="stat-info"><p>Total Gasto</p><h3>R$ 4.250,00</h3><span class="trend down">-12% vs mês anterior</span></div>
-            <div class="stat-icon">💰</div>
         </div>
         <div class="stat-card">
             <div class="stat-info"><p>Orçamento Mensal</p><h3>R$ 6.000,00</h3></div>
-            <div class="stat-icon">📉</div>
         </div>
         <div class="stat-card">
             <div class="stat-info"><p>Saldo Restante</p><h3>R$ 1.750,00</h3><span class="trend up">+28% vs mês anterior</span></div>
-            <div class="stat-icon">💵</div>
         </div>
         <div class="stat-card">
             <div class="stat-info"><p>Mais Usado</p><h3>Cartão de Crédito</h3><span class="trend">Últimos 30 dias</span></div>
-            <div class="stat-icon">💳</div>
         </div>`;
 }
 
@@ -157,7 +173,7 @@ function renderizarTabelas() {
     if (tableBodyPainel) {
         const despesasHoje = despesasExemplo.filter(d => d.data === hoje);
         if (despesasHoje.length === 0) {
-            tableBodyPainel.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;"><div style="font-size:2rem;">☕</div><p>Tudo tranquilo por aqui.<br>Nenhuma despesa registrada hoje!</p></td></tr>`;
+            tableBodyPainel.innerHTML = `<tr><td colspan="6" style="text-align:center; padding:40px; color:#94a3b8;"><p>Nenhuma despesa registrada hoje!</p></td></tr>`;
         } else {
             tableBodyPainel.innerHTML = despesasHoje.map(item => gerarLinha(item)).join('');
         }
@@ -184,7 +200,6 @@ function editarDespesa(index) {
     const d = despesasExemplo[index];
     const mDespesa = document.getElementById('modalDespesa');
     
-    // Preenche os campos
     document.getElementById('editIndex').value = index;
     document.getElementById('modalDespesaTituloPrincipal').innerText = "Editar Despesa";
     document.getElementById('despesaTitulo').value = d.titulo;
@@ -193,7 +208,6 @@ function editarDespesa(index) {
     document.getElementById('despesaDescricao').value = d.observacao;
     document.getElementById('despesaData').value = d.data;
     
-    // Converte o valor numérico para o formato da máscara
     const valorFormatado = new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(d.valor);
     document.getElementById('despesaValor').value = valorFormatado;
 
@@ -249,8 +263,8 @@ function criarCardCarteira(id, nome, tipo, limite) {
                 <div class="wallet-icon-bg">💳</div>
                 <div><h4>${nome}</h4><p style="font-size:0.8rem;color:#94a3b8">${tipo}</p></div>
             </div>
-            <button class="btn-delete-wallet-img" onclick="removerCarteira('${id}')" style="background:none;border:none;cursor:pointer; padding: 0;">
-                <img src="lixeira.png" alt="Excluir" style="width: 18px; height: 18px; object-fit: contain;"/>
+            <button class="btn-delete-wallet-img" onclick="openDeleteModal('${id}', '${nome}')" style="background:none;border:none;cursor:pointer; padding: 0;">
+                <img src="./img/lixeira.png" alt="Excluir" style="width: 18px; height: 18px; object-fit: contain;"/>
             </button>
         </div>
         <div class="wallet-stats" style="margin-top:15px">
@@ -260,15 +274,24 @@ function criarCardCarteira(id, nome, tipo, limite) {
     return card;
 }
 
-function removerCarteira(id) {
-    if (confirm('Excluir carteira?')) {
-        const item = document.querySelector(`[data-id="${id}"]`);
-        if(item) item.remove();
-        verificarEstadoCarteiras();
-    }
+// --- NOVO SISTEMA DE EXCLUSÃO PROFISSIONAL DE CARTEIRA ---
+let walletIdToDelete = null;
+
+function openDeleteModal(id, walletName) {
+    walletIdToDelete = id;
+    const deleteModal = document.getElementById('deleteWalletModal');
+    const deleteDetails = document.getElementById('deleteDetails');
+    
+    deleteDetails.innerHTML = `
+        <div class="detail-item-prof">
+            <span class="detail-label-prof">Carteira selecionada</span>
+            <span class="detail-value-prof">${walletName}</span>
+        </div>
+    `;
+    deleteModal.classList.add('active');
 }
 
-// 7. INICIALIZAÇÃO
+// 7. INICIALIZAÇÃO E EVENTOS
 document.addEventListener('DOMContentLoaded', () => {
     renderizarStats();
     inicializarGraficos();
@@ -277,17 +300,19 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const inputValor = document.getElementById('despesaValor');
     const inputData = document.getElementById('despesaData');
+    const erroDataSpan = document.getElementById('erro-data');
     const mDespesa = document.getElementById('modalDespesa');
     const formDespesa = document.getElementById('formDespesa');
 
     inputValor?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     inputData?.addEventListener('input', (e) => aplicarMascaraData(e.target));
 
-    // Abrir modal para nova despesa
     document.getElementById('btnNewExpense')?.addEventListener('click', () => {
         formDespesa.reset();
         document.getElementById('editIndex').value = "";
         document.getElementById('modalDespesaTituloPrincipal').innerText = "Nova Despesa";
+        inputData.style.borderColor = "";
+        if (erroDataSpan) erroDataSpan.style.display = "none";
         mDespesa.classList.add('active');
     });
 
@@ -296,6 +321,13 @@ document.addEventListener('DOMContentLoaded', () => {
     formDespesa?.addEventListener('submit', (e) => {
         e.preventDefault();
         
+        if (!validarData(inputData.value)) {
+            inputData.style.borderColor = "#ef4444"; 
+            if (erroDataSpan) erroDataSpan.style.display = "block"; 
+            inputData.focus();
+            return;
+        }
+
         const valorPuro = parseFloat(inputValor.value.replace(/\./g, '').replace(',', '.'));
         const indexParaEditar = document.getElementById('editIndex').value;
 
@@ -309,10 +341,8 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         if (indexParaEditar !== "") {
-            // Modo Edição
             despesasExemplo[indexParaEditar] = dadosDespesa;
         } else {
-            // Modo Criação
             despesasExemplo.unshift(dadosDespesa);
         }
 
@@ -331,12 +361,30 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('walletForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
+        
         tempWallet = {
             name: document.getElementById('walletName').value,
             type: document.getElementById('walletType').value,
             limit: parseFloat(document.getElementById('walletLimit').value)
         };
-        document.getElementById('confirmDetails').innerHTML = `📌 ${tempWallet.name} | 💰 ${tempWallet.limit}`;
+        
+        const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
+
+        document.getElementById('confirmDetails').innerHTML = `
+            <div class="detail-item-prof">
+                <span class="detail-label-prof">Nome</span>
+                <span class="detail-value-prof">${tempWallet.name}</span>
+            </div>
+            <div class="detail-item-prof">
+                <span class="detail-label-prof">Tipo</span>
+                <span class="detail-value-prof">${tempWallet.type}</span>
+            </div>
+            <div class="detail-item-prof">
+                <span class="detail-label-prof">Limite Mensal</span>
+                <span class="detail-value-prof highlight">${fmt.format(tempWallet.limit)}</span>
+            </div>
+        `;
+        
         cModal.classList.add('active');
     });
 
@@ -349,4 +397,20 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     document.getElementById('btnCancelFinal')?.addEventListener('click', () => cModal.classList.remove('active'));
+
+    // Eventos do Modal de Excluir Carteira
+    document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
+        if (walletIdToDelete !== null) {
+            const item = document.querySelector(`[data-id="${walletIdToDelete}"]`);
+            if(item) item.remove();
+            verificarEstadoCarteiras();
+            document.getElementById('deleteWalletModal').classList.remove('active');
+            walletIdToDelete = null;
+        }
+    });
+
+    document.getElementById('btnCancelDelete')?.addEventListener('click', () => {
+        document.getElementById('deleteWalletModal').classList.remove('active');
+        walletIdToDelete = null;
+    });
 });
