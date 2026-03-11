@@ -677,3 +677,105 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
     filter: invert(1); /* Torna o ícone branco no tema escuro */
     cursor: pointer;
 }
+
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL) --- */
+
+/* Caixa principal do modal */
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL MINIMALISTA) --- */
+
+.confirmation-box-professional {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    border: 1px solid rgba(34, 211, 238, 0.2); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-header-prof h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin-top: 0; /* Começa do topo, sem o círculo do ícone */
+    margin-bottom: 0.5rem;
+}
+
+.confirm-header-prof .subtitle-prof {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+}
+
+/* Removi as regras do .confirm-icon-circle-prof, pois não usamos mais */
+
+.confirm-details-prof {
+    background: #0f172a; 
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: left;
+    border: 1px solid #1e293b;
+}
+
+.detail-item-prof {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.detail-item-prof:last-child {
+    border-bottom: none;
+}
+
+.detail-label-prof {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detail-value-prof {
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+}
+
+.detail-value-prof.highlight {
+    color: #22d3ee;
+}
+
+.modal-actions-prof {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Botões sem ícones, apenas padding padrão */
+.btn-prof-main, .btn-prof-alt {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    font-weight: 600; /* Texto em negrito para botões de ação */
+    border-radius: 8px; /* Cantos arredondados */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-prof-alt {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #1e293b;
+}
+
+.btn-prof-alt:hover {
+    background: rgba(148, 163, 184, 0.05);
+    border-color: #94a3b8;
+    color: white;
+}
+
+/* Cor de hover específica para o botão de excluir */
+#btnConfirmDelete:hover {
+    background: #dc2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
