@@ -1,4 +1,4 @@
-    <!-- GABYS CHEGOU!! -->
+<!-- GABYS CHEGOU!! -->
 
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -244,7 +244,11 @@
 
                 <div style="margin-bottom: 1rem;">
                     <label style="display:block; font-size: 0.8rem; color: #94a3b8; margin-bottom: 5px;">Data</label>
-                    <input type="text" id="despesaData" placeholder="00/00/0000" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;">
+                    <input type="text" id="despesaData" placeholder="00/00/0000" required style="width: 100%; background: #050a0f; border: 1px solid #1e293b; padding: 10px; border-radius: 8px; color: white;" autocomplete="off">
+                    <!-- AVISO DE ERRO LOCALIZADO -->
+                    <span id="erro-data" style="color: #ef4444; font-size: 0.75rem; display: none; margin-top: 5px; font-weight: 500;">
+                        ⚠️ Data inválida ou inexistente.
+                    </span>
                 </div>
 
                 <div style="margin-bottom: 1.5rem;">
@@ -262,16 +266,53 @@
 
     <!-- MODAL: CONFIRMAÇÃO CARTEIRA -->
     <div class="modal-overlay" id="confirmModal">
-        <div class="modal-box confirmation-box">
-            <div class="confirm-icon">✨</div>
-            <h3>Confirmar nova carteira?</h3>
-            <div id="confirmDetails" class="confirm-details"></div>
-            <div class="modal-actions" style="margin-top: 25px; display: flex; justify-content: center; gap: 15px;">
-                <button id="btnConfirmFinal" class="btn-save">Sim, Confirmar</button>
-                <button id="btnCancelFinal" class="btn-cancel" style="margin: 0;">Corrigir</button>
-            </div>
+    <div class="modal-box confirmation-box-professional">
+        
+        
+<div class="confirm-header-prof" style="text-align: center;">
+            <h3 style="margin-top: 0;">Confirmar Dados da Carteira</h3>
+            <p class="subtitle-prof">Por favor, revise as informações abaixo antes de salvar.</p>
+        </div>
+
+        
+<div id="confirmDetails" class="confirm-details-prof">
+            
+        </div>
+
+        
+<div class="modal-actions-prof">
+            <button id="btnConfirmFinal" class="btn-save btn-prof-main">
+                Salvar Carteira
+            </button>
+            <button id="btnCancelFinal" class="btn-cancel btn-prof-alt">
+                Corrigir
+            </button>
         </div>
     </div>
+</div>
+
+<!-- MODAL: EXCLUIR CARTEIRA -->
+<div class="modal-overlay" id="deleteWalletModal">
+    <div class="modal-box confirmation-box-professional">
+        <div class="confirm-header-prof" style="text-align: center;">
+            <h3 style="margin-top: 0; color: #ef4444;">Excluir Carteira?</h3>
+            <p class="subtitle-prof">Esta ação não pode ser desfeita. Todos os dados vinculados a esta carteira serão removidos.</p>
+        </div>
+
+        <div id="deleteDetails" class="confirm-details-prof" style="border-left: 4px solid #ef4444;">
+            <!-- Nome da carteira aparecerá aqui via JS -->
+        </div>
+
+        <div class="modal-actions-prof">
+            <button id="btnConfirmDelete" class="btn-save" style="background: #ef4444; border-color: #ef4444;">
+                Sim, Excluir
+            </button>
+            <button id="btnCancelDelete" class="btn-cancel btn-prof-alt">
+                Manter Carteira
+            </button>
+        </div>
+    </div>
+</div>
 
     <!-- Scripts -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
