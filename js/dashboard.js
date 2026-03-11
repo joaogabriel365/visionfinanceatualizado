@@ -1,9 +1,9 @@
 // 1. DADOS DE EXEMPLO
 const despesasExemplo = [
-    { titulo: 'Supermercado', categoria: 'Alimentação', pagamento: 'Cartão de Crédito', valor: 350.00, data: '10/03/2026', observacao: '' },
-    { titulo: 'Uber', categoria: 'Transporte', pagamento: 'Cartão de Débito', valor: 45.00, data: '10/03/2026', observacao: '' },
-    { titulo: 'Netflix', categoria: 'Lazer', pagamento: 'Cartão de Crédito', valor: 55.90, data: '09/03/2026', observacao: '' },
-    { titulo: 'Farmácia', categoria: 'Saúde', pagamento: 'VR', valor: 120.00, data: '08/03/2026', observacao: '' }
+    { titulo: 'Supermercado', categoria: 'Alimentação', pagamento: 'Cartão de Crédito', valor: 350.0, data: '10/03/2026', observacao: '' },
+    { titulo: 'Uber', categoria: 'Transporte', pagamento: 'Cartão de Débito', valor: 45.0, data: '10/03/2026', observacao: '' },
+    { titulo: 'Netflix', categoria: 'Lazer', pagamento: 'Cartão de Crédito', valor: 55.9, data: '09/03/2026', observacao: '' },
+    { titulo: 'Farmácia', categoria: 'Saúde', pagamento: 'VR', valor: 120.0, data: '08/03/2026', observacao: '' }
 ];
 
 // Funções auxiliares
@@ -70,11 +70,6 @@ function aplicarMascaraData(input) {
         v = v.replace(/^(\d{2})(\d{0,2})/, "$1/$2");
     }
     input.value = v;
-
-    // Reset visual ao digitar
-    const erroSpan = document.getElementById('erro-data');
-    input.style.borderColor = ""; 
-    if (erroSpan) erroSpan.style.display = "none";
 }
 
 // 2. ESTATÍSTICAS E GRÁFICOS
@@ -240,6 +235,7 @@ function showSection(sectionId) {
     if (navActive) navActive.classList.add('active');
 
     if (sectionId === 'despesas' || sectionId === 'painel') renderizarTabelas();
+    if (sectionId === 'planejamento') renderizarMetas();
 }
 
 // 6. CARTEIRAS
@@ -274,7 +270,6 @@ function criarCardCarteira(id, nome, tipo, limite) {
     return card;
 }
 
-// --- NOVO SISTEMA DE EXCLUSÃO PROFISSIONAL DE CARTEIRA ---
 let walletIdToDelete = null;
 
 function openDeleteModal(id, walletName) {
@@ -297,16 +292,36 @@ document.addEventListener('DOMContentLoaded', () => {
     inicializarGraficos();
     renderizarTabelas();
     verificarEstadoCarteiras();
+    renderizarMetas(); 
 
+    // Referências Despesas
     const inputValor = document.getElementById('despesaValor');
     const inputData = document.getElementById('despesaData');
     const erroDataSpan = document.getElementById('erro-data');
     const mDespesa = document.getElementById('modalDespesa');
     const formDespesa = document.getElementById('formDespesa');
 
-    inputValor?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
-    inputData?.addEventListener('input', (e) => aplicarMascaraData(e.target));
+    // Referências Metas
+    const inputValorMeta = document.getElementById('metaValor');
+    const inputPrazoMeta = document.getElementById('metaPrazo');
+    const erroDataMeta = document.getElementById('erro-data-meta');
 
+    // Máscaras e Limpeza de Erro ao Digitar
+    inputValor?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
+    inputData?.addEventListener('input', (e) => {
+        aplicarMascaraData(e.target);
+        inputData.style.borderColor = ""; 
+        if (erroDataSpan) erroDataSpan.style.display = "none";
+    });
+
+    inputValorMeta?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
+    inputPrazoMeta?.addEventListener('input', (e) => {
+        aplicarMascaraData(e.target);
+        inputPrazoMeta.style.borderColor = ""; 
+        if (erroDataMeta) erroDataMeta.style.display = "none";
+    });
+
+    // Botão Novo Despesa
     document.getElementById('btnNewExpense')?.addEventListener('click', () => {
         formDespesa.reset();
         document.getElementById('editIndex').value = "";
@@ -318,19 +333,18 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnFecharModalDespesa')?.addEventListener('click', () => mDespesa.classList.remove('active'));
 
+    // Submit Despesa
     formDespesa?.addEventListener('submit', (e) => {
         e.preventDefault();
-        
         if (!validarData(inputData.value)) {
-            inputData.style.borderColor = "#ef4444"; 
-            if (erroDataSpan) erroDataSpan.style.display = "block"; 
+            inputData.style.borderColor = "#ef4444";
+            if (erroDataSpan) erroDataSpan.style.display = "block";
             inputData.focus();
             return;
         }
 
         const valorPuro = parseFloat(inputValor.value.replace(/\./g, '').replace(',', '.'));
         const indexParaEditar = document.getElementById('editIndex').value;
-
         const dadosDespesa = {
             titulo: document.getElementById('despesaTitulo').value,
             categoria: document.getElementById('despesaCategoria').value,
@@ -351,7 +365,41 @@ document.addEventListener('DOMContentLoaded', () => {
         formDespesa.reset();
     });
 
-    // Lógica das Carteiras
+    // SUBMIT META COM VALIDAÇÃO VISUAL RIGOROSA
+    document.getElementById('formMeta')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const inputPrazo = document.getElementById('metaPrazo');
+        const erroMsg = document.getElementById('erro-data-meta');
+
+        if (!validarData(inputPrazo.value)) {
+            inputPrazo.style.borderColor = "#ef4444";
+            if (erroMsg) erroMsg.style.display = "block";
+            inputPrazo.focus();
+            return;
+        }
+
+        const valorAlvo = parseFloat(inputValorMeta.value.replace(/\./g, '').replace(',', '.'));
+        const novaMeta = {
+            id: Date.now(),
+            nome: document.getElementById('metaNome').value,
+            alvo: valorAlvo,
+            guardado: 0,
+            prazo: inputPrazo.value
+        };
+
+        metas.push(novaMeta);
+        localStorage.setItem('metas', JSON.stringify(metas));
+        renderizarMetas();
+        fecharModalMeta();
+    });
+
+    // Botão Cancelar Meta
+    document.getElementById('btnCancelarMeta')?.addEventListener('click', () => {
+        fecharModalMeta();
+    });
+
+    // Lógica Carteiras
     const wModal = document.getElementById('walletModal');
     const cModal = document.getElementById('confirmModal');
     let tempWallet = null;
@@ -361,30 +409,16 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('walletForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
-        
         tempWallet = {
             name: document.getElementById('walletName').value,
             type: document.getElementById('walletType').value,
             limit: parseFloat(document.getElementById('walletLimit').value)
         };
-        
         const fmt = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' });
-
         document.getElementById('confirmDetails').innerHTML = `
-            <div class="detail-item-prof">
-                <span class="detail-label-prof">Nome</span>
-                <span class="detail-value-prof">${tempWallet.name}</span>
-            </div>
-            <div class="detail-item-prof">
-                <span class="detail-label-prof">Tipo</span>
-                <span class="detail-value-prof">${tempWallet.type}</span>
-            </div>
-            <div class="detail-item-prof">
-                <span class="detail-label-prof">Limite Mensal</span>
-                <span class="detail-value-prof highlight">${fmt.format(tempWallet.limit)}</span>
-            </div>
-        `;
-        
+            <div class="detail-item-prof"><span class="detail-label-prof">Nome</span><span class="detail-value-prof">${tempWallet.name}</span></div>
+            <div class="detail-item-prof"><span class="detail-label-prof">Tipo</span><span class="detail-value-prof">${tempWallet.type}</span></div>
+            <div class="detail-item-prof"><span class="detail-label-prof">Limite Mensal</span><span class="detail-value-prof highlight">${fmt.format(tempWallet.limit)}</span></div>`;
         cModal.classList.add('active');
     });
 
@@ -398,7 +432,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     document.getElementById('btnCancelFinal')?.addEventListener('click', () => cModal.classList.remove('active'));
 
-    // Eventos do Modal de Excluir Carteira
     document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
         if (walletIdToDelete !== null) {
             const item = document.querySelector(`[data-id="${walletIdToDelete}"]`);
@@ -413,4 +446,176 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('deleteWalletModal').classList.remove('active');
         walletIdToDelete = null;
     });
+
+    // Outros eventos
+    document.getElementById('formAporteMeta')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        const id = parseInt(document.getElementById('aporteMetaIndex').value);
+        const valorAporte = parseFloat(document.getElementById('aporteValor').value.replace(/\./g, '').replace(',', '.'));
+        const index = metas.findIndex(m => m.id === id);
+        if (index !== -1 && !isNaN(valorAporte)) {
+            metas[index].guardado += valorAporte;
+            localStorage.setItem('metas', JSON.stringify(metas));
+            renderizarMetas();
+            fecharModalAporte();
+        }
+    });
+
+    document.getElementById('btnConfirmarExclusaoMeta')?.addEventListener('click', () => {
+        const id = parseInt(document.getElementById('excluirMetaIndex').value);
+        metas = metas.filter(m => m.id !== id);
+        localStorage.setItem('metas', JSON.stringify(metas));
+        renderizarMetas();
+        fecharModalExcluirMeta();
+    });
 });
+
+// 8. DADOS E FUNÇÕES DE METAS
+let metas = JSON.parse(localStorage.getItem('metas')) || [
+    { id: 1, nome: 'Reserva de Emergência', alvo: 10000, guardado: 6500, prazo: '31/12/2026' },
+    { id: 2, nome: 'Notebook Novo', alvo: 5000, guardado: 2000, prazo: '30/06/2026' }
+];
+
+function renderizarMetas() {
+    const tableBody = document.getElementById('goalsTableBody');
+    if (!tableBody) return;
+    tableBody.innerHTML = metas.map(meta => {
+        const percentual = Math.min(Math.round((meta.guardado / meta.alvo) * 100), 100);
+        return `
+            <tr>
+                <td>${meta.nome}</td>
+                <td><strong>${formatarMoeda(meta.alvo)}</strong></td>
+                <td>${meta.prazo}</td>
+                <td>
+                    <div class="goal-progress-container">
+                        <div class="progress-bar-goal"><div class="progress-fill-goal" style="width: ${percentual}%;"></div></div>
+                        <span class="progress-text">${percentual}%</span>
+                    </div>
+                </td>
+                <td style="text-align: center;">
+                    <div style="display: flex; gap: 12px; justify-content: center;">
+                        <button onclick="abrirModalAporte(${meta.id})" class="btn-action-add" title="Adicionar economia" style="background:none; border:none; cursor:pointer; font-size:1.2rem;">💰</button>
+                        <button onclick="abrirModalExcluirMeta(${meta.id})" style="background:none; border:none; cursor:pointer;"><img src="./img/lixeira.png" width="16"></button>
+                    </div>
+                </td>
+            </tr>`;
+    }).join('');
+}
+
+function abrirModalMeta() {
+    const modal = document.getElementById('modalMeta');
+    modal.classList.add('active');
+    modal.style.display = 'flex';
+}
+
+function fecharModalMeta() {
+    const modal = document.getElementById('modalMeta');
+    const inputPrazo = document.getElementById('metaPrazo');
+    const erroMsg = document.getElementById('erro-data-meta');
+
+    modal.style.display = 'none';
+    modal.classList.remove('active');
+    document.getElementById('formMeta').reset();
+    
+    // Limpar estados de erro ao fechar
+    if(inputPrazo) inputPrazo.style.borderColor = "";
+    if(erroMsg) erroMsg.style.display = "none";
+}
+
+function abrirModalAporte(id) {
+    document.getElementById('aporteMetaIndex').value = id;
+    document.getElementById('aporteValor').value = "";
+    document.getElementById('modalAporteMeta').style.display = 'flex';
+}
+
+function fecharModalAporte() {
+    document.getElementById('modalAporteMeta').style.display = 'none';
+}
+
+function abrirModalExcluirMeta(id) {
+    document.getElementById('excluirMetaIndex').value = id;
+    document.getElementById('modalExcluirMeta').style.display = 'flex';
+}
+
+function fecharModalExcluirMeta() {
+    document.getElementById('modalExcluirMeta').style.display = 'none';
+}
+
+document.querySelector('.btn-save-orcamento')?.addEventListener('click', () => {
+    const valor = document.getElementById('orcamentoMensal').value;
+    if (valor) {
+        localStorage.setItem('orcamento_mensal', valor);
+        alert('Orçamento atualizado com sucesso!');
+        // Opcional: recarregar os stats cards aqui
+        renderizarStats(); 
+    }
+});
+
+// Funções de Gestão de Orçamento
+function salvarOrcamento() {
+    const input = document.getElementById('orcamentoMensal');
+    const valorPuro = parseFloat(input.value.replace(/\./g, '').replace(',', '.'));
+
+    if (isNaN(valorPuro) || valorPuro <= 0) {
+        alert("Por favor, insira um valor válido para o orçamento.");
+        return;
+    }
+
+    localStorage.setItem('budget_total', valorPuro);
+    atualizarInterfaceOrcamento();
+    input.value = ""; // Limpa o campo após salvar
+}
+
+function atualizarInterfaceOrcamento() {
+    const orcamentoTotal = parseFloat(localStorage.getItem('budget_total')) || 0;
+    const displayLimite = document.getElementById('valor-limite-display');
+    
+    // 1. Atualiza o badge de valor estabelecido
+    displayLimite.innerText = formatarMoeda(orcamentoTotal);
+
+    // 2. Calcula quanto já foi alocado nas metas (valor 'alvo' das metas)
+    // Se quiser basear no que já foi 'guardado', mude meta.alvo para meta.guardado
+    const totalAlocadoMetas = metas.reduce((acc, meta) => acc + meta.alvo, 0);
+
+    // 3. Cálculos de Porcentagem e Restante
+    const percentualUso = orcamentoTotal > 0 ? (totalAlocadoMetas / orcamentoTotal) * 100 : 0;
+    const saldoDisponivel = orcamentoTotal - totalAlocadoMetas;
+
+    // 4. Atualiza a Barra e Textos
+    const progressBar = document.getElementById('budget-progress-fill');
+    const percentText = document.getElementById('usage-percentage-text');
+    const amountText = document.getElementById('usage-amount-text');
+    const remainingText = document.getElementById('remaining-amount-text');
+
+    progressBar.style.width = `${Math.min(percentualUso, 100)}%`;
+    percentText.innerText = `${Math.round(percentualUso)}%`;
+    amountText.innerText = `${formatarMoeda(totalAlocadoMetas)} alocados`;
+    remainingText.innerText = `Disponível: ${formatarMoeda(saldoDisponivel)}`;
+
+    // 5. Feedback Visual de Cores
+    progressBar.classList.remove('progress-fill-warning', 'progress-fill-danger');
+    if (percentualUso > 100) {
+        progressBar.classList.add('progress-fill-danger');
+        remainingText.style.color = "#ef4444";
+    } else if (percentualUso > 80) {
+        progressBar.classList.add('progress-fill-warning');
+    } else {
+        remainingText.style.color = "#22d3ee";
+    }
+}
+
+// Chame esta função dentro do seu DOMContentLoaded e sempre que uma meta for criada ou deletada
+document.addEventListener('DOMContentLoaded', () => {
+    // ... suas outras inicializações
+    atualizarInterfaceOrcamento();
+});
+
+function atualizarInterfaceOrcamento() {
+    // Verifica se a seção de planejamento está visível ou se os elementos existem
+    const sectionPlanejamento = document.getElementById('section-planejamento');
+    if (!sectionPlanejamento || sectionPlanejamento.style.display === 'none') return;
+
+    const orcamentoTotal = parseFloat(localStorage.getItem('budget_total')) || 0;
+    
+    // ... restante da lógica de cálculo que enviamos anteriormente ...
+}
