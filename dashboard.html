@@ -159,16 +159,16 @@
                         <h3>Orçamento Mensal</h3>
                         <p>Defina seu teto de gastos e monitore a alocação em metas.</p>
                     </div>
-                    <div id="display-orcamento-container" class="orcamento-badge">
-                        <span class="label">LIMITE ESTABELECIDO:</span>
-                        <span id="valor-limite-display" class="value">R$ 0,00</span>
+                    <div class="limit-box">
+                        <span>LIMITE ESTABELECIDO:</span>
+                        <h3 id="valor-limite-display">R$ 0,00</h3> 
                     </div>
                 </div>
                 
                 <div class="orcamento-controls">
                     <div class="input-group">
-                        <input type="text" id="orcamentoMensal" placeholder="R$ 0,00" oninput="aplicarMascaraValor(this)">
-                        <button class="btn-save-orcamento" onclick="salvarOrcamento()">Salvar</button>
+                        <input type="text" id="orcamentoMensal" placeholder="R$ 0,00">
+                        <button class="btn-save-orcamento">Salvar</button>
                     </div>
 
                     <div class="budget-usage-wrapper">
@@ -193,7 +193,7 @@
                         <h3>Metas Financeiras</h3>
                         <p class="subtitle-prof">Acompanhe seus objetivos de médio e longo prazo.</p>
                     </div>
-                    <button class="btn-new-goal" onclick="abrirModalMeta()" style="background: #22d3ee; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer;">+ Nova Meta</button>
+                    <button class="btn-new-goal" style="background: #22d3ee; color: #000; border: none; padding: 10px 20px; border-radius: 8px; font-weight: 800; cursor: pointer;">+ Nova Meta</button>
                 </div>
 
                 <div class="table-container-prof">
@@ -352,8 +352,8 @@
                     </div>
                 </div>
                 <div class="modal-actions-professional">
-                    <button type="submit" class="btn-create-goal">Criar Meta</button>
-                    <button type="button" id="btnCancelarMeta" class="btn-cancel-goal">Cancelar</button>
+                    <button type="submit" id="btnSalvarMeta" class="btn-create-goal">Criar Meta</button>
+                    <button type="button" id="btnFecharModalMeta" class="btn-cancel-goal">Cancelar</button>
                 </div>
             </form>
         </div>
@@ -369,7 +369,7 @@
                 <input type="hidden" id="aporteMetaIndex">
                 <div class="input-container-main">
                     <label class="detail-label-prof">VALOR DO APORTE</label>
-                    <input type="text" id="aporteValor" class="input-prof-styled" placeholder="R$ 0,00" oninput="aplicarMascaraValor(this)" required>
+                    <input type="text" id="aporteValor" class="input-prof-styled" placeholder="R$ 0,00" required>
                 </div>
                 <div class="modal-actions-professional">
                     <button type="submit" class="btn-create-goal">Confirmar Aporte</button>
@@ -393,7 +393,28 @@
         </div>
     </div>
 
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <div id="modalRevisaoOrcamento" class="modal-overlay-prof">
+    <div class="modal-content-prof">
+        
+        <button class="close-modal-x" id="btnFecharModalX" title="Fechar">&times;</button>
+        
+        <div class="modal-header-prof">
+            <h3>Confirmar Novo Orçamento</h3>
+            <p class="subtitle-prof">Revise o valor antes de aplicar a alteração mensal.</p>
+        </div>
+
+        <div id="revisaoOrcamentoDetails" class="modal-body-prof">
+            </div>
+
+        <div class="modal-footer-prof">
+            <button id="btnCancelarRevisaoOrcamento" class="btn-cancel btn-prof-alt">Corrigir</button>
+            <button id="btnConfirmarOrcamentoFinal" class="btn-save btn-prof-main">Confirmar Teto</button>
+        </div>
+    </div>
+</div>
+
     <script src="./js/dashboard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
 </body>
 </html>
