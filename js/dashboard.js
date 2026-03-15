@@ -23,6 +23,7 @@ const truncarTexto = (texto, limite = 150) => (!texto ? '-' : (texto.length <= l
 
 function salvarNoStorage() {
     localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
+    localStorage.setItem('metas', JSON.stringify(metas));
 }
 
 function validarData(dataString) {
@@ -74,6 +75,9 @@ function renderizarStats() {
         <div class="stat-card">
             <div class="stat-info"><p>Principal Categoria</p><h3>${despesasExemplo[0]?.categoria || '-'}</h3></div>
         </div>`;
+    
+    // Sincroniza a barra de planejamento sempre que os stats mudarem
+    atualizarInterfaceOrcamento();
 }
 
 function inicializarGraficos() {
@@ -126,7 +130,6 @@ function renderizarTabelas() {
     const tableBodyPainel = document.getElementById('expenseTableBody');
     const hoje = getHojeFormatado();
 
-    // --- LÓGICA PARA A TABELA DO PAINEL (DESPESAS RECENTES - APENAS HOJE) ---
     if (tableBodyPainel) {
         const despesasDeHoje = despesasExemplo.filter(d => d.data === hoje);
         
@@ -146,7 +149,6 @@ function renderizarTabelas() {
         }
     }
 
-    // --- LÓGICA PARA A TABELA COMPLETA (COM FILTROS) ---
     if (!tableBodyCompleta) return;
 
     const fMes = document.getElementById('filterMonth')?.value || 'todos';
@@ -327,22 +329,118 @@ function abrirModalExcluirDespesa(index) {
 
 function atualizarInterfaceOrcamento() {
     const display = document.getElementById('valor-limite-display');
+    const progressFill = document.getElementById('budget-progress-fill'); // ID correto do seu HTML
+    const progressPercentText = document.getElementById('usage-percentage-text'); // ID correto do seu HTML
+    const valorAlocadoText = document.getElementById('usage-amount-text'); // ID correto do seu HTML
+    const valorDisponivelText = document.getElementById('remaining-amount-text'); // ID correto do seu HTML
+
     if (display) display.innerText = formatarMoeda(limiteMensal);
+
+    const totalGasto = despesasExemplo.reduce((acc, d) => acc + d.valor, 0);
+    const percentual = limiteMensal > 0 ? Math.min((totalGasto / limiteMensal) * 100, 100) : 0;
+    const disponivel = limiteMensal - totalGasto;
+
+    if (progressFill) progressFill.style.width = `${percentual}%`;
+    if (progressPercentText) progressPercentText.innerText = `${percentual.toFixed(0)}%`;
+    if (valorAlocadoText) valorAlocadoText.innerText = `${formatarMoeda(totalGasto)} alocados`;
+    if (valorDisponivelText) {
+        valorDisponivelText.innerText = `Disponível: ${formatarMoeda(disponivel)}`;
+        valorDisponivelText.style.color = disponivel < 0 ? '#ef4444' : '#22d3ee';
+    }
 }
 
-function confirmarEDefinirOrcamento() {
+// No seu JS, mude o nome da função:
+function salvarOrcamentoMensal() { // Antes era confirmarEDefinirOrcamento
     const input = document.getElementById('orcamentoMensal');
     if(!input) return;
     const valorNumerico = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+    
     localStorage.setItem('budget_total', valorNumerico);
     limiteMensal = valorNumerico;
+    
     atualizarInterfaceOrcamento();
     renderizarStats();
     input.value = "";
 }
 
+function abrirModalMeta() {
+    const modal = document.getElementById('modalMeta');
+    if (modal) modal.classList.add('active');
+}
+
+function fecharModalMeta() {
+    const modal = document.getElementById('modalMeta');
+    const form = document.getElementById('formMeta');
+    if (modal) {
+        modal.classList.remove('active');
+        if (form) form.reset();
+    }
+}
+
+function salvarMeta() {
+    const nome = document.getElementById('metaNome').value;
+    const alvoRaw = document.getElementById('metaValor').value;
+    const prazo = document.getElementById('metaPrazo').value;
+
+    const alvo = parseFloat(alvoRaw.replace(/\./g, '').replace(',', '.')) || 0;
+
+    if (!nome || alvo <= 0 || !validarData(prazo)) {
+        alert("Preencha todos os campos da meta corretamente.");
+        return;
+    }
+
+    const novaMeta = {
+        id: Date.now(),
+        nome: nome,
+        alvo: alvo,
+        guardado: 0,
+        prazo: prazo
+    };
+
+    metas.push(novaMeta);
+    salvarNoStorage();
+    renderizarMetas();
+    fecharModalMeta();
+}
+
+function excluirMeta(id) {
+    metas = metas.filter(m => m.id !== id);
+    salvarNoStorage();
+    renderizarMetas();
+}
+
 function renderizarMetas() {
-    console.log("Metas carregadas:", metas);
+    const tableBody = document.getElementById('goalsTableBody');
+    if (!tableBody) return;
+
+    if (metas.length === 0) {
+        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">Nenhuma meta cadastrada</td></tr>`;
+        return;
+    }
+
+    tableBody.innerHTML = metas.map(meta => {
+        const progresso = Math.min((meta.guardado / meta.alvo) * 100, 100).toFixed(0);
+        return `
+            <tr>
+                <td>${meta.nome}</td>
+                <td><strong>${formatarMoeda(meta.alvo)}</strong></td>
+                <td>${meta.prazo}</td>
+                <td>
+                    <div style="display:flex; align-items:center; gap:10px;">
+                        <div class="progress-bar" style="flex:1; height:8px;">
+                            <div class="progress-fill" style="width: ${progresso}%;"></div>
+                        </div>
+                        <span style="font-size:0.8rem;">${progresso}%</span>
+                    </div>
+                </td>
+                <td>
+                    <button onclick="excluirMeta(${meta.id})" style="background:none; border:none; cursor:pointer;">
+                        <img src="./img/lixeira.png" style="width: 18px;"/>
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join('');
 }
 
 // ==========================================================================
@@ -366,6 +464,10 @@ function showSection(sectionId) {
     if (navActive) navActive.classList.add('active');
 
     if (sectionId === 'despesas' || sectionId === 'painel') renderizarTabelas();
+    if (sectionId === 'planejamento') {
+        atualizarInterfaceOrcamento();
+        renderizarMetas();
+    }
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -378,6 +480,12 @@ document.addEventListener('DOMContentLoaded', () => {
     configurarEventosFiltros();
 
     document.getElementById('btnSalvarDespesa')?.addEventListener('click', salvarDespesa);
+
+    // Eventos de Planejamento e Metas
+    document.querySelector('.btn-save-budget')?.addEventListener('click', confirmarEDefinirOrcamento);
+    document.getElementById('btnAbrirModalMeta')?.addEventListener('click', abrirModalMeta);
+    document.getElementById('btnCancelarMeta')?.addEventListener('click', fecharModalMeta);
+    document.getElementById('btnSalvarMeta')?.addEventListener('click', salvarMeta);
 
     document.getElementById('walletForm')?.addEventListener('submit', function(e) {
         e.preventDefault();
@@ -397,7 +505,9 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('walletLimit')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('orcamentoMensal')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('despesaValor')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
+    document.getElementById('metaAlvo')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('despesaData')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
+    document.getElementById('metaPrazo')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
 
     document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
         if (indexDespesaParaExcluir !== null) {
