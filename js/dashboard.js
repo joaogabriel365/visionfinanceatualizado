@@ -590,3 +590,84 @@ function salvarCarteira() {
     document.getElementById('walletModal').classList.remove('active');
     verificarEstadoCarteiras();
 }
+
+// Objeto isolado para a seção de Relatórios
+const RelatoriosModulo = {
+    chart: null,
+
+    init() {
+        this.renderCharts();
+        this.renderRanking();
+    },
+
+    renderCharts() {
+        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        
+        // Destruir gráfico existente se houver para evitar bugs de hover
+        if (this.chart) this.chart.destroy();
+
+        this.chart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: ['Alimentação', 'Transporte', 'Moradia', 'Lazer', 'Saúde'],
+                datasets: [
+                    {
+                        label: 'Mês Atual',
+                        data: [1200, 800, 1500, 450, 300],
+                        backgroundColor: '#22d3ee',
+                        borderRadius: 4
+                    },
+                    {
+                        label: 'Mês Anterior',
+                        data: [1050, 600, 1500, 520, 280],
+                        backgroundColor: '#475569',
+                        borderRadius: 4
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { grid: { color: '#1e293b' }, ticks: { color: '#64748b' } },
+                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                }
+            }
+        });
+    },
+
+    renderRanking() {
+        const container = document.getElementById('rankingGastosContainer');
+        const dados = [
+            { id: 1, cat: 'Moradia', data: '05/03/2026', perc: 35.3, valor: 'R$ 1.500,00' },
+            { id: 2, cat: 'Alimentação', data: '12/03/2026', perc: 14.6, valor: 'R$ 620,00' },
+            { id: 3, cat: 'Transporte', data: '10/03/2026', perc: 10.6, valor: 'R$ 450,00' }
+        ];
+
+        container.innerHTML = dados.map(item => `
+            <div class="ranking-item">
+                <div class="ranking-rank">${item.id}</div>
+                <div class="ranking-details">
+                    <strong>${item.cat} • ${item.data}</strong>
+                    <div class="ranking-progress-bg">
+                        <div class="ranking-progress-fill" style="width: ${item.perc}%"></div>
+                    </div>
+                </div>
+                <div class="ranking-stats">
+                    <span class="ranking-perc"><i class="fas fa-arrow-up"></i> ${item.perc}% do total</span>
+                </div>
+            </div>
+        `).join('');
+    }
+};
+
+// Ajuste na função showSection para inicializar os relatórios
+const originalShowSection = window.showSection;
+window.showSection = function(sectionId) {
+    if (typeof originalShowSection === 'function') originalShowSection(sectionId);
+    
+    if (sectionId === 'relatorios') {
+        RelatoriosModulo.init();
+    }
+};
