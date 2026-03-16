@@ -89,35 +89,35 @@
 
             <div class="filters-bar">
     <select id="filterMonth" class="filter-select">
-        <option value="">📅 Mês</option>
-        <option value="01"> Janeiro</option><option value="02"> Fevereiro</option>
-        <option value="03"> Março</option><option value="04"> Abril</option>
-        <option value="05"> Maio</option><option value="06"> Junho</option>
-        <option value="07"> Julho</option><option value="08"> Agosto</option>
-        <option value="09"> Setembro</option><option value="10"> Outubro</option>
-        <option value="11"> Novembro</option><option value="12"> Dezembro</option>
-    </select>
+        <option value="todos">📅 Mês</option>
+                    <option value="01"> Janeiro</option><option value="02"> Fevereiro</option>
+                    <option value="03"> Março</option><option value="04"> Abril</option>
+                    <option value="05"> Maio</option><option value="06"> Junho</option>
+                    <option value="07"> Julho</option><option value="08"> Agosto</option>
+                    <option value="09"> Setembro</option><option value="10"> Outubro</option>
+                    <option value="11"> Novembro</option><option value="12"> Dezembro</option>
+                </select>
 
-    <select id="filterCategory" class="filter-select">
-        <option value="">Categoria </option>
-        <option value="Alimentação">Alimentação</option>
-        <option value="Transporte">Transporte</option>
-        <option value="Moradia">Moradia</option>
-        <option value="Lazer">Lazer</option>
-        <option value="Saúde">Saúde</option>
-        <option value="Outros">Outros</option>
-    </select>
+                <select id="filterCategory" class="filter-select">
+                    <option value="">Categoria </option>
+                    <option value="Alimentação">Alimentação</option>
+                    <option value="Transporte">Transporte</option>
+                    <option value="Moradia">Moradia</option>
+                    <option value="Lazer">Lazer</option>
+                    <option value="Saúde">Saúde</option>
+                    <option value="Outros">Outros</option>
+                </select>
 
-    <select id="filterPayment" class="filter-select">
-        <option value="">Pagamento</option>
-        <option value="Cartão de Crédito">Cartão de Crédito</option>
-        <option value="Cartão de Débito">Cartão de Débito</option>
-        <option value="Pix">Pix</option>
-        <option value="VR">VR</option>
-        <option value="VA">VA</option>
-        <option value="Dinheiro">Dinheiro</option>
-    </select>
-</div>
+                <select id="filterPayment" class="filter-select">
+                    <option value="">Pagamento</option>
+                    <option value="Cartão de Crédito">Cartão de Crédito</option>
+                    <option value="Cartão de Débito">Cartão de Débito</option>
+                    <option value="Pix">Pix</option>
+                    <option value="VR">VR</option>
+                    <option value="VA">VA</option>
+                    <option value="Dinheiro">Dinheiro</option>
+                </select>
+            </div>
 
             <div class="table-card full-width-table">
                 <table class="dash-table">
@@ -168,7 +168,7 @@
                 <div class="orcamento-controls">
                     <div class="input-group">
                         <input type="text" id="orcamentoMensal" placeholder="R$ 0,00">
-                        <button class="btn-save-orcamento" id="btnSalvarOrcamento" onclick="salvarOrcamentoMensal()">Salvar</button>
+                        <button class="btn-save-orcamento" id="btnSalvarOrcamento" onclick="solicitarConfirmacaoOrcamento()">Salvar</button>
                     </div>
                 </div>
 
@@ -215,49 +215,46 @@
     </main>
 
     <div class="modal-overlay" id="walletModal">
-    <div class="modal-box">
-        <h3>Nova Carteira</h3>
-        <form id="walletForm">
-            <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                <label style="flex: 0 0 120px;">Nome da carteira</label>
-                <input type="text" id="walletName" placeholder="Ex: Nubank Crédito" required style="flex: 1;">
-            </div>
-            
-            <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                <label style="flex: 0 0 120px;">Tipo</label>
-                <select id="walletType" required style="flex: 1;">
-                    <option value="Cartão de Crédito">Cartão de Crédito</option>
-                    <option value="Cartão de Débito">Cartão de Débito</option>
-                    <option value="PIX">Pix</option>
-                    <option value="VR">VR</option>
-                    <option value="VA">VA</option>
-                    <option value="Dinheiro">Dinheiro</option>
-                </select>
-            </div>
-            
-            <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
-                <label style="flex: 0 0 120px;">Limite mensal</label>
-                <input type="text" id="walletLimit" placeholder="0,00" required style="flex: 1;">
-            </div>
-
-            <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 25px;">
-                <button type="submit" class="btn-save" style="flex: 1;">Salvar Carteira</button>
-                <button type="button" class="btn-cancel" id="closeWallet" style="flex: 1;" onclick="document.getElementById('walletModal').classList.remove('active')">Cancelar</button>
-            </div>
-        </form>
+        <div class="modal-box">
+            <h3>Nova Carteira</h3>
+            <form id="walletForm">
+                <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <label style="flex: 0 0 120px;">Nome da carteira</label>
+                    <input type="text" id="walletName" placeholder="Ex: Nubank Crédito" required style="flex: 1;">
+                </div>
+                <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <label style="flex: 0 0 120px;">Tipo</label>
+                    <select id="walletType" required style="flex: 1;">
+                        <option value="Cartão de Crédito">Cartão de Crédito</option>
+                        <option value="Cartão de Débito">Cartão de Débito</option>
+                        <option value="PIX">Pix</option>
+                        <option value="VR">VR</option>
+                        <option value="VA">VA</option>
+                        <option value="Dinheiro">Dinheiro</option>
+                    </select>
+                </div>
+                <div class="input-group" style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 15px;">
+                    <label style="flex: 0 0 120px;">Limite mensal</label>
+                    <input type="text" id="walletLimit" placeholder="0,00" required style="flex: 1;">
+                </div>
+                <div class="modal-actions" style="display: flex; gap: 10px; margin-top: 25px;">
+                    <button type="submit" class="btn-save" style="flex: 1;">Salvar Carteira</button>
+                    <button type="button" class="btn-cancel" onclick="document.getElementById('walletModal').classList.remove('active')">Cancelar</button>
+                </div>
+            </form>
+        </div>
     </div>
-</div>
 
     <div class="modal-overlay" id="deleteWalletModal">
         <div class="modal-box confirmation-box-professional">
             <div class="confirm-header-prof" style="text-align: center;">
-                <h3 style="margin-top: 0; color: #ef4444;">Excluir Despesa?</h3>
-                <p class="subtitle-prof">Esta ação não pode ser desfeita.</p>
+                <h3 id="confirmarTitulo" style="margin-top: 0; color: #ef4444;">Confirmar Ação</h3>
+                <p id="confirmarSubtitulo" class="subtitle-prof">Esta ação não pode ser desfeita.</p>
             </div>
-            <div id="deleteDetails" class="confirm-details-prof" style="border-left: 4px solid #ef4444;"></div>
+            <div id="deleteDetails" class="confirm-details-prof" style="border-left: 4px solid #ef4444; color: #94a3b8; padding: 10px; margin: 15px 0;"></div>
             <div class="modal-actions-prof">
-                <button id="btnConfirmDelete" class="btn-save" style="background: #ef4444; border-color: #ef4444;">Sim, Excluir</button>
-                <button id="btnCancelDelete" class="btn-cancel btn-prof-alt">Manter Despesa</button>
+                <button id="btnConfirmDelete" class="btn-save" style="background: #ef4444; border-color: #ef4444;">Confirmar</button>
+                <button type="button" class="btn-cancel btn-prof-alt" onclick="document.getElementById('deleteWalletModal').classList.remove('active')">Cancelar</button>
             </div>
         </div>
     </div>
@@ -318,81 +315,79 @@
         </div>
     </div>
 
-   <div class="modal-overlay" id="modalMeta">
-    <div class="modal-box goal-modal-styled">
-        <div class="confirm-header-prof">
-            <h3>Criar Nova Meta</h3>
-            <p class="subtitle-prof">Estipule um valor e um prazo.</p>
-        </div>
-        <form id="formMeta" class="form-professional">
-            <div class="input-container-main">
-                <label class="detail-label-prof">NOME DA META</label>
-                <input type="text" id="metaNome" class="input-prof-styled" placeholder="Ex: Reserva" required>
+    <div class="modal-overlay" id="modalMeta">
+        <div class="modal-box goal-modal-styled">
+            <div class="confirm-header-prof">
+                <h3>Criar Nova Meta</h3>
+                <p class="subtitle-prof">Estipule um valor e um prazo.</p>
             </div>
-            <div class="input-row-flex">
+            <form id="formMeta" class="form-professional">
                 <div class="input-container-main">
-                    <label class="detail-label-prof">VALOR ALVO</label>
-                    <input type="text" id="metaValor" class="input-prof-styled" placeholder="R$ 0,00" required>
+                    <label class="detail-label-prof">NOME DA META</label>
+                    <input type="text" id="metaNome" class="input-prof-styled" placeholder="Ex: Reserva" required>
                 </div>
+                <div class="input-row-flex">
+                    <div class="input-container-main">
+                        <label class="detail-label-prof">VALOR ALVO</label>
+                        <input type="text" id="metaValor" class="input-prof-styled" placeholder="R$ 0,00" required>
+                    </div>
+                    <div class="input-container-main">
+                        <label class="detail-label-prof">PRAZO</label>
+                        <input type="text" id="metaPrazo" class="input-prof-styled" placeholder="00/00/0000" maxlength="10" required>
+                    </div>
+                </div>
+                <div class="modal-actions-professional">
+                    <button type="button" class="btn-create-goal" onclick="salvarMeta()">Criar Meta</button>
+                    <button type="button" class="btn-cancel-goal" onclick="document.getElementById('modalMeta').classList.remove('active')">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalAporteMeta">
+        <div class="modal-box goal-modal-styled">
+            <div class="confirm-header-prof">
+                <h3>Adicionar Economia</h3>
+                <p class="subtitle-prof">Quanto você deseja poupar para esta meta?</p>
+            </div>
+            <form id="formAporteMeta" class="form-professional">
+                <input type="hidden" id="aporteMetaIndex">
                 <div class="input-container-main">
-                    <label class="detail-label-prof">PRAZO</label>
-                    <input type="text" id="metaPrazo" class="input-prof-styled" placeholder="00/00/0000" maxlength="10" required>
-                    <span id="erro-data-meta" style="display: none; color: #ef4444; font-size: 0.85rem; margin-top: 5px;">⚠️ Data inválida.</span>
+                    <label class="detail-label-prof">VALOR DO APORTE</label>
+                    <input type="text" id="aporteValor" class="input-prof-styled" placeholder="R$ 0,00" required>
                 </div>
+                <div class="modal-actions-professional">
+                    <button type="button" class="btn-create-goal" onclick="salvarAporte()">Confirmar Aporte</button>
+                    <button type="button" onclick="document.getElementById('modalAporteMeta').classList.remove('active')" class="btn-cancel-goal">Cancelar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <div class="modal-overlay" id="modalExcluirMeta">
+        <div class="modal-box goal-modal-styled">
+            <div class="confirm-header-prof">
+                <h3>Excluir Meta</h3>
+                <p class="subtitle-prof">Esta ação não pode ser desfeita.</p>
             </div>
+            <input type="hidden" id="excluirMetaIndex">
             <div class="modal-actions-professional">
-                <button type="submit" id="btnSalvarMeta" class="btn-create-goal">Criar Meta</button>
-                <button type="button" id="btnFecharModalMeta" class="btn-cancel-goal">Cancelar</button>
+                <button type="button" id="btnConfirmarExclusaoMeta" class="btn-create-goal" style="background-color: #ef4444;" onclick="confirmarExcluirMeta()">Excluir Permanentemente</button>
+                <button type="button" onclick="document.getElementById('modalExcluirMeta').classList.remove('active')" class="btn-cancel-goal">Manter Meta</button>
             </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalAporteMeta" style="display: none;">
-    <div class="modal-box goal-modal-styled">
-        <div class="confirm-header-prof">
-            <h3>Adicionar Economia</h3>
-            <p class="subtitle-prof">Quanto você deseja poupar para esta meta?</p>
         </div>
-        <form id="formAporteMeta" class="form-professional">
-            <input type="hidden" id="aporteMetaIndex">
-            <div class="input-container-main">
-                <label class="detail-label-prof">VALOR DO APORTE</label>
-                <input type="text" id="aporteValor" class="input-prof-styled" placeholder="R$ 0,00" required>
+    </div>
+
+    <div id="modalConfirmarExclusao" class="modal-overlay">
+        <div class="modal-box" style="text-align: center;">
+            <h3>Excluir Registro?</h3>
+            <p style="color: #94a3b8; margin-bottom: 25px;">Esta ação não poderá ser desfeita.</p>
+            <div style="display: flex; gap: 10px; justify-content: center;">
+                <button id="btnConfirmarDeletar" class="btn-save" style="background: #ef4444;">Excluir</button>
+                <button type="button" onclick="fecharModalExclusao()" class="btn-cancel">Cancelar</button>
             </div>
-            <div class="modal-actions-professional">
-                <button type="submit" class="btn-create-goal">Confirmar Aporte</button>
-                <button type="button" onclick="fecharModalAporte()" class="btn-cancel-goal">Cancelar</button>
-            </div>
-        </form>
-    </div>
-</div>
-
-<div class="modal-overlay" id="modalExcluirMeta" style="display: none;">
-    <div class="modal-box goal-modal-styled">
-        <div class="confirm-header-prof">
-            <h3>Excluir Meta</h3>
-            <p class="subtitle-prof">Esta ação não pode ser desfeita.</p>
-        </div>
-        <input type="hidden" id="excluirMetaIndex">
-        <div class="modal-actions-professional">
-            <button type="button" id="btnConfirmarExclusaoMeta" class="btn-create-goal" style="background-color: #ef4444;">Excluir Permanentemente</button>
-            <button type="button" onclick="fecharModalExcluirMeta()" class="btn-cancel-goal">Manter Meta</button>
         </div>
     </div>
-</div>
-
-<div id="modalConfirmarExclusao" class="modal-overlay-prof">
-    <div class="modal-content-prof" style="text-align: center;">
-        <h2 id="confirmarTitulo">Excluir Registro?</h2>
-        <p style="color: #94a3b8; margin-bottom: 25px;">Esta ação não poderá ser desfeita. Deseja continuar?</p>
-        
-        <div style="display: flex; gap: 10px; justify-content: center;">
-            <button id="btnConfirmarDeletar" class="btn-save-cyan" style="background: #ef4444; color: white;">Excluir</button>
-            <button onclick="fecharModalExclusao()" class="btn-cancel" style="background: transparent; color: #94a3b8; border: none; cursor: pointer;">Cancelar</button>
-        </div>
-    </div>
-</div>
 
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="./js/dashboard.js"></script>
