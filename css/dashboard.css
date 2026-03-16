@@ -1517,3 +1517,372 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
     from { transform: translateY(20px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
+
+/* Container de Relatórios com Scroll Inteligente */
+/* ==========================================================================
+   SEÇÃO DE RELATÓRIOS - CORREÇÃO RIGOROSA DE CONSISTÊNCIA
+   ========================================================================== */
+
+/* Container Principal - Sem travar altura, permitindo scroll único da página */
+#section-relatorios {
+    padding: 20px;
+    display: block; 
+    min-height: auto;
+    color: #ffffff;
+}
+
+/* Grid de Layout - Segue o fluxo natural do site */
+.reports-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Cards - Cores e Bordas idênticas à seção de Planejamento */
+ /* ==========================================================================
+   PADRONIZAÇÃO GLOBAL DE BOXES E RELATÓRIOS
+   ========================================================================== */
+
+/* CORREÇÃO DE COR: Aplicando o azul escuro padrão em todas as boxes do sistema */
+/* ==========================================================================
+   REVISÃO RIGOROSA: PADRONIZAÇÃO DE CORES E ESTRUTURA
+   ========================================================================== */
+
+/* PADRONIZAÇÃO GLOBAL DE BOXES - Tom exato do Planejamento */
+/* ==========================================================================
+   REVISÃO FINAL: PADRONIZAÇÃO DE CORES, ALINHAMENTO E LARGURA TOTAL
+   ========================================================================== */
+
+/* 1. PADRONIZAÇÃO GLOBAL DE BOXES - Tom Sólido e Fiel ao Planejamento */
+/* =============================================================
+   REESTRUTURAÇÃO TOTAL: RELATÓRIOS PROFISSIONAIS
+   ============================================================= */
+
+/* 1. COR DE FUNDO ABSOLUTA (Garante o tom escuro em todas as boxes) */
+/* ==========================================================================
+   REESTRUTURAÇÃO PROFISSIONAL: SEÇÃO DE RELATÓRIOS
+   ========================================================================== */
+
+/* ==========================================================================
+   PADRONIZAÇÃO FINAL E ALINHAMENTO MILIMÉTRICO: RELATÓRIOS
+   ========================================================================== */
+
+/* ==========================================================================
+   SISTEMA DE RELATÓRIOS: ALINHAMENTO MILIMÉTRICO E CORES SÓLIDAS
+   ========================================================================== */
+
+/* 1. PADRONIZAÇÃO ABSOLUTA DE COR (FUNDO DO RANKING EM TUDO) */
+:root {
+
+    --bg-card-solid: #0b1120;
+
+    --border-color: #1e293b;
+
+    --accent-cyan: #22d3ee;
+
+    --text-muted: #94a3b8;
+
+}
+
+
+
+/* 1. HIERARQUIA DE TÍTULOS */
+
+#section-relatorios h2 {
+
+    font-size: 1.8rem !important;
+
+    font-weight: 700 !important;
+
+    letter-spacing: -0.025em;
+
+    margin-bottom: 2rem !important;
+
+    color: #ffffff;
+
+}
+
+
+
+/* Subtítulos internos das boxes */
+
+.chart-card-large h3,
+
+.summary-card h3,
+
+.ranking-container h3 {
+
+    font-size: 1.1rem !important;
+
+    font-weight: 600 !important;
+
+    color: #f8fafc;
+
+    margin-bottom: 0.5rem !important;
+
+}
+
+
+
+.chart-card-large p,
+
+.ranking-container p {
+
+    font-size: 0.85rem;
+
+    color: var(--text-muted);
+
+    margin-bottom: 1.5rem;
+
+}
+
+
+
+/* 2. PADRONIZAÇÃO DE BOXES E ALINHAMENTO */
+
+.reports-grid {
+
+    display: grid !important;
+
+    grid-template-columns: 1fr 340px !important;
+
+    gap: 24px !important;
+
+    align-items: stretch !important; /* Resolve a distorção da Sidebar */
+
+    margin-bottom: 24px !important;
+
+}
+
+
+
+.chart-card-large,
+
+.reports-sidebar {
+
+    background: var(--bg-card-solid) !important;
+
+    border: 1px solid var(--border-color) !important;
+
+    border-radius: 16px !important;
+
+    padding: 24px !important;
+
+}
+
+
+
+/* 3. CORREÇÃO DA BOX "RESUMO DO PERÍODO" */
+
+.reports-sidebar {
+
+    display: flex !important;
+
+    flex-direction: column !important;
+
+    gap: 20px !important;
+
+}
+
+
+
+.summary-item-card {
+
+    display: flex !important;
+
+    align-items: center !important;
+
+    gap: 16px !important;
+
+    padding: 12px 0 !important;
+
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05) !important;
+
+}
+
+
+
+.summary-item-card:last-child { border-bottom: none !important; }
+
+
+
+/* Ícones e Valores no Resumo */
+
+.summary-icon {
+
+    width: 44px;
+
+    height: 44px;
+
+    background: rgba(34, 211, 238, 0.08) !important;
+
+    color: var(--accent-cyan);
+
+    border-radius: 10px;
+
+    display: flex;
+
+    align-items: center;
+
+    justify-content: center;
+
+    font-size: 1.2rem;
+
+}
+
+
+
+.summary-info span {
+
+    font-size: 0.75rem !important;
+
+    text-transform: uppercase;
+
+    letter-spacing: 0.05em;
+
+    color: var(--text-muted);
+
+}
+
+
+
+.summary-info strong {
+
+    font-size: 1.2rem !important;
+
+    color: #ffffff;
+
+    display: block;
+
+    margin-top: 2px;
+
+}
+
+
+
+.summary-info small {
+
+    font-size: 0.8rem;
+
+    color: var(--accent-cyan);
+
+}
+
+
+
+/* 4. RANKING EXPANDIDO E LIMPO */
+
+.ranking-container {
+
+    background: var(--bg-card-solid) !important;
+
+    border: 1px solid var(--border-color) !important;
+
+    border-radius: 16px !important;
+
+    padding: 28px !important;
+
+    width: 100% !important;
+
+}
+
+
+
+.ranking-item {
+
+    display: grid !important;
+
+    grid-template-columns: 40px 1fr 180px 100px !important;
+
+    align-items: center !important;
+
+    padding: 16px !important;
+
+    background: rgba(255, 255, 255, 0.02) !important;
+
+    border-radius: 12px;
+
+    margin-bottom: 10px;
+
+    transition: background 0.2s;
+
+}
+
+
+
+.ranking-item:hover { background: rgba(255, 255, 255, 0.04) !important; }
+
+
+
+/* Barras de progresso mais elegantes */
+
+.ranking-progress-bg {
+
+    height: 6px !important;
+
+    background: #1e293b !important;
+
+    border-radius: 10px;
+
+    overflow: hidden;
+
+}
+
+
+
+.ranking-progress-fill {
+
+    background: var(--accent-cyan) !important;
+
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+
+}
+
+
+
+/* 5. TÍTULO DUPLICADO (REMOÇÃO DEFINITIVA) */
+
+#section-relatorios .section-header-row h2 + h2,
+
+#section-relatorios > h2:nth-of-type(2) {
+
+    display: none !important;
+
+}
+
+
+
+/* GRÁFICO - Altura controlada profissional */
+
+.chart-wrapper {
+
+    height: 320px;
+
+    position: relative;
+
+    width: 100%;
+
+    margin-top: 10px;
+
+}
+
+
+
+/* FILTROS */
+
+.filter-select {
+
+    background-color: #0b1120;
+
+    border: 1px solid #1e293b;
+
+    color: #ffffff;
+
+    padding: 8px 15px;
+
+    border-radius: 8px;
+
+    outline: none;
+
+}
