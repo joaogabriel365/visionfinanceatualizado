@@ -76,7 +76,6 @@ function renderizarStats() {
             <div class="stat-info"><p>Principal Categoria</p><h3>${despesasExemplo[0]?.categoria || '-'}</h3></div>
         </div>`;
     
-    // Sincroniza a barra de planejamento sempre que os stats mudarem
     atualizarInterfaceOrcamento();
 }
 
@@ -329,38 +328,30 @@ function abrirModalExcluirDespesa(index) {
 
 function atualizarInterfaceOrcamento() {
     const display = document.getElementById('valor-limite-display');
-    const progressFill = document.getElementById('budget-progress-fill'); // ID correto do seu HTML
-    const progressPercentText = document.getElementById('usage-percentage-text'); // ID correto do seu HTML
-    const valorAlocadoText = document.getElementById('usage-amount-text'); // ID correto do seu HTML
-    const valorDisponivelText = document.getElementById('remaining-amount-text'); // ID correto do seu HTML
+    const progressFill = document.getElementById('budget-progress-fill');
+    const progressPercentText = document.getElementById('usage-percentage-text');
+    const valorAlocadoText = document.getElementById('usage-amount-text');
+    const valorDisponivelText = document.getElementById('remaining-amount-text');
 
-    if (display) display.innerText = formatarMoeda(limiteMensal);
+    const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
+    if (display) display.innerText = formatarMoeda(limite);
 
-    const totalGasto = despesasExemplo.reduce((acc, d) => acc + d.valor, 0);
-    const percentual = limiteMensal > 0 ? Math.min((totalGasto / limiteMensal) * 100, 100) : 0;
-    const disponivel = limiteMensal - totalGasto;
+    // CORREÇÃO: Soma Despesas + Metas
+    const totalGastoDespesas = despesasExemplo.reduce((acc, d) => acc + d.valor, 0);
+    const totalAlocadoMetas = metas.reduce((acc, m) => acc + m.guardado, 0);
+    const totalGeral = totalGastoDespesas + totalAlocadoMetas;
+
+    const percentual = limite > 0 ? Math.min((totalGeral / limite) * 100, 100) : 0;
+    const disponivel = limite - totalGeral;
 
     if (progressFill) progressFill.style.width = `${percentual}%`;
     if (progressPercentText) progressPercentText.innerText = `${percentual.toFixed(0)}%`;
-    if (valorAlocadoText) valorAlocadoText.innerText = `${formatarMoeda(totalGasto)} alocados`;
+    if (valorAlocadoText) valorAlocadoText.innerText = `${formatarMoeda(totalGeral)} gastos/alocados`;
+    
     if (valorDisponivelText) {
         valorDisponivelText.innerText = `Disponível: ${formatarMoeda(disponivel)}`;
         valorDisponivelText.style.color = disponivel < 0 ? '#ef4444' : '#22d3ee';
     }
-}
-
-// No seu JS, mude o nome da função:
-function salvarOrcamentoMensal() { // Antes era confirmarEDefinirOrcamento
-    const input = document.getElementById('orcamentoMensal');
-    if(!input) return;
-    const valorNumerico = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
-    
-    localStorage.setItem('budget_total', valorNumerico);
-    limiteMensal = valorNumerico;
-    
-    atualizarInterfaceOrcamento();
-    renderizarStats();
-    input.value = "";
 }
 
 function abrirModalMeta() {
@@ -403,20 +394,9 @@ function salvarMeta() {
     fecharModalMeta();
 }
 
-function excluirMeta(id) {
-    metas = metas.filter(m => m.id !== id);
-    salvarNoStorage();
-    renderizarMetas();
-}
-
 function renderizarMetas() {
     const tableBody = document.getElementById('goalsTableBody');
     if (!tableBody) return;
-
-    if (metas.length === 0) {
-        tableBody.innerHTML = `<tr><td colspan="5" style="text-align:center; color:#94a3b8; padding:20px;">Nenhuma meta cadastrada</td></tr>`;
-        return;
-    }
 
     tableBody.innerHTML = metas.map(meta => {
         const progresso = Math.min((meta.guardado / meta.alvo) * 100, 100).toFixed(0);
@@ -427,19 +407,21 @@ function renderizarMetas() {
                 <td>${meta.prazo}</td>
                 <td>
                     <div style="display:flex; align-items:center; gap:10px;">
-                        <div class="progress-bar" style="flex:1; height:8px;">
-                            <div class="progress-fill" style="width: ${progresso}%;"></div>
-                        </div>
+                        <div class="progress-bar" style="flex:1; height:8px;"><div class="progress-fill" style="width: ${progresso}%;"></div></div>
                         <span style="font-size:0.8rem;">${progresso}%</span>
                     </div>
                 </td>
                 <td>
-                    <button onclick="excluirMeta(${meta.id})" style="background:none; border:none; cursor:pointer;">
-                        <img src="./img/lixeira.png" style="width: 18px;"/>
-                    </button>
+                    <div style="display: flex; gap: 10px; justify-content: center;">
+                        <button onclick="prepararAporte(${meta.id})" style="background:none; border:none; cursor:pointer;">
+                            <img src="./img/+.png" style="width: 18px;"/>
+                        </button>
+                        <button onclick="solicitarExclusaoMeta(${meta.id}, '${meta.nome}')" style="background:none; border:none; cursor:pointer;">
+                            <img src="./img/lixeira.png" style="width: 18px;"/>
+                        </button>
+                    </div>
                 </td>
-            </tr>
-        `;
+            </tr>`;
     }).join('');
 }
 
@@ -470,6 +452,9 @@ function showSection(sectionId) {
     }
 }
 
+let metaIdParaAporte = null;
+let acaoConfirmarGlobal = null;
+
 document.addEventListener('DOMContentLoaded', () => {
     renderizarStats();
     inicializarGraficos();
@@ -479,38 +464,27 @@ document.addEventListener('DOMContentLoaded', () => {
     verificarEstadoCarteiras();
     configurarEventosFiltros();
 
-    document.getElementById('btnSalvarDespesa')?.addEventListener('click', salvarDespesa);
-
-    // Eventos de Planejamento e Metas
-    document.querySelector('.btn-save-budget')?.addEventListener('click', confirmarEDefinirOrcamento);
-    document.getElementById('btnAbrirModalMeta')?.addEventListener('click', abrirModalMeta);
-    document.getElementById('btnCancelarMeta')?.addEventListener('click', fecharModalMeta);
-    document.getElementById('btnSalvarMeta')?.addEventListener('click', salvarMeta);
-
-    document.getElementById('walletForm')?.addEventListener('submit', function(e) {
-        e.preventDefault();
-        const nome = document.getElementById('walletName').value;
-        const tipo = document.getElementById('walletType').value;
-        const limite = parseFloat(document.getElementById('walletLimit').value.replace(/\./g, '').replace(',', '.')) || 0;
-        
-        if (nome.trim() !== "" && limite > 0) {
-            const id = "wallet-" + Date.now();
-            document.getElementById('walletsGrid').appendChild(criarCardCarteira(id, nome, tipo, limite));
-            document.getElementById('walletModal').classList.remove('active');
-            this.reset();
-            verificarEstadoCarteiras();
-        }
-    });
-
+    // Máscaras de Input
     document.getElementById('walletLimit')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('orcamentoMensal')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('despesaValor')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
-    document.getElementById('metaAlvo')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
+    document.getElementById('metaValor')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
+    document.getElementById('aporteValor')?.addEventListener('input', (e) => aplicarMascaraValor(e.target));
     document.getElementById('despesaData')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
     document.getElementById('metaPrazo')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
 
+    // CORREÇÃO: Escutar o botão de salvar carteira
+    document.getElementById('walletForm')?.addEventListener('submit', (e) => {
+        e.preventDefault();
+        salvarCarteira();
+    });
+
+    // Evento de Confirmação Principal (Modal Lixeira/Orçamento)
     document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
-        if (indexDespesaParaExcluir !== null) {
+        if (acaoConfirmarGlobal) {
+            acaoConfirmarGlobal();
+            acaoConfirmarGlobal = null;
+        } else if (indexDespesaParaExcluir !== null) {
             despesasExemplo.splice(indexDespesaParaExcluir, 1);
             salvarNoStorage();
             indexDespesaParaExcluir = null;
@@ -518,9 +492,12 @@ document.addEventListener('DOMContentLoaded', () => {
             document.querySelector(`[data-id="${walletIdToDelete}"]`)?.remove();
             walletIdToDelete = null;
         }
+        
         verificarEstadoCarteiras();
         renderizarTabelas();
         renderizarStats();
+        renderizarMetas();
+        atualizarInterfaceOrcamento();
         document.getElementById('deleteWalletModal').classList.remove('active');
     });
 
@@ -528,3 +505,88 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('deleteWalletModal').classList.remove('active');
     });
 });
+
+// Funções de Aporte (Botão +)
+function prepararAporte(id) {
+    metaIdParaAporte = id;
+    document.getElementById('aporteValor').value = "";
+    document.getElementById('modalAporteMeta').classList.add('active');
+}
+
+function salvarAporte() {
+    const input = document.getElementById('aporteValor');
+    const valor = parseFloat(input.value.replace(/\./g, '').replace(',', '.')) || 0;
+    
+    if (valor > 0) {
+        const meta = metas.find(m => m.id === metaIdParaAporte);
+        if (meta) {
+            meta.guardado += valor;
+            salvarNoStorage();
+            renderizarMetas();
+            atualizarInterfaceOrcamento();
+            document.getElementById('modalAporteMeta').classList.remove('active');
+        }
+    }
+}
+
+// Funções de Orçamento (Salvar)
+function solicitarConfirmacaoOrcamento() {
+    const input = document.getElementById('orcamentoMensal');
+    const valorRaw = input.value || "0";
+    const valor = parseFloat(valorRaw.replace(/\./g, '').replace(',', '.')) || 0;
+    
+    abrirModalConfirmacao("Confirmar Orçamento?", 
+        `Deseja confirmar ${formatarMoeda(valor)} como seu novo limite?`, 
+        () => {
+            localStorage.setItem('budget_total', valor);
+            limiteMensal = valor;
+            input.value = "";
+            renderizarStats();
+        }
+    );
+}
+
+// Funções de Meta (Lixeira)
+function solicitarExclusaoMeta(id, nome) {
+    abrirModalConfirmacao("Excluir Meta?", 
+        `Tem certeza que deseja excluir a meta "${nome}"?`, 
+        () => {
+            metas = metas.filter(m => m.id !== id);
+            salvarNoStorage();
+            renderizarMetas();
+            atualizarInterfaceOrcamento();
+        }
+    );
+}
+
+// Helper para abrir modal de confirmação
+function abrirModalConfirmacao(titulo, texto, callback) {
+    document.getElementById('confirmarTitulo').innerText = titulo;
+    document.getElementById('deleteDetails').innerHTML = `<p style="color:#94a3b8">${texto}</p>`;
+    acaoConfirmarGlobal = callback;
+    document.getElementById('deleteWalletModal').classList.add('active');
+}
+
+// Função para salvar nova carteira
+function salvarCarteira() {
+    const nome = document.getElementById('walletName').value;
+    const tipo = document.getElementById('walletType').value;
+    const limiteRaw = document.getElementById('walletLimit').value;
+    const limite = parseFloat(limiteRaw.replace(/\./g, '').replace(',', '.')) || 0;
+
+    if (!nome || limite <= 0) {
+        alert("Preencha os dados da carteira corretamente.");
+        return;
+    }
+
+    const id = Date.now().toString();
+    const grid = document.getElementById('walletsGrid');
+    const novoCard = criarCardCarteira(id, nome, tipo, limite);
+    
+    grid.appendChild(novoCard);
+    
+    // Limpar e fechar
+    document.getElementById('walletForm').reset();
+    document.getElementById('walletModal').classList.remove('active');
+    verificarEstadoCarteiras();
+}
