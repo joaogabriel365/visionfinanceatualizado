@@ -1479,3 +1479,41 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
     margin-top: 8px;
     opacity: 0.7;
 }
+
+
+/* --- FINALIZAÇÃO DO OVERLAY E TRANSIÇÕES --- */
+.modal-overlay-prof {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 10, 15, 0.85); /* Fundo escuro levemente transparente */
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo para foco total */
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay-prof.active {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Animação para o conteúdo do modal subir suavemente */
+.modal-overlay-prof.active .goal-modal-styled,
+.modal-overlay-prof.active .confirmation-box-professional {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
