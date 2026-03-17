@@ -1,416 +1,270 @@
-/* --- VARIÁVEIS E CONFIGURAÇÕES GERAIS --- */
-:root {
-    --primary: #22d3ee;
-    --bg-dark: #050a0f;
-    --card-bg: #0b1118;
-    --text-white: #ffffff;
-    --text-gray: #94a3b8;
-    --border: #1e293b;
-    --border-active: rgba(34, 211, 238, 0.4);
+.dashboard-body {
+    display: flex;
+    background-color: #050a0f;
+    min-height: 100vh;
 }
 
-/* --- CONFIGURAÇÃO GLOBAL DE FONTE --- */
-* { 
-    margin: 0; 
-    padding: 0; 
-    box-sizing: border-box; 
-    font-family: 'Montserrat', sans-serif !important; /* Força a Montserrat em tudo */
-}
-
-body {
-    background-color: var(--bg-dark);
-    color: var(--text-white);
-    line-height: 1.6;
-    overflow-x: hidden;
-    -webkit-font-smoothing: antialiased; /* Melhora a renderização da fonte */
-}
-
-/* --- BOTÕES --- */
-button { 
-    font-family: 'Inter', sans-serif; 
-    cursor: pointer; 
-    border: none; 
-    transition: 0.3s; 
-}
-
-.btn-primary, .btn-primary-large {
-    background-color: var(--primary);
-    color: var(--bg-dark);
-    font-weight: 700;
-    border-radius: 12px;
-}
-
-.btn-primary { padding: 0.7rem 1.5rem; }
-.btn-primary-large { padding: 1.1rem 2.2rem; font-size: 1rem; width: fit-content; }
-
-.btn-secondary-large {
-    background: transparent;
-    color: white;
-    border: 1px solid var(--border);
-    padding: 1.1rem 2.2rem;
-    border-radius: 12px;
-}
-
-button:hover { 
-    transform: translateY(-2px); 
-    opacity: 0.9; 
-}
-
-/* --- NAVBAR --- */
-.navbar {
-    display: flex; 
-    justify-content: space-between; 
-    align-items: center;
-    padding: 1.2rem 5%; 
-    position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    background-color: rgba(5, 10, 15, 0.95);
-    backdrop-filter: blur(10px);
-    z-index: 1000;
-    border-bottom: 1px solid var(--border);
-}
-
-.logo-container { display: flex; align-items: center; gap: 12px; }
-
-/* Ajuste da Logo na Navbar */
-.logo-img {
-    height: 50px; 
-    width: auto;
-    object-fit: contain;
-    transition: transform 0.3s ease;
-}
-
-.logo-container:hover .logo-img {
-    transform: scale(1.05);
-}
-
-.logo-text {
-    font-size: 1.4rem; 
-    font-weight: 800;
-    letter-spacing: -0.5px;
-}
-
-.nav-links { display: flex; align-items: center; gap: 2rem; }
-.btn-login { color: var(--text-gray); text-decoration: none; font-weight: 600; transition: 0.3s; }
-.btn-login:hover { color: var(--primary); }
-
-/* --- HERO SECTION --- */
-/* --- HERO SECTION --- */
-.hero-section {
-    display: grid; 
-    grid-template-columns: 1fr 1fr; 
-    gap: 4rem; /* Aumentei um pouco o gap para dar mais ar */
-    padding: 160px 5% 5rem; 
-    max-width: 1200px; 
-    margin: 0 auto; 
-    align-items: center;
-}
-
-.hero-content {
-    text-align: left;
+/* Sidebar */
+.sidebar {
+    width: 260px;
+    background-color: #0b1118;
+    border-right: 1px solid #1e293b;
     display: flex;
     flex-direction: column;
+    padding: 2rem 1rem;
+    position: fixed;
+    height: 100vh;
+}
+
+.sidebar-logo { width: 35px; margin-right: 10px; }
+
+.sidebar-nav { margin-top: 3rem; flex-grow: 1; }
+
+.nav-item {
+    display: flex;
+    align-items: center;
+    padding: 0.8rem 1rem;
+    color: #94a3b8;
+    text-decoration: none;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    transition: 0.3s;
+}
+
+.nav-item.active, .nav-item:hover {
+    background-color: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
+}
+
+/* Layout de Conteúdo */
+.main-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 2rem 3rem;
+}
+
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2.5rem;
+}
+
+/* Grid de Estatísticas */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 1.5rem;
+    margin-bottom: 2rem;
 }
 
-.hero-title { font-size: 3.5rem; font-weight: 800; line-height: 1.1; }
-.highlight { color: var(--primary); }
-.hero-description { color: var(--text-gray); font-size: 1.1rem; line-height: 1.6; }
-.cta-group { display: flex; gap: 1rem; justify-content: flex-start; }
-
-/* Definição da Animação (Mantida, mas aplicada diretamente) */
-@keyframes float {
-    0% { transform: translateY(0px); }
-    50% { transform: translateY(-20px); } /* Flutua um pouco mais */
-    100% { transform: translateY(0px); }
+.stat-card {
+    background: #0b1118;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
 }
 
-.hero-image-container { 
-    width: 100%; 
-    display: flex; 
-    justify-content: center; /* Centraliza horizontalmente na coluna */
-    align-items: center;     /* Centraliza verticalmente na coluna */
-    position: relative;
+.stat-icon {
+    background: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
 }
 
-/* NOVA CLASSE: Para a moeda PNG solta */
-/* --- HERO SECTION ATUALIZADA --- */
-
-/* Ajuste do tamanho da moeda */
-.hero-img-floating { 
-    width: 100%; 
-    max-width: 550px; /* Aumentado de 400px para 550px para dar mais destaque */
-    height: auto;
-    display: block;
-    
-    /* Aplica a animação diretamente no PNG */
-    animation: float 6s ease-in-out infinite;
-    
-    /* Sombra projetada que segue o contorno da moeda */
-    filter: drop-shadow(0 25px 35px rgba(0,0,0,0.8)); 
-    
-    transition: transform 0.3s ease;
+/* Estilo da Tabela */
+.table-card {
+    background: #0b1118;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    margin-top: 2rem;
 }
 
-/* Ajuste na animação para uma flutuação mais fluida com o tamanho maior */
-@keyframes float {
-    0% { transform: translateY(0px) rotate(0deg); }
-    50% { transform: translateY(-30px) rotate(2deg); } /* Sobe 30px e dá uma leve inclinada */
-    100% { transform: translateY(0px) rotate(0deg); }
+table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+th { text-align: left; color: #64748b; font-size: 0.85rem; padding-bottom: 1rem; }
+td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
+.tag { padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
+.tag.food { background: rgba(34, 211, 238, 0.1); color: #22d3ee; }
+
+/* Layout Principal */
+.dashboard-body {
+    display: flex;
+    background-color: #050a0f;
+    min-height: 100vh;
+    color: white;
 }
 
-/* Ajuste de responsividade para telas menores */
-@media (max-width: 1024px) {
-    .hero-img-floating {
-        max-width: 450px; /* Tamanho intermediário para tablets */
-    }
+/* Sidebar Estilizada */
+.sidebar {
+    width: 260px;
+    background-color: #0b1118;
+    border-right: 1px solid #1e293b;
+    display: flex;
+    flex-direction: column;
+    padding: 1.5rem;
+    position: fixed;
+    height: 100vh;
+    z-index: 10;
 }
 
-@media (max-width: 768px) {
-    .hero-img-floating {
-        max-width: 320px; /* Tamanho para celulares */
-        margin-top: 3rem;
-    }
+/* --- dashboard.css --- */
+
+/* Ajuste do container da logo */
+/* --- SIDEBAR CORRIGIDA --- */
+
+.sidebar-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;              /* Espaço entre logo e texto */
+    margin-bottom: 1.5rem;  /* Reduzido para aproximar do menu */
+    padding: 0 10px;
 }
 
-/* --- SEÇÃO DE FUNCIONALIDADES --- */
-.features-section {
-    padding: 100px 5%;
-    max-width: 1400px;
-    margin: 0 auto;
+/* Ajuste do tamanho da Logo */
+.sidebar-logo {
+    width: 120px !important; /* Tamanho ajustado conforme pedido */
+    height: auto;           
+    filter: drop-shadow(0 0 10px rgba(212, 175, 55, 0.3)); 
+    transition: transform 0.3s ease; 
+}
+
+/* Efeito: a logo cresce um pouco quando passa o mouse */
+.sidebar-header:hover .sidebar-logo {
+    transform: scale(1.1);
+}
+
+/* Ajuste do texto Vision Finance */
+.logo-text {
+    font-weight: 800;
+    font-size: 1.2rem;
+    margin-top: -5px;       /* Puxa o texto para perto da logo */
+    color: white;           /* Garante a visibilidade do título */
     text-align: center;
 }
 
-.features-header { margin-bottom: 80px; }
-.features-header h2 { font-size: 2.5rem; font-weight: 800; margin-bottom: 15px; }
-.features-header p { color: var(--text-gray); font-size: 1.1rem; max-width: 700px; margin: 0 auto; }
-
-.features-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); 
-    gap: 25px;
+.sidebar-nav {
+    margin-top: 0.5rem;     /* Aproxima os itens do título */
+    flex-grow: 1;
 }
 
-.feature-card {
-    background: var(--card-bg);
-    padding: 40px 30px;
-    border-radius: 20px;
-    border: 1px solid var(--border);
-    text-align: left;
-    display: flex;
-    flex-direction: column;
-    height: 100%;
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    cursor: default;
-}
-
-.feature-card:hover {
-    transform: scale(1.03); 
-    border-color: var(--primary); 
-    box-shadow: 0 15px 30px rgba(0,0,0,0.4); 
-}
-
-.feature-icon {
-    background: rgba(34, 211, 238, 0.1);
-    color: var(--primary);
-    width: 50px;
-    height: 50px;
+.nav-item {
     display: flex;
     align-items: center;
-    justify-content: center;
-    border-radius: 12px;
-    font-size: 1.5rem;
-    margin-bottom: 25px;
-}
-
-.feature-card h3 { margin-bottom: 15px; font-size: 1.25rem; font-weight: 700; }
-.feature-card p { color: var(--text-gray); font-size: 0.95rem; line-height: 1.6; }
-
-/* --- SHOWCASE --- */
-.showcase-section {
-    width: 100%;
-    padding: 80px 20px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    background-color: #050a0f;
-}
-
-.showcase-container {
-    max-width: 1200px;
-    width: 100%;
-    display: grid;
-    grid-template-columns: 1fr 1.2fr;
-    align-items: center;
-    gap: 40px;
-    background: linear-gradient(145deg, #0b1118 0%, #050a0f 100%);
-    padding: 60px;
-    border-radius: 40px;
-    border: 1px solid rgba(255, 255, 255, 0.1); 
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
-    transition: transform 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
-    cursor: default;
-}
-
-.showcase-container:hover {
-    transform: translateY(-5px);
-    border-color: #22d3ee;
-    box-shadow: 0 20px 40px -10px rgba(34, 211, 238, 0.15);
-}
-
-.showcase-text {
-    display: flex;
-    flex-direction: column;
-}
-
-.showcase-title {
-    font-size: 2.8rem;
-    font-weight: 800;
-    line-height: 1.2;
-    margin-bottom: 20px;
-}
-
-.showcase-description {
+    padding: 0.8rem 1rem;
     color: #94a3b8;
-    font-size: 1.1rem;
-    line-height: 1.7;
-    margin-bottom: 40px;
-}
-
-.showcase-text .btn-primary-large {
-    width: fit-content; 
-}
-
-.showcase-bg-card {
-    background: #161d26;
-    padding: 15px;
-    border-radius: 24px;
-    border: 1px solid rgba(255, 255, 255, 0.05);
-}
-
-.showcase-bg-card img {
-    width: 100%;
+    text-decoration: none;
     border-radius: 12px;
-    display: block;
-}
-
-/* --- FINAL CTA --- */
-.final-cta { padding: 100px 5%; text-align: center; }
-.final-cta-content { display: flex; flex-direction: column; align-items: center; gap: 30px; }
-.cta-title { font-size: 3rem; font-weight: 800; max-width: 700px; line-height: 1.2; }
-
-/* --- FOOTER --- */
-.footer { padding: 80px 5% 40px; border-top: 1px solid var(--border); margin-top: 50px; }
-.footer-container { 
-    max-width: 1200px; margin: 0 auto; display: flex; 
-    justify-content: space-between; align-items: flex-start; gap: 40px; 
-}
-.footer-brand { flex: 1; }
-.footer-tagline { color: var(--text-gray); margin-top: 20px; font-size: 1rem; }
-.footer-links-group { display: flex; gap: 100px; }
-.footer-column h4 { margin-bottom: 20px; font-size: 1rem; font-weight: 700; color: var(--text-white); }
-.footer-nav { display: flex; flex-direction: column; gap: 12px; }
-.footer-nav a { color: var(--text-gray); text-decoration: none; font-size: 0.95rem; transition: 0.3s; }
-.footer-nav a:hover { color: var(--primary); }
-.footer-bottom { 
-    max-width: 1200px; margin: 60px auto 0; padding-top: 30px; 
-    border-top: 1px solid var(--border); text-align: center; 
-}
-.footer-bottom p { color: #64748b; font-size: 0.9rem; }
-
-/* --- MODAIS (REGISTRO E LOGIN) --- */
-.modal-overlay {
-    display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.9); z-index: 9999; align-items: center; justify-content: center; backdrop-filter: blur(10px);
-}
-.modal-content {
-    background: var(--card-bg); 
-    padding: 30px 45px 40px; /* Reduzido padding do topo e base */
-    border-radius: 24px;
-    width: 95%; max-width: 500px; border: 1px solid var(--border);
-    position: relative; text-align: center; max-height: 95vh; overflow-y: auto;
-}
-
-.modal-header {
-    margin-bottom: 25px; /* Reduzido espaçamento do header para o form */
-}
-
-.modal-image-container {
-    display: flex;
-    justify-content: center;
-    margin-bottom: 10px; /* Reduzido espaçamento da logo para o título */
-}
-
-/* Ajuste da Logo nos Modais (Cadastro/Login) */
-.modal-app-logo {
-    width: 80px;  /* Aumentamos de 60px para 80px conforme solicitado */
-    height: 80px; 
-    object-fit: contain;
-    margin-bottom: 0px; /* Margem interna removida */
-}
-
-.modal-header h2 {
-    font-size: 1.8rem;
-    margin-bottom: 5px; /* Colado no parágrafo abaixo */
-}
-
-.modal-header p {
-    color: var(--text-gray);
+    margin-bottom: 0.5rem;
+    transition: 0.3s;
     font-size: 0.95rem;
 }
 
-.input-row { display: flex; gap: 15px; }
-.input-group { margin-bottom: 18px; text-align: left; width: 100%; }
-.input-group label { display: block; font-size: 0.8rem; color: var(--text-gray); margin-bottom: 6px; }
-
-.input-group input, .input-group select {
-    width: 100%; padding: 12px 15px; background: var(--bg-dark);
-    border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 1rem; outline: none;
-}
-.input-group input:focus { border-color: var(--primary); }
-
-.close-modal { position: absolute; top: 20px; right: 20px; background: none; color: white; font-size: 2rem; cursor: pointer; }
-
-.link-entrar { color: var(--primary) !important; font-weight: 700; text-decoration: none; transition: 0.3s; }
-.link-entrar:hover { text-decoration: underline; }
-
-/* --- RESPONSIVIDADE --- */
-@media (max-width: 768px) {
-    .hero-section { grid-template-columns: 1fr; text-align: center; padding-top: 120px; }
-    .showcase-container { grid-template-columns: 1fr; text-align: center; padding: 40px 20px; }
-    .hero-content { align-items: center; }
-    .cta-group { justify-content: center; }
-    .footer-container { flex-direction: column; text-align: center; align-items: center; }
-    .footer-links-group { gap: 40px; margin-top: 30px; }
-    .hero-image-card { max-width: 100%; }
+.nav-item:hover, .nav-item.active {
+    background: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
 }
 
-/* --- ANIMAÇÕES DE ENTRADA DO MODAL --- */
-@keyframes fadeIn {
-    from { opacity: 0; }
-    to { opacity: 1; }
+/* Conteúdo */
+.main-content {
+    margin-left: 260px;
+    flex-grow: 1;
+    padding: 2rem 3rem;
+    max-width: 1400px;
 }
 
-@keyframes modalSlideUp {
-    from {
-        opacity: 0;
-        transform: translateY(30px) scale(0.95);
-    }
-    to {
-        opacity: 1;
-        transform: translateY(0) scale(1);
-    }
+.dash-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
 }
 
-.modal-overlay.active {
-    display: flex !important;
-    animation: fadeIn 0.3s ease-out forwards;
+.user-profile {
+    display: flex;
+    align-items: center;
+    gap: 12px;
 }
 
-.modal-overlay.active .modal-content {
-    animation: modalSlideUp 0.4s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+.avatar {
+    width: 40px;
+    height: 40px;
+    background: var(--primary);
+    color: var(--bg-dark);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+}
+
+/* Grid de Stats */
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.stat-card {
+    background: #0b1118;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.stat-info p { color: #94a3b8; font-size: 0.85rem; margin-bottom: 5px; }
+.stat-info h3 { font-size: 1.4rem; font-weight: 700; }
+.trend { font-size: 0.75rem; margin-top: 5px; display: block; }
+.trend.up { color: #10b981; }
+.trend.down { color: #ef4444; }
+
+/* Gráficos */
+.charts-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.chart-card {
+    background: #0b1118;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+}
+
+.chart-card h3 { margin-bottom: 1.5rem; font-size: 1.1rem; }
+.chart-container { height: 250px; position: relative; }
+
+/* Tabela */
+.table-card {
+    background: #0b1118;
+    padding: 1.5rem;
+    border-radius: 16px;
+    border: 1px solid #1e293b;
+}
+
+.dash-table { width: 100%; border-collapse: collapse; margin-top: 1rem; }
+.dash-table th { text-align: left; color: #64748b; font-size: 0.85rem; padding-bottom: 1rem; }
+.dash-table td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
+
+.category-tag {
+    padding: 4px 10px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    background: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
 }
 
 /* --- CONFIGURAÇÃO GLOBAL --- */
@@ -488,8 +342,1548 @@ button:hover {
     transform: scale(1.08);
 }
 
-.logo-img, .sidebar-logo, .modal-app-logo {
-    image-rendering: -webkit-optimize-contrast; /* Melhora a nitidez em navegadores Webkit */
-    image-rendering: crisp-edges;
-    object-fit: contain;
+/* Cards de Carteira */
+.wallets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+
+.wallet-card {
+    background: #0b1118;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+}
+
+.wallet-top { display: flex; align-items: center; gap: 12px; margin-bottom: 1.5rem; }
+.wallet-icon-bg { background: rgba(34, 211, 238, 0.1); padding: 10px; border-radius: 8px; }
+
+.progress-bar {
+    background: #1e293b;
+    height: 8px;
+    border-radius: 4px;
+    margin: 10px 0;
+    overflow: hidden;
+}
+
+.progress-fill {
+    background: var(--primary);
+    height: 100%;
+    transition: width 0.5s ease;
+}
+
+.stat-row { display: flex; justify-content: space-between; font-size: 0.85rem; color: #94a3b8; }
+.stat-row.total { margin-top: 10px; font-weight: 700; color: white; }
+.highlight { color: var(--primary); }
+
+/* Modal Styles */
+.modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.8); display: none; align-items: center; justify-content: center; z-index: 100;
+}
+.modal-overlay.active { display: flex; }
+.modal-box { background: #0b1118; padding: 2rem; border-radius: 16px; width: 100%; max-width: 450px; }
+.btn-save { background: var(--primary); color: #050a0f; border: none; padding: 12px 24px; border-radius: 8px; font-weight: 700; cursor: pointer; }
+.btn-cancel { background: transparent; color: #94a3b8; border: 1px solid #1e293b; padding: 12px 24px; border-radius: 8px; cursor: pointer; margin-left: 10px; }
+
+.tab-content {
+    display: none; /* Esconde por padrão */
+}
+
+.tab-content.active {
+    display: block; /* Mostra a que tiver a classe active */
+}
+
+.section-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 2rem;
+}
+
+/* Garante que o grid controle o tamanho dos filhos uniformemente */
+.wallets-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Mantém largura padrão */
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+    align-items: start;
+}
+
+.wallet-card {
+    background: #0b1118;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 1.5rem;
+    min-height: 200px; /* Garante altura mínima igual */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+/* dashboard.css */
+
+/* 1. Criamos um container para posicionar o botão corretamente */
+.wallet-top {
+    position: relative; /* Base para o posicionamento do botão */
+}
+
+/* 2. Estilizamos o botão que contém a imagem gigante */
+.btn-delete-wallet-img {
+    background: transparent; /* Garante que o fundo do botão seja invisível */
+    border: none;             /* Sem borda */
+    cursor: pointer;          /* Mãozinha do mouse */
+    padding: 2px;             /* Espaçamento interno mínimo */
+    display: flex;            /* Centraliza a imagem */
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s ease, opacity 0.2s ease; /* Animação suave */
+    opacity: 0.7;             /* Ligeira transparência padrão */
+    
+    /* POSIÇÃO: Coloca o botão no canto superior direito do card */
+    position: absolute;
+    top: 0px;                /* Distância do topo */
+    right: 0px;               /* Distância da direita */
+    z-index: 5;              /* Garante que fique acima de outros elementos */
+}
+
+/* 3. Estilizamos a IMAGEM gigante propriamente dita */
+.btn-delete-wallet-img img {
+    /* TAMANHO: Força a lixeira a ficar pequena (ajuste se precisar) */
+    width: 22px !important;  /* Largura pequena e forçada */
+    height: 22px !important; /* Altura pequena e forçada */
+    object-fit: contain;      /* Garante que a imagem não distorça */
+    
+    /* TIRA O FUNDO BRANCO: Usa um filtro para tornar o branco transparente */
+    /* Mix-blend-mode é o truque principal aqui */
+    mix-blend-mode: screen; /* Faz com que as áreas brancas fiquem transparentes */
+    filter: drop-shadow(0 0 2px rgba(239, 68, 68, 0.2)); /* Glow vermelho suave */
+}
+
+/* 4. Efeito quando passa o mouse por cima */
+.btn-delete-wallet-img:hover {
+    opacity: 1;              /* Fica totalmente opaco */
+    transform: scale(1.1);   /* Aumenta levemente de tamanho */
+}
+
+/* --- dashboard.css --- */
+
+/* 1. Definição Base para todas as Boxes (para garantir consistência e suavidade) */
+.stat-card,
+.chart-card,
+.table-card,
+.wallet-card {
+    /* Garante que já exista uma borda transparente para não dar "pulo" no layout */
+    border: 1px solid rgba(34, 211, 238, 0.05); /* Usando a cor azul-ciano com opacidade baixa */
+    
+    /* Configuração da transição suave para todas as propriedades */
+    transition: transform 0.3s ease, 
+                box-shadow 0.3s ease, 
+                border-color 0.3s ease; 
+    
+    cursor: pointer; /* Indica que é interativo */
+}
+
+/* 2. Efeito de Hover nas Boxes (Borda e Sombra) */
+.stat-card:hover,
+.chart-card:hover,
+.table-card:hover,
+.wallet-card:hover {
+    /* 2.1 Borda Azul (cor do layout: #22d3ee) */
+    border-color: #22d3ee; 
+    
+    /* 2.2 Sombra (Glow) Azul suave para destacar */
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.15); 
+    
+    /* 2.3 Box cresce levemente como um todo */
+    transform: translateY(-3px); /* Sobe um pouquinho */
+}
+
+/* 3. Efeito de Hover nas IMAGENS e ÍCONES dentro das Boxes */
+/* Isso mira nas lixeiras, ícones de dinheiro, gráficos, etc. */
+.stat-card:hover .stat-icon,
+.chart-card:hover img,
+.wallet-card:hover img, 
+.wallet-card:hover .wallet-icon-bg {
+    /* A imagem/ícone cresce de tamanho suavemente */
+    transform: scale(1.1); /* Cresce 10% */
+    transition: transform 0.3s ease;
+}
+
+/* Ajuste específico para garantir que as animações não quebrem o layout */
+.stat-icon, .wallet-icon-bg {
+    overflow: hidden; /* Evita que o ícone ao crescer vaze */
+}
+
+/* --- ESTADO VAZIO (Empty State) --- */
+.empty-state {
+    grid-column: 1 / -1; /* Faz a box ocupar toda a largura disponível do grid */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 4rem 2rem;
+    background: rgba(34, 211, 238, 0.02); /* Fundo ciano super transparente */
+    border: 2px dashed #1e293b; /* Borda tracejada moderna */
+    border-radius: 16px;
+    color: #94a3b8;
+    transition: 0.3s ease;
+}
+
+.empty-state .empty-icon {
+    font-size: 3.5rem;
+    margin-bottom: 1rem;
+    opacity: 0.7;
+    filter: drop-shadow(0 0 10px rgba(34, 211, 238, 0.2));
+}
+
+.empty-state h3 {
+    color: white;
+    font-size: 1.3rem;
+    margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+    max-width: 400px;
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
+/* Estilos para o Modal de Confirmação */
+.confirmation-box {
+    text-align: center;
+    border: 1px solid #22d3ee; /* Borda ciano para destacar */
+}
+
+.confirm-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.confirm-details {
+    background: rgba(34, 211, 238, 0.05);
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin: 1.5rem 0;
+    text-align: left; /* Alinha os detalhes à esquerda para facilitar leitura */
+    font-size: 0.95rem;
+    line-height: 1.8;
+    color: #94a3b8;
+}
+
+.confirm-details strong {
+    color: #22d3ee;
+}
+
+/* Filtros */
+/* Estilização dos Filtros */
+.filters-bar {
+    display: flex;
+    gap: 1.5rem;
+    margin-bottom: 2rem;
+    align-items: center;
+}
+
+.filter-select {
+    background: #0b1118;
+    border: 1px solid #1e293b;
+    color: #ffffff; /* Texto em branco para destacar o negrito */
+    padding: 0.8rem 1.2rem;
+    border-radius: 10px;
+    outline: none;
+    cursor: pointer;
+    min-width: 180px;
+    font-weight: 700; /* Deixa o título em negrito */
+    font-family: 'Montserrat', sans-serif;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); /* Transição suave */
+}
+
+/* Efeito ao passar o mouse (Hover) */
+.filter-select:hover {
+    border-color: #22d3ee; /* Borda azul padrão do site */
+    transform: scale(1.05); /* Aumenta levemente o tamanho da box */
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2); /* Brilho leve em azul */
+}
+
+/* Ajuste das opções dentro do select (Dica: alguns browsers limitam o estilo aqui) */
+.filter-select option {
+    background: #0f172a;
+    color: #ffffff;
+    font-weight: 400; /* Opções internas com peso normal para contraste */
+}
+
+/* Tabela de Despesas */
+.full-width-table {
+    margin-top: 0;
+}
+
+.action-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+.btn-action {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    opacity: 0.6;
+    transition: 0.3s;
+}
+
+.btn-action:hover {
+    opacity: 1;
+    transform: scale(1.2);
+}
+
+.btn-edit { color: #94a3b8; }
+.btn-delete { color: #ef4444; }
+
+/* Reutilizando as tags que já criamos */
+/* Estilo Base das Tags */
+.tag {
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.75rem;
+    font-weight: 500;
+}
+
+/* Cores por Categoria (Layout com fundo opaco) */
+.tag.alimentacao { background: rgba(245, 158, 11, 0.2); color: #f59e0b; }
+.tag.transporte { background: rgba(139, 92, 246, 0.2); color: #8b5cf6; }
+.tag.lazer { background: rgba(236, 72, 153, 0.2); color: #ec4899; }
+.tag.saude { background: rgba(59, 130, 246, 0.2); color: #3b82f6; }
+.tag.outros { background: rgba(148, 163, 184, 0.2); color: #94a3b8; }
+.tag.moradia { background: rgba(6, 182, 212, 0.2); color: #06b6d4; }
+
+/* Estilo para inputs de formulário dentro do modal */
+#formDespesa input, 
+#formDespesa textarea,
+#formDespesa select {
+    font-family: 'Montserrat', sans-serif !important;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+
+#formDespesa input:focus, 
+#formDespesa textarea:focus {
+    border-color: #22d3ee !important;
+}
+
+/* Garante que o ícone do calendário no input date seja visível/estilizado */
+::-webkit-calendar-picker-indicator {
+    filter: invert(1); /* Torna o ícone branco no tema escuro */
+    cursor: pointer;
+}
+
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL) --- */
+
+/* Caixa principal do modal */
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL MINIMALISTA) --- */
+
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL MINIMALISTA) --- */
+
+.confirmation-box-professional {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    border: 1px solid rgba(34, 211, 238, 0.2); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+.confirm-header-prof h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin-top: 0; /* Começa do topo, sem o círculo do ícone */
+    margin-bottom: 0.5rem;
+}
+
+.confirm-header-prof .subtitle-prof {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+}
+
+/* Removi as regras do .confirm-icon-circle-prof, pois não usamos mais */
+
+.confirm-details-prof {
+    background: #0f172a; 
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: left;
+    border: 1px solid #1e293b;
+}
+
+.detail-item-prof {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.detail-item-prof:last-child {
+    border-bottom: none;
+}
+
+.detail-label-prof {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.detail-value-prof {
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+}
+
+.detail-value-prof.highlight {
+    color: #22d3ee;
+}
+
+.modal-actions-prof {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+/* Botões sem ícones, apenas padding padrão */
+.btn-prof-main, .btn-prof-alt {
+    padding: 12px 24px;
+    font-size: 0.95rem;
+    font-weight: 600; /* Texto em negrito para botões de ação */
+    border-radius: 8px; /* Cantos arredondados */
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-prof-alt {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #1e293b;
+}
+
+.btn-prof-alt:hover {
+    background: rgba(148, 163, 184, 0.05);
+    border-color: #94a3b8;
+    color: white;
+}
+
+#btnConfirmDelete:hover {
+    background: #dc2626 !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px; /* Espaço entre os campos */
+    position: relative;
+}
+
+#erro-data {
+    color: #ef4444;
+    font-size: 0.75rem;
+    margin-top: 5px;
+    font-weight: 500;
+    min-height: 1rem; /* Evita que o layout "pule" quando a mensagem aparece */
+}
+
+/* --- NOVA CONFIRMAÇÃO DE CARTEIRA (PROFISSIONAL) --- */
+
+/* Caixa principal do modal */
+.confirmation-box-professional {
+    text-align: center;
+    padding: 2.5rem 2rem;
+    border: 1px solid rgba(34, 211, 238, 0.2); /* Borda ciano sutil */
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+}
+
+/* Cabeçalho */
+.confirm-header-prof h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    color: white;
+    margin-top: 1rem;
+    margin-bottom: 0.5rem;
+}
+
+.confirm-header-prof .subtitle-prof {
+    font-size: 0.9rem;
+    color: #94a3b8;
+    margin-bottom: 2rem;
+}
+
+/* Círculo com o Ícone de Check */
+.confirm-icon-circle-prof {
+    width: 60px;
+    height: 60px;
+    background: rgba(34, 211, 238, 0.1); /* Fundo ciano super sutil */
+    color: #22d3ee; /* Ícone ciano */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.8rem;
+    margin: 0 auto; /* Centraliza */
+    border: 2px solid rgba(34, 211, 238, 0.2);
+}
+
+/* Área de Detalhes - Estilo Lista Refinada */
+.confirm-details-prof {
+    background: #0f172a; /* Fundo um pouco mais claro que o modal */
+    padding: 1.5rem;
+    border-radius: 12px;
+    margin-bottom: 2rem;
+    text-align: left;
+    border: 1px solid #1e293b;
+}
+
+/* Itens de detalhe dentro da lista */
+.detail-item-prof {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+}
+
+.detail-item-prof:last-child {
+    border-bottom: none; /* Remove borda do último item */
+}
+
+/* Rótulo (ex: Nome) */
+.detail-label-prof {
+    font-size: 0.85rem;
+    color: #64748b;
+    font-weight: 500;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Valor (ex: Nubank) */
+.detail-value-prof {
+    font-size: 1rem;
+    color: white;
+    font-weight: 600;
+}
+
+/* Valor em destaque (ex: Limite) */
+.detail-value-prof.highlight {
+    color: #22d3ee;
+}
+
+/* Botões do Modal */
+.modal-actions-prof {
+    display: flex;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.btn-prof-main, .btn-prof-alt {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaço entre ícone e texto */
+    padding: 12px 24px;
+    font-size: 0.95rem;
+}
+
+/* Ajuste sutil no botão de cancelar para não brigar com o principal */
+.btn-prof-alt:hover {
+    background: rgba(148, 163, 184, 0.05);
+    border-color: #94a3b8;
+    color: white;
+}
+
+.planning-card-prof {
+    background: #0f172a; /* Azul escuro do tema */
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 2rem;
+}
+
+.planning-header-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 1.5rem;
+}
+
+.btn-new-goal {
+    background: #22d3ee;
+    color: #0891b2;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-new-goal:hover {
+    background: #67e8f9;
+    transform: translateY(-2px);
+}
+
+/* Barra de Progresso das Metas */
+.goal-progress-container {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.progress-bar-goal {
+    flex-grow: 1;
+    height: 8px;
+    background: #1e293b;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.progress-fill-goal {
+    height: 100%;
+    background: #22d3ee; /* Ciano do site */
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.4);
+}
+
+.progress-text {
+    font-size: 0.85rem;
+    color: #94a3b8;
+    min-width: 35px;
+}
+
+/* --- PLANEJAMENTO FINANCEIRO (ESTRUTURA) --- */
+
+.planning-card-prof {
+    background: #0b1118 !important; /* Cor padrão do site */
+    border: 1px solid #1e293b !important;
+    border-radius: 16px;
+    padding: 1.5rem;
+    margin-bottom: 2rem;
+}
+
+.planning-card-prof h3 {
+    color: white;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+}
+
+.planning-card-prof p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* ==========================================================================
+   --- SEÇÃO: PLANEJAMENTO FINANCEIRO ---
+   ========================================================================== */
+
+/* 1. CARDS PRINCIPAIS (Fundo Escuro Padrão) */
+.planning-card-prof {
+    background: #0b1118 !important; /* Força a cor padrão do dashboard */
+    border: 1px solid #1e293b;
+    border-radius: 16px; /* Arredondamento padrão dos outros cards */
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+
+.planning-card-prof h3 {
+    color: white;
+    font-size: 1.25rem;
+    margin-bottom: 0.5rem;
+    font-weight: 700;
+}
+
+.planning-card-prof p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+    margin-bottom: 1.5rem;
+}
+
+/* 2. TABELA DE METAS */
+#goalsTableBody tr {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.1);
+    transition: background 0.2s;
+}
+
+#goalsTableBody tr:hover {
+    background: rgba(34, 211, 238, 0.02);
+}
+
+#goalsTableBody td {
+    padding: 1rem;
+    color: white;
+    vertical-align: middle;
+}
+
+/* 3. INPUTS PADRONIZADOS (Orçamento e Modal) */
+#orcamentoMensal,
+.input-prof-styled {
+    background: #050a0f !important; /* Mais escuro para contraste */
+    border: 1px solid #1e293b !important;
+    color: white !important;
+    padding: 0.8rem 1rem;
+    border-radius: 8px;
+    font-family: 'Montserrat', sans-serif;
+    transition: 0.3s ease;
+}
+
+#orcamentoMensal:focus,
+.input-prof-styled:focus {
+    border-color: #22d3ee !important; /* Brilho Ciano no foco */
+    outline: none;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.15);
+}
+
+#orcamentoMensal {
+    margin-right: 12px;
+    width: 220px;
+}
+
+/* Labels do Modal (ex: NOME DA META) */
+.detail-label-prof {
+    font-weight: 700;
+    font-size: 0.75rem;
+    color: #64748b;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    margin-bottom: 8px;
+    display: block;
+}
+
+/* ==========================================================================
+   --- BOTÕES E AÇÕES (PADRÃO CIANO) ---
+   ========================================================================== */
+
+/* 1. BOTÕES PRINCIPAIS (Ciano com Texto Escuro) */
+.btn-save-orcamento,
+.modal-actions-professional .btn-create-goal, /* Forçando seletor do modal */
+.btn-new-goal {
+    background: #22d3ee !important; /* Ciano Site */
+    color: #050a0f !important;     /* Texto Escuro para Contraste */
+    border: none !important;
+    border-radius: 8px;
+    font-weight: 800;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-transform: uppercase; /* Opcional, mas dá nítidez */
+    letter-spacing: 0.5px;
+}
+
+/* Hover dos Botões Principais */
+.btn-save-orcamento:hover,
+.modal-actions-professional .btn-create-goal:hover,
+.btn-new-goal:hover {
+    background: #ffffff !important; /* Fica branco no hover */
+    color: #050a0f !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4);
+}
+
+/* Ajustes de tamanho específicos */
+.btn-save-orcamento { padding: 0.8rem 1.8rem; }
+.btn-new-goal { padding: 0.8rem 1.5rem; font-size: 0.85rem; gap: 8px; }
+
+/* 2. BOTÃO SECUNDÁRIO (Cancelar) */
+.btn-cancel-goal {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #1e293b;
+    padding: 1rem 1.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-cancel-goal:hover {
+    background: rgba(239, 68, 68, 0.1); /* Hover vermelho sutil */
+    color: #ef4444;
+    border-color: #ef4444;
+}
+
+/* 3. ÍCONES DE AÇÃO (na tabela) */
+.btn-action-add {
+    background: none; border: none; color: #22d3ee;
+    cursor: pointer; font-size: 1.1rem; transition: 0.2s;
+}
+.btn-action-add:hover { transform: scale(1.15); color: white; }
+
+/* ==========================================================================
+   --- MODAL DE METAS E CORREÇÃO DE LAYOUT ---
+   ========================================================================== */
+
+.goal-modal-styled {
+    background: #0b1118; /* Fundo padrão do site */
+    border: 1px solid #1e293b;
+    padding: 2.5rem;
+    border-radius: 16px;
+    max-width: 460px;
+    width: 90%;
+}
+
+/* Input Row (Valor e Prazo lado a lado) */
+.input-row-flex {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 1.5rem;
+}
+.input-row-flex .input-container-main { flex: 1; }
+
+/* --- CORREÇÃO DO BOTÃO CANCELAR (Lado a Lado) --- */
+.modal-actions-professional {
+    display: flex;
+    gap: 12px; /* Espaço entre os botões */
+    margin-top: 1.5rem;
+    width: 100%;
+}
+
+/* Garante que os dois botões tenham o mesmo tamanho */
+.modal-actions-professional button {
+    flex: 1;
+    padding: 1rem !important; /* Padding igual para os dois */
+}
+
+/* BARRA DE PROGRESSO */
+.progress-fill-goal {
+    height: 6px; background: #22d3ee;
+    border-radius: 10px;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+}
+
+/* Badge de Orçamento Estabelecido */
+.orcamento-badge {
+    background: rgba(34, 211, 238, 0.1);
+    border: 1px dashed #22d3ee;
+    padding: 10px 15px;
+    border-radius: 8px;
+    text-align: right;
+}
+
+.orcamento-badge .label {
+    display: block;
+    font-size: 0.65rem;
+    color: #94a3b8;
+    font-weight: 700;
+}
+
+.orcamento-badge .value {
+    font-size: 1.1rem;
+    color: #22d3ee;
+    font-weight: 800;
+}
+
+/* Botão Salvar - Máximo Contraste solicitado */
+.btn-save-orcamento {
+    background: #22d3ee !important;
+    color: #000000 !important; /* Preto absoluto para nitidez */
+    font-weight: 900 !important; /* Extra negrito */
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    padding: 0.8rem 2rem;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save-orcamento:hover {
+    background: #ffffff !important;
+    transform: scale(1.05);
+}
+
+/* Barra de Uso do Orçamento */
+.budget-usage-wrapper {
+    margin-top: 25px;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 15px;
+    border-radius: 12px;
+}
+
+.usage-info {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.85rem;
+    color: #f8fafc;
+    margin-bottom: 8px;
+    font-weight: 600;
+}
+
+.progress-bar-main {
+    width: 100%;
+    height: 12px;
+    background: #1e293b;
+    border-radius: 20px;
+    overflow: hidden;
+    border: 1px solid #334155;
+}
+
+.progress-fill-cyan {
+    height: 100%;
+    background: linear-gradient(90deg, #22d3ee, #06b6d4);
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.5);
+    transition: width 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.usage-footer {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 10px;
+    font-size: 0.75rem;
+    font-weight: 700;
+}
+
+#usage-amount-text { color: #94a3b8; }
+#remaining-amount-text { color: #22d3ee; }
+
+/* Mudança de cor se estourar o orçamento */
+.progress-fill-warning { background: #f59e0b !important; }
+.progress-fill-danger { background: #ef4444 !important; }
+
+/* Container dos controles de orçamento */
+.orcamento-controls {
+    display: flex;
+    flex-direction: column; /* Deixa a barra de progresso embaixo */
+    gap: 20px;
+}
+
+/* Grupo de Input + Botão lado a lado */
+.input-group {
+    display: flex;
+    align-items: center;
+    gap: 15px; /* Espaço entre input e botão */
+}
+
+/* Botão Salvar com máximo contraste */
+.btn-save-orcamento {
+    background: #22d3ee !important;
+    color: #000000 !important; /* Texto preto para nitidez */
+    font-weight: 900 !important;
+    padding: 0.8rem 2rem;
+    border-radius: 8px;
+    height: 48px; /* Mesma altura do input */
+    display: flex;
+    align-items: center;
+}
+
+/* Estilo da caixa de limite estabelecido (3ª foto) */
+.limite-box-style {
+    border: 1.5px dashed #22d3ee; /* Borda pontilhada ciano */
+    border-radius: 8px;
+    padding: 10px 15px;
+    background: rgba(34, 211, 238, 0.05); /* Fundo levemente azulado */
+    text-align: right;
+}
+
+#valor-limite-display {
+    color: #22d3ee;
+    font-weight: bold;
+    font-size: 1.4rem;
+    text-shadow: 0 0 10px rgba(34, 211, 238, 0.3); /* Efeito neon */
+}
+
+
+/* Overlay que escurece o fundo */
+.modal-overlay-prof {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7); /* Fundo escurecido */
+    display: none; /* Escondido por padrão */
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.modal-overlay-prof.active {
+    display: flex; /* Mostra o modal */
+}
+
+.modal-content-prof {
+    background: #0f172a; /* Azul bem escuro padrão do seu site */
+    padding: 30px;
+    border-radius: 16px;
+    width: 100%;
+    max-width: 450px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+}
+
+.modal-content-prof h2 {
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 1.5rem;
+}
+
+.modal-content-prof input, 
+.modal-content-prof select {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 8px;
+    margin-bottom: 15px;
+}
+
+/* Botões */
+.btn-save-cyan {
+    background: #22d3ee;
+    color: #000;
+    font-weight: bold;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save-cyan:hover {
+    background: #0891b2;
+}
+
+/* Estilo da caixa de limite estabelecido (3ª foto) */
+.limite-card-dotted {
+    border: 2px dashed #22d3ee;
+    border-radius: 12px;
+    padding: 10px 20px;
+    background: rgba(34, 211, 238, 0.05);
+}
+
+/* Classe Global para Botões de Destaque (Ciano) */
+.btn-primary-glow {
+    background: #22d3ee !important;
+    color: #000000 !important;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary-glow:hover {
+    background: #ffffff !important;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(34, 211, 238, 0.4);
+}
+
+/* Overlay que escurece o fundo */
+.modal-overlay-prof {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.85); /* Escurecimento mais denso */
+    display: none; /* Controlado via JS (style.display = 'flex') */
+    justify-content: center;
+    align-items: center;
+    z-index: 9999;
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo */
+}
+
+/* Quando o modal está ativo */
+.modal-overlay-prof.active {
+    display: flex;
+}
+
+/* Box interna do Modal Profissional */
+.modal-box-prof {
+    background: #0b1118;
+    border: 1px solid #1e293b;
+    border-radius: 20px;
+    padding: 2.5rem;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    position: relative;
+    animation: modalAppear 0.3s ease-out;
+}
+
+@keyframes modalAppear {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* No seu arquivo dashboard.css ou style.css */
+
+/* Ajuste do Modal de Carteira para alinhar Label e Input */
+#walletModal .input-group {
+    display: flex;
+    align-items: center;
+    justify-content: b;
+    margin-bottom: 20px;
+}
+
+#walletModal .input-group label {
+    flex: 0 0 120px; /* Largura fixa para o texto da esquerda */
+    margin-bottom: 0;
+    color: #94a3b8;
+}
+
+#walletModal .input-group input, 
+#walletModal .input-group select {
+    flex: 1;
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+}
+
+#walletModal .modal-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.empty-search-message {
+    text-align: center;
+    padding: 60px 20px;
+    color: #94a3b8;
+}
+
+.empty-search-message i {
+    display: block;
+    font-size: 2.5rem;
+    margin-bottom: 15px;
+    opacity: 0.5;
+}
+
+.empty-search-message p {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+
+.empty-search-message span {
+    font-size: 0.9rem;
+    display: block;
+    margin-top: 8px;
+    opacity: 0.7;
+}
+
+
+/* --- FINALIZAÇÃO DO OVERLAY E TRANSIÇÕES --- */
+.modal-overlay-prof {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(5, 10, 15, 0.85); /* Fundo escuro levemente transparente */
+    backdrop-filter: blur(4px); /* Efeito de desfoque no fundo para foco total */
+    display: none; 
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay-prof.active {
+    display: flex;
+    animation: fadeIn 0.3s ease forwards;
+}
+
+/* Animação para o conteúdo do modal subir suavemente */
+.modal-overlay-prof.active .goal-modal-styled,
+.modal-overlay-prof.active .confirmation-box-professional {
+    animation: slideUp 0.3s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+}
+
+@keyframes slideUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Container de Relatórios com Scroll Inteligente */
+/* ==========================================================================
+   SEÇÃO DE RELATÓRIOS - CORREÇÃO RIGOROSA DE CONSISTÊNCIA
+   ========================================================================== */
+
+/* Container Principal - Sem travar altura, permitindo scroll único da página */
+#section-relatorios {
+    padding: 20px;
+    display: block; 
+    min-height: auto;
+    color: #ffffff;
+}
+
+/* Grid de Layout - Segue o fluxo natural do site */
+.reports-grid {
+    display: grid;
+    grid-template-columns: 1fr 320px;
+    gap: 20px;
+    align-items: start;
+}
+
+/* Cards - Cores e Bordas idênticas à seção de Planejamento */
+
+/* 1. PADRONIZAÇÃO ABSOLUTA DE COR (FUNDO DO RANKING EM TUDO) */
+:root {
+    --bg-card-solid: #0b1118;
+    --border-color: #0b1118;
+    --accent-cyan: #22d3ee;
+    --text-muted: #94a3b8;
+}
+
+/* 1. HIERARQUIA DE TÍTULOS */
+#section-relatorios h2 {
+    font-size: 1.8rem !important;
+    font-weight: 700 !important;
+    letter-spacing: -0.025em;
+    margin-bottom: 2rem !important;
+    color: #ffffff;
+}
+
+/* Subtítulos internos das boxes */
+.chart-card-large h3,
+.summary-card h3,
+.ranking-container h3,
+.reports-sidebar h3 {
+    font-size: 1.1rem !important;
+    font-weight: 600 !important;
+    color: #f8fafc;
+    margin-bottom: 1.5rem !important; /* Aumentado para melhor respiro */
+}
+
+.chart-card-large p,
+.ranking-container p {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    margin-bottom: 1.5rem;
+}
+
+/* 2. PADRONIZAÇÃO DE BOXES E ALINHAMENTO */
+.reports-grid {
+    display: grid !important;
+    grid-template-columns: 1fr 340px !important;
+    gap: 24px !important;
+    align-items: stretch !important;
+    margin-bottom: 24px !important;
+}
+
+.chart-card-large,
+.reports-sidebar,
+.ranking-container {
+    background-color: var(--bg-card-solid) !important;
+    background-image: none !important;
+    background: var(--bg-card-solid) !important;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px !important;
+    padding: 24px !important;
+    display: flex !important;
+    flex-direction: column !important;
+}
+
+/* 3. CORREÇÃO DA BOX "RESUMO DO PERÍODO" (SIDEBAR) */
+.reports-sidebar {
+    gap: 16px !important;
+}
+
+.summary-item-card {
+    display: flex !important;
+    flex-direction: column !important; /* Empilha para visual moderno */
+    align-items: flex-start !important;
+    gap: 6px !important;
+    padding: 18px !important; /* Adicionado padding interno */
+    border-bottom: none !important; /* Removida borda simples */
+    background: rgba(255, 255, 255, 0.03) !important; /* Fundo sutil para preencher espaço */
+    border-radius: 12px !important;
+    border-left: 3px solid transparent;
+    transition: all 0.2s ease;
+}
+
+.summary-item-card:hover {
+    background: rgba(255, 255, 255, 0.05) !important;
+    border-left: 3px solid var(--accent-cyan);
+    transform: translateX(4px);
+}
+
+.summary-icon {
+    display: none !important;
+}
+
+.summary-info {
+    display: flex !important;
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    width: 100%;
+}
+
+.summary-info span {
+    font-size: 0.7rem !important;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    color: var(--text-muted);
+}
+
+.summary-info strong {
+    font-size: 1.4rem !important;
+    color: #ffffff;
+    margin: 2px 0;
+}
+
+.summary-info small {
+    font-size: 0.8rem;
+    color: var(--accent-cyan);
+    font-weight: 500;
+}
+
+/* 4. RANKING DE GASTOS */
+.ranking-container {
+    padding: 24px !important;
+    background-color: var(--bg-card-solid) !important;
+    border-radius: 16px !important;
+}
+
+/* Card Individual */
+.ranking-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 16px 20px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 14px !important;
+    margin-bottom: 12px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(34, 211, 238, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* Número da posição estilizado */
+.ranking-item::before {
+    content: attr(data-rank); /* Caso use atributo data, senão o HTML limpo resolve */
+    font-weight: 800;
+    color: var(--accent-cyan);
+}
+
+/* Barras de progresso elegantes */
+.ranking-progress-bg {
+    height: 6px !important;
+    background: #1e293b !important;
+    border-radius: 10px;
+    overflow: hidden;
+    margin-top: 8px;
+}
+
+.ranking-progress-fill {
+    background: var(--accent-cyan) !important;
+    box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);
+}
+
+/* 5. TÍTULO DUPLICADO E AJUSTES FINAIS */
+#section-relatorios .section-header-row h2 + h2,
+#section-relatorios > h2:nth-of-type(2) {
+    display: none !important;
+}
+
+/* GRÁFICO - Altura expandida */
+.chart-wrapper {
+    height: 400px; /* Aumentado para preencher a box */
+    position: relative;
+    width: 100%;
+    margin-top: 5px; /* Reduzido para aproximar do título */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Garante que o canvas do gráfico use todo o espaço */
+#meuGraficoComparativo { 
+    width: 100% !important;
+    height: 100% !important;
+}
+
+/* FILTROS */
+.filter-select {
+    background-color: #0b1120;
+    border: 1px solid #1e293b;
+    color: #ffffff;
+    padding: 8px 15px;
+    border-radius: 8px;
+    outline: none;
+    cursor: pointer;
+}
+
+.report-filters-group {
+    display: flex !important;
+    gap: 10px !important;
+    margin-right: auto !important; 
+    margin-left: 0 !important;
+    margin-bottom: 20px !important;
+}
+
+.report-filters-group .filter-select {
+    min-width: 100px !important;
+    width: auto !important;
+}
+
+/* LEGENDA DO GRÁFICO */
+.chart-legend-custom {
+    display: flex !important;
+    justify-content: center !important; 
+    align-items: center !important;
+    gap: 32px !important;
+    margin-top: 24px !important;
+    width: 100% !important;
+}
+
+.legend-item {
+    display: flex !important;
+    align-items: center !important;
+    gap: 10px !important;
+    font-size: 0.85rem !important;
+    color: var(--text-muted);
+    line-height: 1 !important;
+}
+
+.dot-atual, .dot-anterior {
+    width: 12px !important; 
+    height: 12px !important; 
+    border-radius: 3px !important; 
+    display: block !important;
+    flex-shrink: 0 !important;
+}
+
+.dot-atual { background-color: var(--accent-cyan) !important; }
+.dot-anterior { background-color: #64748b !important; }
+
+/* Container Principal do Ranking */
+/* ==========================================================================
+   4. RANKING DE GASTOS - ATUALIZAÇÃO (REMOÇÃO DE MEDALHAS)
+   ========================================================================== */
+
+.ranking-container {
+    padding: 24px !important;
+    background-color: var(--bg-card-solid) !important;
+    border-radius: 16px !important;
+}
+
+/* Card Individual */
+.ranking-item {
+    display: flex !important;
+    align-items: center !important;
+    padding: 16px 20px !important;
+    background: rgba(255, 255, 255, 0.02) !important;
+    border: 1px solid rgba(255, 255, 255, 0.05) !important;
+    border-radius: 14px !important;
+    margin-bottom: 12px !important;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+}
+
+.ranking-item:hover {
+    background: rgba(255, 255, 255, 0.04) !important;
+    border-color: rgba(34, 211, 238, 0.3) !important;
+    transform: translateY(-2px);
+}
+
+/* Posição (Círculos Uniformes e Azuis) */
+.ranking-position {
+    width: 35px;
+    height: 35px;
+    background: rgba(34, 211, 238, 0.1); /* Tom azulado */
+    color: #22d3ee;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 0.9rem;
+    margin-right: 15px;
+    flex-shrink: 0;
+    border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+/* REMOVIDO: Os seletores específicos para Top 1, 2 e 3 
+   para garantir que nenhum item tenha cor de medalha.
+*/
+
+/* Detalhes e Categoria */
+.ranking-details {
+    flex-grow: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.ranking-details h4 {
+    margin: 0;
+    color: #fff;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+.ranking-details small {
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+}
+
+/* Barra de Progresso Interna */
+.ranking-progress-bg {
+    width: 120px;
+    height: 6px;
+    background: #1e293b;
+    border-radius: 10px;
+    margin-top: 8px;
+    overflow: hidden;
+}
+
+.ranking-progress-fill {
+    height: 100%;
+    background: var(--accent-cyan);
+    box-shadow: 0 0 8px rgba(34, 211, 238, 0.4);
+}
+
+/* Valores e Porcentagem */
+.ranking-value-group {
+    text-align: right;
+    margin-left: 20px;
+}
+
+.ranking-value-amount {
+    display: block;
+    color: #fff;
+    font-weight: 700;
+    font-size: 1.15rem;
+    font-family: 'JetBrains Mono', monospace; /* Para números fintech */
+}
+
+.ranking-badge-perc {
+    display: inline-block;
+    background: rgba(34, 211, 238, 0.1);
+    color: var(--accent-cyan);
+    padding: 2px 8px;
+    border-radius: 6px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 4px;
 }
