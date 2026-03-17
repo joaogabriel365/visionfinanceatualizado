@@ -214,7 +214,7 @@
         </div>
         <div id="section-relatorios" class="content-section" style="display: none;">
     <div class="section-header-row">
-        <div class="report-filters">
+        <h2>Relatórios Detalhados</h2> <div class="report-filters">
             <select id="reportFilterMonth" class="filter-select">
                 <option value="03">Março</option>
             </select>
@@ -225,24 +225,15 @@
     </div>
 
     <div class="reports-grid">
-        <div class="reports-main-col">
-            <div class="chart-card-large">
-                <h3>Comparativo Mensal por Categoria</h3>
-                <p class="chart-subtitle">Março vs Fevereiro 2026</p>
-                <div class="chart-wrapper">
-                    <canvas id="comparisonChart"></canvas>
-                </div>
-                <div class="chart-legend-custom">
-                    <span><i class="fas fa-square" style="color: #22d3ee;"></i> Mês Atual</span>
-                    <span><i class="fas fa-square" style="color: #64748b;"></i> Mês Anterior</span>
-                </div>
+        <div class="chart-card-large">
+            <h3>Comparativo Mensal por Categoria</h3>
+            <p class="chart-subtitle">Março vs Fevereiro 2026</p>
+            <div class="chart-wrapper">
+                <canvas id="comparisonChart"></canvas>
             </div>
-
-            <div class="table-card" style="margin-top: 2rem;">
-                <h3>Ranking de Maiores Gastos</h3>
-                <p class="chart-subtitle">Os maiores gastos individuais do período</p>
-                <div id="rankingGastosContainer" class="ranking-list">
-                    </div>
+            <div class="chart-legend-custom">
+                <span><i class="fas fa-square" style="color: #22d3ee;"></i> Mês Atual</span>
+                <span><i class="fas fa-square" style="color: #64748b;"></i> Mês Anterior</span>
             </div>
         </div>
 
@@ -285,6 +276,13 @@
                 </div>
             </div>
         </aside>
+    </div>
+
+    <div class="ranking-container">
+        <h3>Ranking de Maiores Gastos</h3>
+        <p class="chart-subtitle">Os maiores gastos individuais do período</p>
+        <div id="rankingGastosContainer" class="ranking-list">
+            </div>
     </div>
 </div>
     </main>
