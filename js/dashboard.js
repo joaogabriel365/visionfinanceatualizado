@@ -336,7 +336,6 @@ function atualizarInterfaceOrcamento() {
     const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
     if (display) display.innerText = formatarMoeda(limite);
 
-    // CORREÇÃO: Soma Despesas + Metas
     const totalGastoDespesas = despesasExemplo.reduce((acc, d) => acc + d.valor, 0);
     const totalAlocadoMetas = metas.reduce((acc, m) => acc + m.guardado, 0);
     const totalGeral = totalGastoDespesas + totalAlocadoMetas;
@@ -445,10 +444,16 @@ function showSection(sectionId) {
     const navActive = document.getElementById('nav-' + sectionId);
     if (navActive) navActive.classList.add('active');
 
+    // Inicialização específica por seção
     if (sectionId === 'despesas' || sectionId === 'painel') renderizarTabelas();
     if (sectionId === 'planejamento') {
         atualizarInterfaceOrcamento();
         renderizarMetas();
+    }
+    
+    // NOVO: Gatilho para seção de relatórios
+    if (sectionId === 'relatorios') {
+        RelatoriosModulo.init();
     }
 }
 
@@ -473,13 +478,11 @@ document.addEventListener('DOMContentLoaded', () => {
     document.getElementById('despesaData')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
     document.getElementById('metaPrazo')?.addEventListener('input', (e) => aplicarMascaraData(e.target));
 
-    // CORREÇÃO: Escutar o botão de salvar carteira
     document.getElementById('walletForm')?.addEventListener('submit', (e) => {
         e.preventDefault();
         salvarCarteira();
     });
 
-    // Evento de Confirmação Principal (Modal Lixeira/Orçamento)
     document.getElementById('btnConfirmDelete')?.addEventListener('click', () => {
         if (acaoConfirmarGlobal) {
             acaoConfirmarGlobal();
@@ -506,7 +509,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
-// Funções de Aporte (Botão +)
 function prepararAporte(id) {
     metaIdParaAporte = id;
     document.getElementById('aporteValor').value = "";
@@ -529,7 +531,6 @@ function salvarAporte() {
     }
 }
 
-// Funções de Orçamento (Salvar)
 function solicitarConfirmacaoOrcamento() {
     const input = document.getElementById('orcamentoMensal');
     const valorRaw = input.value || "0";
@@ -546,7 +547,6 @@ function solicitarConfirmacaoOrcamento() {
     );
 }
 
-// Funções de Meta (Lixeira)
 function solicitarExclusaoMeta(id, nome) {
     abrirModalConfirmacao("Excluir Meta?", 
         `Tem certeza que deseja excluir a meta "${nome}"?`, 
@@ -559,7 +559,6 @@ function solicitarExclusaoMeta(id, nome) {
     );
 }
 
-// Helper para abrir modal de confirmação
 function abrirModalConfirmacao(titulo, texto, callback) {
     document.getElementById('confirmarTitulo').innerText = titulo;
     document.getElementById('deleteDetails').innerHTML = `<p style="color:#94a3b8">${texto}</p>`;
@@ -567,7 +566,6 @@ function abrirModalConfirmacao(titulo, texto, callback) {
     document.getElementById('deleteWalletModal').classList.add('active');
 }
 
-// Função para salvar nova carteira
 function salvarCarteira() {
     const nome = document.getElementById('walletName').value;
     const tipo = document.getElementById('walletType').value;
@@ -585,25 +583,33 @@ function salvarCarteira() {
     
     grid.appendChild(novoCard);
     
-    // Limpar e fechar
     document.getElementById('walletForm').reset();
     document.getElementById('walletModal').classList.remove('active');
     verificarEstadoCarteiras();
 }
 
-// Objeto isolado para a seção de Relatórios
+// ==========================================================================
+// 7. MÓDULO: RELATÓRIOS (NOVA FUNCIONALIDADE)
+// ==========================================================================
+
 const RelatoriosModulo = {
     chart: null,
 
     init() {
-        this.renderCharts();
-        this.renderRanking();
+        // Delay mínimo para garantir que o elemento canvas esteja visível no DOM
+        setTimeout(() => {
+            this.renderCharts();
+            this.renderRanking();
+        }, 10);
     },
 
     renderCharts() {
-        const ctx = document.getElementById('comparisonChart').getContext('2d');
+        const canvas = document.getElementById('comparisonChart');
+        if (!canvas) return;
+
+        const ctx = canvas.getContext('2d');
         
-        // Destruir gráfico existente se houver para evitar bugs de hover
+        // Destruir gráfico anterior para evitar sobreposição
         if (this.chart) this.chart.destroy();
 
         this.chart = new Chart(ctx, {
@@ -638,36 +644,72 @@ const RelatoriosModulo = {
     },
 
     renderRanking() {
-        const container = document.getElementById('rankingGastosContainer');
-        const dados = [
-            { id: 1, cat: 'Moradia', data: '05/03/2026', perc: 35.3, valor: 'R$ 1.500,00' },
-            { id: 2, cat: 'Alimentação', data: '12/03/2026', perc: 14.6, valor: 'R$ 620,00' },
-            { id: 3, cat: 'Transporte', data: '10/03/2026', perc: 10.6, valor: 'R$ 450,00' }
-        ];
+    const container = document.getElementById('rankingGastosContainer');
+    if (!container) return;
 
-        container.innerHTML = dados.map(item => `
-            <div class="ranking-item">
-                <div class="ranking-rank">${item.id}</div>
-                <div class="ranking-details">
-                    <strong>${item.cat} • ${item.data}</strong>
-                    <div class="ranking-progress-bg">
-                        <div class="ranking-progress-fill" style="width: ${item.perc}%"></div>
-                    </div>
-                </div>
-                <div class="ranking-stats">
-                    <span class="ranking-perc"><i class="fas fa-arrow-up"></i> ${item.perc}% do total</span>
+    // Dados conforme seu projeto de dashboard financeiro
+    const dados = [
+        { id: 1, cat: 'Moradia', data: '05 MAR 2026', perc: 35.3, valor: 'R$ 1.500,00' },
+        { id: 2, cat: 'Alimentação', data: '12 MAR 2026', perc: 14.6, valor: 'R$ 620,00' },
+        { id: 3, cat: 'Transporte', data: '10 MAR 2026', perc: 10.6, valor: 'R$ 450,00' },
+        { id: 4, cat: 'Lazer', data: '15 MAR 2026', perc: 5.2, valor: 'R$ 220,00' },
+        { id: 5, cat: 'Saúde', data: '02 MAR 2026', perc: 3.1, valor: 'R$ 130,00' }
+    ];
+
+    container.innerHTML = dados.map(item => `
+        <div class="ranking-item">
+            <div class="ranking-position">
+                ${item.id}º
+            </div>
+            
+            <div class="ranking-details">
+                <small>${item.data}</small>
+                <h4>${item.cat}</h4>
+                <div class="ranking-progress-bg">
+                    <div class="ranking-progress-fill" style="width: ${item.perc}%"></div>
                 </div>
             </div>
-        `).join('');
-    }
-};
 
-// Ajuste na função showSection para inicializar os relatórios
-const originalShowSection = window.showSection;
-window.showSection = function(sectionId) {
-    if (typeof originalShowSection === 'function') originalShowSection(sectionId);
-    
-    if (sectionId === 'relatorios') {
-        RelatoriosModulo.init();
+            <div class="ranking-value-group">
+                <span class="ranking-value-amount">${item.valor}</span>
+                <span class="ranking-badge-perc">${item.perc}% do total</span>
+            </div>
+        </div>
+    `).join('');
+    }      
+}
+
+const config = {
+    type: 'bar',
+    data: data,
+    options: {
+        responsive: true,
+        maintainAspectRatio: false, // CRUCIAL: Permite que o gráfico preencha a altura do container
+        layout: {
+            padding: {
+                top: 10,
+                bottom: 0,
+                left: 0,
+                right: 10
+            }
+        },
+        plugins: {
+            legend: {
+                display: false // Recomendado: Já que você usa uma legenda personalizada abaixo
+            }
+        },
+        scales: {
+            y: {
+                beginAtZero: true,
+                grid: {
+                    color: 'rgba(255, 255, 255, 0.05)' // Deixa as linhas de fundo bem sutis
+                }
+            },
+            x: {
+                grid: {
+                    display: false // Remove linhas verticais para um look mais clean
+                }
+            }
+        }
     }
 };
