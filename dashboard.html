@@ -214,31 +214,39 @@
         </div>
         <div id="section-relatorios" class="content-section" style="display: none;">
     <div class="section-header-row">
-        <h2>Relatórios Detalhados</h2> <div class="report-filters">
-            <select id="reportFilterMonth" class="filter-select">
-                <option value="03">Março</option>
-            </select>
-            <select id="reportFilterYear" class="filter-select">
-                <option value="2026">2026</option>
-            </select>
+    <div class="report-filters-group">
+        <select id="reportFilterMonth" class="filter-select">
+            <option value="03">Março</option>
+        </select>
+        <select id="reportFilterYear" class="filter-select">
+            <option value="2026">2026</option>
+        </select>
+    </div>
+</div>
+
+    <div class="reports-grid">
+    <div class="chart-card-large">
+        <h3>Comparativo Mensal por Categoria</h3>
+        <p class="chart-subtitle">Março vs Fevereiro 2026</p>
+        
+        <div class="chart-wrapper">
+            <canvas id="comparisonChart"></canvas>
+        </div>
+
+        <div class="chart-legend-custom">
+            <div class="legend-item">
+                <span class="dot-atual"></span>
+                <span>Mês Atual</span>
+            </div>
+            <div class="legend-item">
+                <span class="dot-anterior"></span>
+                <span>Mês Anterior</span>
+            </div>
         </div>
     </div>
 
-    <div class="reports-grid">
-        <div class="chart-card-large">
-            <h3>Comparativo Mensal por Categoria</h3>
-            <p class="chart-subtitle">Março vs Fevereiro 2026</p>
-            <div class="chart-wrapper">
-                <canvas id="comparisonChart"></canvas>
-            </div>
-            <div class="chart-legend-custom">
-                <span><i class="fas fa-square" style="color: #22d3ee;"></i> Mês Atual</span>
-                <span><i class="fas fa-square" style="color: #64748b;"></i> Mês Anterior</span>
-            </div>
-        </div>
-
-        <aside class="reports-sidebar">
-            <h3>Resumo do Período</h3>
+    <aside class="reports-sidebar">
+        <h3>Resumo do Período</h3>
             
             <div class="summary-item-card">
                 <div class="summary-icon"><i class="fas fa-piggy-bank"></i></div>
@@ -279,11 +287,12 @@
     </div>
 
     <div class="ranking-container">
-        <h3>Ranking de Maiores Gastos</h3>
-        <p class="chart-subtitle">Os maiores gastos individuais do período</p>
-        <div id="rankingGastosContainer" class="ranking-list">
-            </div>
-    </div>
+    <h3>Ranking de Maiores Gastos</h3>
+    <p class="chart-subtitle">Os maiores gastos individuais do período</p>
+    
+    <div id="rankingGastosContainer">
+        </div>
+</div>
 </div>
     </main>
 
