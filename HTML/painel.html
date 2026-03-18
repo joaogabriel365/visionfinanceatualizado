@@ -1,0 +1,60 @@
+<div class="stats-grid">
+    <div class="stat-card">
+        <div class="stat-info">
+            <p>Total Gasto</p>
+            <h3 id="totalGastoText">R$ 0,00</h3>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <p>Limite Estabelecido</p>
+            <h3 id="limiteText">R$ 0,00</h3>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <p>Saldo Restante</p>
+            <h3 id="saldoText">R$ 0,00</h3>
+        </div>
+    </div>
+
+    <div class="stat-card">
+        <div class="stat-info">
+            <p>Principal Categoria</p>
+            <h3 id="categoriaPrincipalText">---</h3>
+        </div>
+    </div>
+</div>
+
+<div class="charts-grid">
+    <div class="chart-card">
+        <h3>Gastos por Categoria</h3>
+        <div class="chart-container">
+            <canvas id="categoryChart"></canvas>
+        </div>
+    </div>
+    <div class="chart-card">
+        <h3>Gastos por Método de Pagamento</h3>
+        <div class="chart-container">
+            <canvas id="paymentChart"></canvas>
+        </div>
+    </div>
+</div>
+
+<div class="table-card">
+    <h3>Despesas Recentes</h3>
+    <table class="dash-table">
+        <thead>
+            <tr>
+                <th>Título</th>
+                <th>Categoria</th>
+                <th>Pagamento</th>
+                <th>Valor</th>
+                <th>Data</th>
+            </tr>
+        </thead>
+        <tbody id="expenseTableBody"></tbody>
+    </table>
+</div>

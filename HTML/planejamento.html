@@ -1,0 +1,88 @@
+<div class="planning-card-prof" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px; position: relative;">
+    <div style="display: flex; justify-content: space-between; align-items: start;">
+        <div>
+            <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Orçamento Mensal</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 5px 0 20px 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
+        </div>
+        <div style="text-align: right;">
+            <p style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">LIMITE ESTABELECIDO:</p>
+            <h3 id="valor-limite-display" style="color: #22d3ee; margin: 0; font-size: 1.6rem; font-weight: bold;">R$ 0,00</h3>
+        </div>
+    </div>
+
+    <div style="display: flex; gap: 10px; margin-bottom: 30px; max-width: 350px;">
+        <input type="number" id="orcamentoMensal" placeholder="R$ 0,00" 
+               style="flex: 1; background: #0f172a; border: 1px solid #334155; border-radius: 8px; padding: 12px; color: #94a3b8; outline: none; transition: 0.2s;">
+        <button class="btn-save-orcamento" onclick="PlanejamentoModulo.salvarOrcamento()"
+                style="background: #22d3ee; color: #0f172a; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; font-size: 0.9rem; text-transform: uppercase; cursor: pointer; transition: 0.3s;">
+            SALVAR
+        </button>
+    </div>
+
+    <div style="margin-top: 20px;">
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+            <span style="color: white; font-size: 0.85rem; font-weight: 600;">Uso do Orçamento <span style="color:#94a3b8">(Alocado em Metas)</span></span>
+            <span style="color: white; font-size: 0.85rem; font-weight: bold;">0%</span>
+        </div>
+        <div style="height: 10px; background: #1a253a; border-radius: 5px; overflow: hidden; position: relative;">
+            <div id="progressBudgetFill" style="width: 0%; height: 100%; background: #22d3ee; border-radius: 5px; box-shadow: 0 0 15px rgba(34, 211, 238, 0.5); transition: width 0.3s;"></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+            <span style="color: white; font-size: 0.8rem;">R$ 0,00 gastos/alocados</span>
+            <span style="color: #ef4444; font-size: 0.8rem; font-weight: 600;">Disponível: R$ 0,00</span>
+        </div>
+    </div>
+</div>
+
+<div class="planning-card-prof" style="margin-top: 2rem; background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 25px;">
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+        <div>
+            <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
+            <p style="color: #94a3b8; font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de médio e longo prazo.</p>
+        </div>
+        <button class="btn-primary" onclick="alert('Funcionalidade Nova Meta em desenvolvimento.')"
+                style="background: #22d3ee; color: #0f172a; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; font-size: 0.85rem; text-transform: uppercase; cursor: pointer; transition: 0.3s; display: flex; align-items: center; gap: 8px;">
+            <i class="fas fa-plus"></i> + NOVA META
+        </button>
+    </div>
+
+    <table class="full-table" style="width: 100%; border-collapse: collapse; color: #94a3b8;">
+        <thead>
+            <tr style="text-align: left; border-bottom: 1px solid #1e293b;">
+                <th style="padding: 15px 15px 15px 25px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">META</th>
+                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">VALOR ALVO</th>
+                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">PRAZO</th>
+                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">PROGRESSO</th>
+                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600; text-align: center;">AÇÕES</th>
+            </tr>
+        </thead>
+        <tbody id="goalsTableBody">
+            </tbody>
+    </table>
+</div>
+
+<div id="modalAporteMeta" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1100; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="modal-content-card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 40px; width: 100%; max-width: 420px; text-align: left; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
+        <h3 style="color: white; margin: 0; font-size: 1.8rem; font-weight: 800;">Adicionar Economia</h3>
+        <p style="color: #94a3b8; margin: 10px 0 35px 0; font-size: 1rem;">Quanto você deseja poupar para esta meta?</p>
+        
+        <input type="hidden" id="indexMetaAporte">
+        
+        <div style="margin-bottom: 30px;">
+            <label style="color: #94a3b8; display: block; margin-bottom: 12px; font-size: 0.85rem; text-transform: uppercase; letter-spacing: 1px; font-weight: 600;">VALOR DO APORTE</label>
+            <input type="number" id="valorAporteMeta" placeholder="R$ 0,00" 
+                   style="width: 100%; background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 18px; color: white; font-size: 1.3rem; outline: none;">
+        </div>
+
+        <div style="display: flex; gap: 15px;">
+            <button onclick="PlanejamentoModulo.confirmarAporte()" 
+                    style="flex: 1; background: #22d3ee; color: #0f172a; border: none; padding: 15px; border-radius: 12px; font-weight: 800; font-size: 1.1rem; text-transform: uppercase; cursor: pointer; transition: 0.3s;">
+                CONFIRMAR APORTE
+            </button>
+            <button onclick="document.getElementById('modalAporteMeta').style.display='none'" 
+                    style="flex: 1; background: transparent; color: #94a3b8; border: 1px solid #1e293b; border-radius: 12px; font-weight: 700; padding: 15px; cursor: pointer; transition: 0.3s;">
+                Cancelar
+            </button>
+        </div>
+    </div>
+</div>
