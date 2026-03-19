@@ -1956,3 +1956,256 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
 .btn-cancel-flat:hover {
     color: white;
 }
+
+/* Container Principal do Ranking */
+.ranking-card-premium {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 20px;
+    padding: 30px;
+    width: 100%;
+    box-sizing: border-box;
+    box-shadow: 0 10px 30px -10px rgba(0,0,0,0.5);
+    margin-top: 20px;
+}
+
+/* Cabeçalho da Seção */
+.ranking-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 30px;
+}
+
+.ranking-header h3 {
+    color: #f8fafc;
+    margin: 0;
+    font-size: 1.25rem;
+    letter-spacing: -0.025em;
+}
+
+.ranking-header p {
+    color: #64748b;
+    font-size: 0.875rem;
+    margin: 5px 0 0 0;
+}
+
+.header-badge {
+    background: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
+    padding: 6px 14px;
+    border-radius: 99px;
+    font-size: 0.75rem;
+    font-weight: 700;
+    border: 1px solid rgba(34, 211, 238, 0.2);
+}
+
+/* Lista de Itens */
+.ranking-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    width: 100%;
+}
+
+/* Linha Individual do Ranking */
+.ranking-row {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 16px 24px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* Efeito Hover Profissional */
+.ranking-row:hover {
+    background: #1e293b;
+    border-color: #334155;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+}
+
+/* Indicador lateral azul no Hover */
+.ranking-row::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #22d3ee;
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.ranking-row:hover::before {
+    opacity: 1;
+}
+
+/* Lado Esquerdo: Posição e Título */
+.row-left {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.rank-number {
+    font-weight: 800;
+    color: #22d3ee;
+    font-size: 0.875rem;
+    background: rgba(15, 23, 42, 0.5);
+    width: 40px;
+    height: 40px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+    flex-shrink: 0; /* Impede que o círculo achate em telas menores */
+}
+
+.item-details {
+    display: flex;
+    flex-direction: column;
+}
+
+.item-date {
+    color: #64748b;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.item-title {
+    color: #f1f5f9;
+    margin: 2px 0 0 0;
+    font-size: 1.05rem;
+    font-weight: 600;
+}
+
+/* Lado Direito: Valores Financeiros */
+.row-right {
+    text-align: right;
+}
+
+.item-financial {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+}
+
+.item-value {
+    color: #fff;
+    font-size: 1.25rem;
+    font-weight: 700;
+    font-variant-numeric: tabular-nums; /* Mantém os números alinhados */
+}
+
+.item-category {
+    color: #22d3ee;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-top: 2px;
+}
+
+/* Estado Vazio */
+.empty-state {
+    color: #64748b;
+    text-align: center;
+    padding: 40px;
+    border: 2px dashed #1e293b;
+    border-radius: 16px;
+}
+
+/* Estilização dos Selects (Filtros) */
+.custom-select {
+    background: #111827;
+    color: white;
+    border: 1px solid #1e293b;
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 0.85rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    outline: none;
+    min-width: 100px;
+}
+
+.custom-select:hover {
+    border-color: #22d3ee;
+    background: #1e293b;
+}
+
+/* Cards do Resumo Lateral */
+.resumo-item {
+    background: #111827;
+    border: 1px solid #1e293b;
+    border-radius: 16px;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+    cursor: default;
+}
+
+/* O "pulo do gato": Borda lateral invisível por padrão */
+.resumo-item::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: 100%;
+    width: 4px;
+    background: #22d3ee;
+    opacity: 0; /* Escondida */
+    transition: opacity 0.3s ease;
+}
+
+/* Efeito Hover: Aparece a borda, muda o fundo e desloca para a direita */
+.resumo-item:hover {
+    background: #1e293b;
+    transform: translateX(8px);
+    border-color: #334155;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.resumo-item:hover::before {
+    opacity: 1; /* Borda aparece suavemente */
+}
+
+/* Estilização dos textos internos */
+.resumo-label {
+    color: #64748b;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+}
+
+.resumo-value {
+    color: #f8fafc;
+    margin: 4px 0;
+    font-size: 1.3rem;
+    font-weight: 800;
+}
+
+.resumo-info {
+    color: #22d3ee;
+    font-size: 0.75rem;
+    font-weight: 600;
+}
+
+.resumo-info.highlight {
+    color: #ef4444; /* Cor vermelha para alertas de alta, como na imagem */
+}

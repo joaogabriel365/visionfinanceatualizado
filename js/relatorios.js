@@ -1,7 +1,10 @@
 import { formatarMoeda } from './common.js';
 
 export const RelatoriosModulo = {
-    despesas: JSON.parse(localStorage.getItem('despesas')) || [],
+    // Busca dados atualizados do localStorage
+    get despesas() {
+        return JSON.parse(localStorage.getItem('despesas')) || [];
+    },
 
     init() {
         this.renderizarResumo();
@@ -16,33 +19,33 @@ export const RelatoriosModulo = {
         const totalGeral = this.despesas.reduce((acc, d) => acc + parseFloat(d.valor), 0);
         const mediaDiaria = totalGeral > 0 ? totalGeral / 30 : 0;
         
-        // Dados para bater com a Imagem Meta
         const economiaSimulada = 1750.00; 
         const porcentagemEconomia = 29;
 
+        // Limpo de estilos inline, usando agora as classes resumo-item, resumo-label, etc.
         container.innerHTML = `
-            <div style="background: #1a253a; padding: 18px; border-radius: 12px; border-left: 4px solid #22d3ee;">
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Economia do Mês</p>
-                <h4 style="color: white; font-size: 1.4rem; margin: 0; font-weight: 700;">${formatarMoeda(economiaSimulada)}</h4>
-                <p style="color: #22d3ee; font-size: 0.75rem; margin-top: 5px;">${porcentagemEconomia}% do orçamento</p>
+            <div class="resumo-item">
+                <span class="resumo-label">Economia do Mês</span>
+                <h3 class="resumo-value">${formatarMoeda(economiaSimulada)}</h3>
+                <p class="resumo-info">${porcentagemEconomia}% do orçamento</p>
             </div>
 
-            <div style="background: #1a253a; padding: 18px; border-radius: 12px; border-left: 4px solid #22d3ee;">
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Média Diária</p>
-                <h4 style="color: white; font-size: 1.4rem; margin: 0; font-weight: 700;">${formatarMoeda(mediaDiaria)}</h4>
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 5px;">Últimos 30 dias</p>
+            <div class="resumo-item">
+                <span class="resumo-label">Média Diária</span>
+                <h3 class="resumo-value">${formatarMoeda(mediaDiaria)}</h3>
+                <p class="resumo-info">Últimos 30 dias</p>
             </div>
 
-            <div style="background: #1a253a; padding: 18px; border-radius: 12px; border-left: 4px solid #1e293b;">
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Dia com Mais Gasto</p>
-                <h4 style="color: white; font-size: 1.4rem; margin: 0; font-weight: 700;">R$ 620,00</h4>
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-top: 5px;">12/03 - Sexta-feira</p>
+            <div class="resumo-item">
+                <span class="resumo-label">Dia com Mais Gasto</span>
+                <h3 class="resumo-value">R$ 620,00</h3>
+                <p class="resumo-info">12/03 - Sexta-feira</p>
             </div>
 
-            <div style="background: #1a253a; padding: 18px; border-radius: 12px; border-left: 4px solid #1e293b;">
-                <p style="color: #94a3b8; font-size: 0.75rem; margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;">Categoria em Alta</p>
-                <h4 style="color: white; font-size: 1.4rem; margin: 0; font-weight: 700;">Transporte</h4>
-                <p style="color: #ef4444; font-size: 0.75rem; margin-top: 5px;">↑ 34% em relação a fev</p>
+            <div class="resumo-item">
+                <span class="resumo-label">Categoria em Alta</span>
+                <h3 class="resumo-value">Transporte</h3>
+                <p class="resumo-info highlight">↑ 34% em relação a fev</p>
             </div>
         `;
     },
@@ -58,8 +61,8 @@ export const RelatoriosModulo = {
         });
 
         const labels = Object.keys(categoriasMap).length ? Object.keys(categoriasMap) : ['Alimentação', 'Transporte', 'Lazer', 'Saúde', 'Outros'];
-        const valoresAtuais = Object.values(categoriasMap).length ? Object.values(categoriasMap) : [1200, 800, 450, 300, 150];
-        const valoresAnteriores = [1050, 600, 520, 280, 200]; // Simulação para efeito visual idêntico
+        const valoresAtuais = Object.values(categoriasMap).length ? Object.values(categoriasMap) : [0, 0, 0, 0, 0];
+        const valoresAnteriores = [1050, 600, 520, 280, 200]; 
 
         window.myChart = new Chart(ctx, {
             type: 'bar',
@@ -71,16 +74,14 @@ export const RelatoriosModulo = {
                         data: valoresAtuais,
                         backgroundColor: '#22d3ee',
                         borderRadius: 5,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.7
+                        barPercentage: 0.6
                     },
                     {
                         label: 'Fevereiro',
                         data: valoresAnteriores,
                         backgroundColor: '#1e293b',
                         borderRadius: 5,
-                        barPercentage: 0.6,
-                        categoryPercentage: 0.7
+                        barPercentage: 0.6
                     }
                 ]
             },
@@ -88,10 +89,7 @@ export const RelatoriosModulo = {
                 responsive: true,
                 maintainAspectRatio: false,
                 plugins: {
-                    legend: {
-                        position: 'bottom',
-                        labels: { color: '#94a3b8', font: { size: 12 }, padding: 20, usePointStyle: true }
-                    }
+                    legend: { position: 'bottom', labels: { color: '#94a3b8', padding: 20, usePointStyle: true } }
                 },
                 scales: {
                     y: { beginAtZero: true, grid: { color: '#1e293b' }, ticks: { color: '#94a3b8' } },
@@ -110,22 +108,32 @@ export const RelatoriosModulo = {
             .slice(0, 5);
 
         if (ranking.length === 0) {
-            container.innerHTML = `<p style="color: #64748b; text-align: center; padding: 20px;">Nenhum dado disponível.</p>`;
+            container.innerHTML = `<div class="empty-state">Nenhuma despesa registrada para o período.</div>`;
             return;
         }
 
-        const maiorValor = parseFloat(ranking[0].valor);
+        container.innerHTML = ranking.map((item, index) => {
+            let dataDisplay = item.data || '--/--/----';
+            if (dataDisplay.includes('-')) {
+                const parts = dataDisplay.split('-');
+                dataDisplay = `${parts[2]}/${parts[1]}/${parts[0]}`;
+            }
 
-        container.innerHTML = ranking.map(item => {
-            const porcentagem = (parseFloat(item.valor) / maiorValor) * 100;
             return `
-                <div style="margin-bottom: 20px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-                        <span style="color: white; font-weight: 500;">${item.titulo}</span>
-                        <span style="color: #22d3ee; font-weight: 700;">${formatarMoeda(item.valor)}</span>
+                <div class="ranking-row">
+                    <div class="row-left">
+                        <div class="rank-number">${index + 1}º</div>
+                        <div class="item-details">
+                            <span class="item-date">${dataDisplay}</span>
+                            <h4 class="item-title">${item.titulo}</h4>
+                        </div>
                     </div>
-                    <div style="height: 6px; background: #1a253a; border-radius: 10px; overflow: hidden;">
-                        <div style="width: ${porcentagem}%; height: 100%; background: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);"></div>
+                    
+                    <div class="row-right">
+                        <div class="item-financial">
+                            <span class="item-value">${formatarMoeda(item.valor)}</span>
+                            <span class="item-category">${item.categoria}</span>
+                        </div>
                     </div>
                 </div>
             `;
