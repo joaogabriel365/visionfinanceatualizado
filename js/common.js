@@ -16,6 +16,7 @@ export const getHojeFormatado = () => new Date().toLocaleDateString('pt-BR');
 export function salvarNoStorage() {
     localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
     localStorage.setItem('metas', JSON.stringify(metas));
+    localStorage.setItem('budget_total', limiteMensal.toString());
 }
 
 // Máscaras
@@ -24,3 +25,6 @@ export function aplicarMascaraValor(input) {
     let valorFloat = (parseFloat(value) / 100).toFixed(2);
     input.value = isNaN(valorFloat) ? "" : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(valorFloat);
 }
+
+
+    

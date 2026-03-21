@@ -1,18 +1,19 @@
-// 1. PRIMEIRO TODOS OS IMPORTS
+// 1. IMPORTS DOS MÓDULOS
 import { Painel } from './painel.js';
 import { DespesasModulo } from './despesas.js';
 import { RelatoriosModulo } from './relatorios.js';
 import { PlanejamentoModulo } from './planejamento.js';
 import { CarteirasModulo } from './carteiras.js';
 
-// --- A CORREÇÃO CHAVE ---
-// Expõe os módulos para o escopo global (window)
-// Sem isso, o HTML (onclick) nunca vai encontrar as funções!
-window.DespesasModulo = DespesasModulo;
+// 2. EXPOSIÇÃO GLOBAL
+// Essencial para que os atributos 'onclick' no seu HTML funcionem com módulos
 window.Painel = Painel;
+window.DespesasModulo = DespesasModulo;
+window.RelatoriosModulo = RelatoriosModulo;
+window.PlanejamentoModulo = PlanejamentoModulo;
 window.CarteirasModulo = CarteirasModulo;
 
-// 2. DEPOIS O MAPA DE MÓDULOS
+// 3. MAPA DE MÓDULOS PARA INICIALIZAÇÃO
 const modulos = {
     'painel': Painel,
     'despesas': DespesasModulo,
@@ -21,15 +22,15 @@ const modulos = {
     'carteiras': CarteirasModulo
 };
 
-// 3. A FUNÇÃO DE NAVEGAÇÃO
+// 4. MOTOR DE NAVEGAÇÃO SPA (Single Page Application)
 async function navegar(sectionId) {
     try {
-        console.log(`Navegando para: ${sectionId}`);
+        console.log(`Carregando seção: ${sectionId}`);
         
-        // Ajuste o caminho conforme sua pasta (se os HTMLs estiverem na pasta 'HTML')
+        // Busca o conteúdo HTML na pasta /HTML/
         const response = await fetch(`./HTML/${sectionId}.html`);
         
-        if (!response.ok) throw new Error(`Não foi possível carregar ${sectionId}.html`);
+        if (!response.ok) throw new Error(`Arquivo ${sectionId}.html não encontrado.`);
         
         const html = await response.text();
         const container = document.getElementById('dynamic-content');
@@ -38,41 +39,44 @@ async function navegar(sectionId) {
             container.innerHTML = html;
         }
 
-        // Atualiza Título
+        // Atualização do Título da Página
         const titulo = document.getElementById('sectionTitle');
         if (titulo) {
             const nomesTitulos = {
-                'painel': 'Painel',
-                'despesas': 'Despesas',
+                'painel': 'Painel Geral',
+                'despesas': 'Minhas Despesas',
                 'relatorios': 'Relatórios Mensais',
-                'planejamento': 'Planejamento',
-                'carteiras': 'Carteiras'
+                'planejamento': 'Planejamento e Metas',
+                'carteiras': 'Minhas Carteiras'
             };
             titulo.innerText = nomesTitulos[sectionId] || sectionId;
         }
         
-        // Atualiza Menu Ativo
+        // Controle visual do menu (Active state)
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         const navItem = document.querySelector(`[data-section="${sectionId}"]`);
         if (navItem) navItem.classList.add('active');
 
-        // Inicializa o módulo após o HTML estar no DOM
+        // Inicialização do JavaScript específico do módulo
+        // O timeout garante que o HTML já foi renderizado pelo navegador
         setTimeout(() => {
             if (modulos[sectionId] && typeof modulos[sectionId].init === 'function') {
-                console.log(`Iniciando JS de: ${sectionId}`);
                 modulos[sectionId].init();
             }
-        }, 150); // Aumentado um pouco para garantir a renderização
+        }, 100); 
 
     } catch (err) {
         console.error("Erro na navegação:", err);
         const container = document.getElementById('dynamic-content');
-        if (container) container.innerHTML = `<div style="color:white; padding:20px;"><h2>Erro ao carregar seção: ${sectionId}</h2><p>Verifique se o arquivo ./HTML/${sectionId}.html existe.</p></div>`;
+        if (container) {
+            container.innerHTML = `<div style="color:white; padding:20px;"><h2>Erro 404</h2><p>A seção <b>${sectionId}</b> não pôde ser carregada.</p></div>`;
+        }
     }
 }
 
-// 4. LISTENERS DE EVENTOS (Melhorado)
+// 5. EVENT LISTENERS
 document.addEventListener('click', (e) => {
+    // Verifica se o clique foi em um item do menu lateral
     const navItem = e.target.closest('[data-section]');
     if (navItem) {
         e.preventDefault();
@@ -81,6 +85,6 @@ document.addEventListener('click', (e) => {
     }
 });
 
-// 5. INICIALIZAÇÃO
-// Como é type="module", não precisa de DOMContentLoaded, mas mantemos por segurança
+// 6. START DA APLICAÇÃO
+// Carrega o painel automaticamente ao abrir o site
 navegar('painel');
