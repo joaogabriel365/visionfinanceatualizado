@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Perfil - Vision Finance</title>
+    <link rel="stylesheet" href="./css/style.css">
+    <link rel="stylesheet" href="./css/dashboard.css">
+</head>
+<body>
+
+<div class="perfil-container">
+    <div class="perfil-card main-info">
+        <div class="profile-header">
+            <div class="avatar-large">
+                <span>JS</span>
+                <button class="edit-photo-btn">
+                    <img src="./img/lapis.png" alt="Editar">
+                </button>
+            </div>
+            <div class="profile-details">
+                <h2 id="userNameDisplay">João Silva</h2>
+                <p id="userEmailDisplay">joao@exemplo.com</p>
+            </div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-box income" onclick="PerfilModulo.abrirDetalhamento('receitas')" style="cursor: pointer;">
+                <span class="stat-label">Total de Receitas</span>
+                <h3 id="totalReceitas">R$ 0,00</h3>
+                <small>Clique para detalhes</small>
+            </div>
+            
+            <div class="stat-box expense" onclick="PerfilModulo.abrirDetalhamento('despesas')" style="cursor: pointer;">
+                <span class="stat-label">Total de Despesas</span>
+                <h3 id="totalDespesas">R$ 0,00</h3>
+                <small>Clique para detalhes</small>
+            </div>
+        </div>
+    </div>
+
+    <div class="perfil-card">
+        <form id="formPerfil">
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="perfilNome">Nome</label>
+                    <input type="text" id="perfilNome" value="João">
+                </div>
+                <div class="form-group">
+                    <label for="perfilSobrenome">Sobrenome</label>
+                    <input type="text" id="perfilSobrenome" value="Silva">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="perfilEmail">E-mail</label>
+                <input type="email" id="perfilEmail" value="joao@exemplo.com">
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn-save">Salvar Alterações</button>
+                <button type="button" class="btn-password">Alterar Senha</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<div id="modalDetalhamento" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2 id="modalDetalhamentoTitulo">Detalhes</h2>
+            <button onclick="PerfilModulo.fecharModal()" class="close-btn">&times;</button>
+        </div>
+        
+        <div class="filter-section">
+            <label for="filtroPeriodo">Filtrar Período:</label>
+            <select id="filtroPeriodo" class="filter-select" onchange="PerfilModulo.atualizarListaDetalhada()">
+                <option value="mes">Mês Atual</option>
+                <option value="7">Últimos 7 dias</option>
+                <option value="15">Últimos 15 dias</option>
+                <option value="30">Últimos 30 dias</option>
+                <option value="90">Últimos 3 meses</option>
+                <option value="180">Últimos 6 meses</option>
+                <option value="365">Últimos 12 meses</option>
+            </select>
+        </div>
+
+        <div class="list-container" id="listaDetalhada">
+            </div>
+    </div>
+</div>
+
+<script src="./js/common.js"></script>
+<script src="./js/perfil.js"></script>
+
+</body>
+</html>

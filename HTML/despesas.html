@@ -50,11 +50,11 @@
                 <th style="padding: 20px; color: white; font-weight: 600;">Pagamento</th>
                 <th style="padding: 20px; color: white; font-weight: 600;">Valor</th>
                 <th style="padding: 20px; color: white; font-weight: 600;">Data</th>
-                <th style="padding: 20px; color: white; font-weight: 600;">Descrição</th>
+                <th style="padding: 20px; color: white; font-weight: 600; text-align: center;">Descrição</th>
                 <th style="padding: 20px; color: white; font-weight: 600; text-align: center;">Ações</th>
             </tr>
-            <tbody id="fullExpenseTableBody">
-    </tbody>
+        </thead>
+        <tbody id="fullExpenseTableBody"></tbody>
     </table>
 </div>
 
@@ -72,7 +72,7 @@
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Valor</label>
-                <input type="number" id="valor" step="0.01" placeholder="R$ 0,00" required class="dark-input">
+                <input type="text" id="valor" placeholder="R$ 0,00" required class="dark-input">
             </div>
 
             <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
@@ -89,7 +89,7 @@
                 </div>
                 <div style="flex: 1;">
                     <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Método</label>
-                    <select id="metodo" required class="dark-input dark-select">
+                    <select id="metodo" required class="dark-input dark-select" onchange="DespesasModulo.verificarMetodoPagamento()">
                         <option value="">Selecione</option>
                         <option value="Cartão de Crédito">Crédito</option>
                         <option value="Cartão de Débito">Débito</option>
@@ -100,9 +100,33 @@
                 </div>
             </div>
 
+            <div id="containerParcelamento" style="display: none; margin-bottom: 15px; padding: 15px; background: rgba(34, 211, 238, 0.05); border-radius: 12px; border: 1px solid rgba(34, 211, 238, 0.2);">
+                <label style="color: #22d3ee; display: block; margin-bottom: 10px; font-size: 13px; font-weight: 600;">Deseja informar se esta compra foi parcelada?</label>
+                <div style="display: flex; gap: 15px; align-items: center;">
+                    <select id="foiParcelado" class="dark-input dark-select" style="flex: 1;" onchange="DespesasModulo.toggleSeletorParcelas()">
+                        <option value="nao">Não</option>
+                        <option value="sim">Sim</option>
+                    </select>
+                    
+                    <select id="numParcelas" class="dark-input dark-select" style="flex: 1; display: none;">
+                        <option value="2x">2x</option>
+                        <option value="3x">3x</option>
+                        <option value="4x">4x</option>
+                        <option value="5x">5x</option>
+                        <option value="6x">6x</option>
+                        <option value="7x">7x</option>
+                        <option value="8x">8x</option>
+                        <option value="9x">9x</option>
+                        <option value="10x">10x</option>
+                        <option value="11x">11x</option>
+                        <option value="12x">12x</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Data</label>
-                <input type="date" id="data" required class="dark-input">
+                <input type="text" id="data" placeholder="dd/mm/aaaa" required class="dark-input">
             </div>
 
             <div class="form-group" style="margin-bottom: 25px;">

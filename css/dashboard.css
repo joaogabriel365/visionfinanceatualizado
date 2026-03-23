@@ -2209,3 +2209,260 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
 .resumo-info.highlight {
     color: #ef4444; /* Cor vermelha para alertas de alta, como na imagem */
 }
+
+/* Container Principal */
+.perfil-container {
+    padding: 20px;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+}
+
+/* Cards de Estilo Padrão */
+.perfil-card {
+    background-color: #0f172a; /* Azul escuro profundo do sistema */
+    border-radius: 12px;
+    padding: 30px;
+    border: 1px solid #1e293b;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+}
+
+/* Cabeçalho do Perfil (Foto e Nome) */
+.profile-header {
+    display: flex;
+    align-items: center;
+    gap: 25px;
+    margin-bottom: 30px;
+    padding-bottom: 25px;
+    border-bottom: 1px solid #1e293b;
+}
+
+.avatar-large {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    background-color: #22d3ee; /* Ciano do sistema */
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #0f172a;
+}
+
+.edit-photo-btn {
+    position: absolute;
+    bottom: 0;
+    right: 0;
+    background: #1e293b;
+    border: 1px solid #22d3ee;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.edit-photo-btn:hover {
+    background: #22d3ee;
+}
+
+.edit-photo-btn img {
+    width: 16px;
+    filter: brightness(0) saturate(100%) invert(8%) sepia(21%) saturate(2360%) hue-rotate(192deg) brightness(94%) contrast(96%);
+}
+
+.profile-details h2 {
+    color: #ffffff;
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+}
+
+.profile-details p {
+    color: #94a3b8;
+    font-size: 0.9rem;
+}
+
+/* Grade de Estatísticas (Receitas e Despesas) */
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.stat-box {
+    background: rgba(30, 41, 59, 0.5);
+    padding: 20px;
+    border-radius: 10px;
+    border: 1px solid #1e293b;
+    cursor: pointer;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.stat-box:hover {
+    transform: translateY(-3px);
+    border-color: #22d3ee;
+}
+
+.stat-label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 10px;
+}
+
+.stat-box h3 {
+    font-size: 1.4rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+}
+
+.stat-box.income h3 { color: #22d3ee; }
+.stat-box.expense h3 { color: #ffffff; }
+
+.stat-box small {
+    color: #64748b;
+    font-size: 0.75rem;
+}
+
+/* Formulário de Edição */
+.form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    color: #94a3b8;
+    font-size: 0.85rem;
+    margin-bottom: 8px;
+}
+
+.form-group input {
+    width: 100%;
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 8px;
+    padding: 12px 15px;
+    color: white;
+    font-family: 'Montserrat', sans-serif;
+    transition: 0.3s;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #22d3ee;
+    box-shadow: 0 0 0 2px rgba(34, 211, 238, 0.2);
+}
+
+/* Botões de Ação */
+.form-actions {
+    display: flex;
+    gap: 15px;
+    margin-top: 10px;
+}
+
+.btn-save {
+    background-color: #22d3ee;
+    color: #0f172a;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-save:hover {
+    background-color: #0891b2;
+    transform: scale(1.02);
+}
+
+.btn-password {
+    background: transparent;
+    color: #94a3b8;
+    border: 1px solid #334155;
+    padding: 12px 25px;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.btn-password:hover {
+    border-color: #94a3b8;
+    color: #ffffff;
+}
+
+/* Estilos do Modal de Detalhamento */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.list-container {
+    max-height: 300px;
+    overflow-y: auto;
+    margin-top: 20px;
+}
+
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px;
+    border-bottom: 1px solid #1e293b;
+    color: white;
+}
+
+.detail-item small {
+    display: block;
+    color: #64748b;
+}
+
+/* Custom Scrollbar para o Modal */
+.list-container::-webkit-scrollbar {
+    width: 6px;
+}
+
+.list-container::-webkit-scrollbar-thumb {
+    background: #334155;
+    border-radius: 10px;
+}
+
+/* Faz a caixa inteira brilhar e mostrar que é clicável */
+.stat-box {
+    cursor: pointer;
+    transition: transform 0.2s, background 0.2s;
+}
+
+.stat-box:hover {
+    background-color: #1a2233; /* Um tom levemente mais claro que o fundo */
+    transform: translateY(-2px);
+}
+
+.stat-box small {
+    color: #00d2ff; /* Cor azul/ciano para destacar */
+    text-decoration: underline;
+    display: block;
+    margin-top: 5px;
+}
