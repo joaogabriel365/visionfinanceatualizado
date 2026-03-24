@@ -1,95 +1,120 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Perfil - Vision Finance</title>
-    <link rel="stylesheet" href="./css/style.css">
-    <link rel="stylesheet" href="./css/dashboard.css">
-</head>
-<body>
-
 <div class="perfil-container">
     <div class="perfil-card main-info">
         <div class="profile-header">
-            <div class="avatar-large">
+            <div class="avatar-large" id="avatarIcon">
                 <span>JS</span>
-                <button class="edit-photo-btn">
-                    <img src="./img/lapis.png" alt="Editar">
-                </button>
             </div>
             <div class="profile-details">
                 <h2 id="userNameDisplay">João Silva</h2>
                 <p id="userEmailDisplay">joao@exemplo.com</p>
+                <button class="btn-outline-sm" onclick="PerfilModulo.abrirModalSenha()">Alterar Senha</button>
             </div>
         </div>
 
         <div class="stats-grid">
-            <div class="stat-box income" onclick="PerfilModulo.abrirDetalhamento('receitas')" style="cursor: pointer;">
-                <span class="stat-label">Total de Receitas</span>
-                <h3 id="totalReceitas">R$ 0,00</h3>
-                <small>Clique para detalhes</small>
+            <div class="stat-box income-box" onclick="PerfilModulo.abrirDetalhamento('receitas')">
+                <div class="stat-icon-circle">↑</div>
+                <div class="stat-content">
+                    <span>Orçamento Mensal (Receita)</span>
+                    <h3 id="totalReceitas">R$ 0,00</h3>
+                    <small>Clique para detalhes</small>
+                </div>
             </div>
-            
-            <div class="stat-box expense" onclick="PerfilModulo.abrirDetalhamento('despesas')" style="cursor: pointer;">
-                <span class="stat-label">Total de Despesas</span>
-                <h3 id="totalDespesas">R$ 0,00</h3>
-                <small>Clique para detalhes</small>
+            <div class="stat-box expense-box" onclick="PerfilModulo.abrirDetalhamento('despesas')">
+                <div class="stat-icon-circle">↓</div>
+                <div class="stat-content">
+                    <span>Total de Despesas</span>
+                    <h3 id="totalDespesas">R$ 0,00</h3>
+                    <small>Clique para detalhes</small>
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="perfil-card">
+    <div class="perfil-card edit-info">
+        <h3 class="card-subtitle">Dados Pessoais</h3>
         <form id="formPerfil">
-            <div class="form-row">
+            <div class="form-row-2col">
                 <div class="form-group">
-                    <label for="perfilNome">Nome</label>
+                    <label>Nome</label>
                     <input type="text" id="perfilNome" value="João">
                 </div>
                 <div class="form-group">
-                    <label for="perfilSobrenome">Sobrenome</label>
+                    <label>Sobrenome</label>
                     <input type="text" id="perfilSobrenome" value="Silva">
                 </div>
             </div>
             <div class="form-group">
-                <label for="perfilEmail">E-mail</label>
+                <label>E-mail</label>
                 <input type="email" id="perfilEmail" value="joao@exemplo.com">
             </div>
+            <div class="form-group">
+            <label>CPF</label>
+            <input type="text" class="input-readonly" value="384.XXX.XXX-06" readonly>
+        </div>
+        <div class="form-row-2col">
+            <div class="form-group">
+                <label>Estado</label>
+                <input type="text" class="input-readonly" value="São Paulo" readonly>
+            </div>
+            <div class="form-group">
+                <label>Cidade</label>
+                <input type="text" class="input-readonly" value="São Paulo" readonly>
+            </div>
+        </div>
             <div class="form-actions">
-                <button type="submit" class="btn-save">Salvar Alterações</button>
-                <button type="button" class="btn-password">Alterar Senha</button>
+                <button type="submit" id="btnSalvarPerfil" class="btn-primary-perfil" disabled>Salvar Alterações</button>
             </div>
         </form>
     </div>
 </div>
 
-<div id="modalDetalhamento" class="modal-overlay" style="display: none;">
-    <div class="modal-content">
+<div id="modalDetalhamento" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
         <div class="modal-header">
-            <h2 id="modalDetalhamentoTitulo">Detalhes</h2>
-            <button onclick="PerfilModulo.fecharModal()" class="close-btn">&times;</button>
+            <h2 id="modalDetalhamentoTitulo">Detalhamento</h2>
+            <button class="btn-close-x" onclick="PerfilModulo.fecharModal('modalDetalhamento')">&times;</button>
         </div>
-        
-        <div class="filter-section">
-            <label for="filtroPeriodo">Filtrar Período:</label>
-            <select id="filtroPeriodo" class="filter-select" onchange="PerfilModulo.atualizarListaDetalhada()">
-                <option value="mes">Mês Atual</option>
-                <option value="7">Últimos 7 dias</option>
-                <option value="15">Últimos 15 dias</option>
-                <option value="30">Últimos 30 dias</option>
-                <option value="90">Últimos 3 meses</option>
-                <option value="180">Últimos 6 meses</option>
-                <option value="365">Últimos 12 meses</option>
-            </select>
-        </div>
-
-        <div class="list-container" id="listaDetalhada">
+        <div class="modal-body">
+            <div class="filter-período">
+                <label>Filtrar período:</label>
+                <select id="filtroPeriodo" class="perfil-select-modern">
+                    <option value="30">Últimos 30 dias</option>
+                    <option value="mes">Mês Atual</option>
+                </select>
             </div>
+            <div id="listaDetalhada" class="perfil-scroll-container"></div>
+        </div>
+        <div class="modal-footer">
+            <button class="btn-primary-full" onclick="PerfilModulo.fecharModal('modalDetalhamento')">Fechar</button>
+        </div>
     </div>
 </div>
 
-<script src="./js/common.js"></script>
-<script src="./js/perfil.js"></script>
-
-</body>
-</html>
+<div id="modalSenha" class="modal-overlay" style="display:none;">
+    <div class="modal-card">
+        <div class="modal-header">
+            <h2>Segurança da Conta</h2>
+            <button class="btn-close-x" onclick="PerfilModulo.fecharModal('modalSenha')">&times;</button>
+        </div>
+        <form id="formSenha" class="modal-body">
+            <p class="modal-instruction">Para sua segurança, digite a senha atual e defina uma nova com pelo menos 8 caracteres.</p>
+            <div class="form-group">
+                <label>Senha Atual</label>
+                <input type="password" id="senhaAtual" placeholder="••••••••" required>
+            </div>
+            <div class="form-group">
+                <label>Nova Senha</label>
+                <input type="password" id="novaSenha" placeholder="Mínimo 8 caracteres" required>
+            </div>
+            <div class="form-group">
+                <label>Confirmar Nova Senha</label>
+                <input type="password" id="confirmaSenha" placeholder="••••••••" required>
+            </div>
+            <div class="modal-footer-actions">
+                <button type="button" class="btn-link-sm">Esqueceu a senha?</button>
+                <button type="submit" class="btn-accent-blue">Confirmar Alteração</button>
+            </div>
+        </form>
+    </div>
+</div>

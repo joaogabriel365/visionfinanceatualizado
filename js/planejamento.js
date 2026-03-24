@@ -17,6 +17,8 @@ export const PlanejamentoModulo = {
 
     salvarOrcamento() {
         const input = document.getElementById('orcamentoMensalInput');
+        if (!input) return;
+        
         const novoValor = parseFloat(input.value);
 
         if (!isNaN(novoValor) && novoValor > 0) {
@@ -49,13 +51,14 @@ export const PlanejamentoModulo = {
         if (nome && prazo && alvo > 0) {
             const novaMeta = {
                 nome: nome,
-                prazo: prazo.split('-').reverse().join('/'), // Converte YYYY-MM-DD para DD/MM/YYYY
+                prazo: prazo.split('-').reverse().join('/'),
                 alvo: alvo,
                 guardado: 0
             };
 
             metas.push(novaMeta);
             salvarNoStorage();
+            
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
             this.fecharModalNovaMeta();
@@ -80,7 +83,9 @@ export const PlanejamentoModulo = {
         const valorAporte = parseFloat(valInput.value);
 
         if (!isNaN(valorAporte) && valorAporte > 0) {
-            metas[index].guardado = (parseFloat(metas[index].guardado) || 0) + valorAporte;
+            const atual = parseFloat(metas[index].guardado) || 0;
+            metas[index].guardado = atual + valorAporte;
+            
             salvarNoStorage();
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
@@ -89,8 +94,10 @@ export const PlanejamentoModulo = {
     },
 
     fecharModalAporte() {
-        document.getElementById('modalAporteMeta').style.display = 'none';
-        document.getElementById('valorAporteMetaInput').value = '';
+        const modal = document.getElementById('modalAporteMeta');
+        if (modal) modal.style.display = 'none';
+        const input = document.getElementById('valorAporteMetaInput');
+        if (input) input.value = '';
     },
 
     // 4. RENDERIZAÇÃO E PROGRESSO
@@ -137,68 +144,62 @@ export const PlanejamentoModulo = {
     },
 
     atualizarProgressoGlobal() {
-    const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
-    
-    // Busca as despesas e metas do localStorage
-    const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
-    const totalDespesas = despesas.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
+        // CORREÇÃO: Ler direto do storage para ignorar a variável 'limiteMensal' desatualizada
+        const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
+        
+        const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
+        const totalDespesas = despesas.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
+        const totalAlocadoMetas = metas.reduce((sum, item) => sum + (parseFloat(item.guardado) || 0), 0);
 
-    const totalAlocadoMetas = metas.reduce((sum, item) => sum + (parseFloat(item.guardado) || 0), 0);
+        const utilizado = totalDespesas + totalAlocadoMetas;
+        const saldo = limite - utilizado;
+        
+        const porcentagemValor = limite > 0 ? (utilizado / limite) * 100 : 0;
+        const porcentagemDisplay = Math.min(porcentagemValor, 100).toFixed(0);
 
-    const utilizado = totalDespesas + totalAlocadoMetas;
-    const saldo = limite - utilizado;
-    
-    // Cálculo da porcentagem (limita em 100% para a largura da barra, mas mantém real para a cor)
-    const porcentagemValor = limite > 0 ? (utilizado / limite) * 100 : 0;
-    const porcentagemDisplay = Math.min(porcentagemValor, 100).toFixed(0);
+        const corStatus = porcentagemValor >= 100 ? '#ef4444' : '#22d3ee';
+        const sombraStatus = porcentagemValor >= 100 ? '0 0 15px rgba(239, 68, 68, 0.5)' : '0 0 15px rgba(34, 211, 238, 0.5)';
 
-    // 1. Lógica de Cores (Ciano se ok, Vermelho se estourar)
-    const corStatus = porcentagemValor >= 100 ? '#ef4444' : '#22d3ee';
-    const sombraStatus = porcentagemValor >= 100 ? '0 0 15px rgba(239, 68, 68, 0.5)' : '0 0 15px rgba(34, 211, 238, 0.5)';
+        const fill = document.getElementById('progressBudgetFill');
+        if (fill) {
+            // Garante que o CSS renderize a transição de largura
+            requestAnimationFrame(() => {
+                fill.style.width = `${porcentagemDisplay}%`;
+                fill.style.background = corStatus;
+                fill.style.boxShadow = sombraStatus;
+            });
+        }
 
-    // Atualiza a Barra de Progresso
-    const fill = document.getElementById('progressBudgetFill');
-    if (fill) {
-        fill.style.width = `${porcentagemDisplay}%`;
-        fill.style.background = corStatus;
-        fill.style.boxShadow = sombraStatus;
-    }
+        const percText = document.getElementById('progresso-porcentagem-text');
+        if (percText) {
+            percText.innerText = `${porcentagemDisplay}%`;
+            percText.style.color = corStatus;
+        }
 
-    // 2. Atualização dos Textos
-    const percText = document.getElementById('progresso-porcentagem-text');
-    if (percText) {
-        percText.innerText = `${porcentagemValor.toFixed(0)}%`;
-        percText.style.color = corStatus;
-    }
+        const gastoText = document.getElementById('gasto-total-text');
+        if (gastoText) {
+            gastoText.innerHTML = `
+                <span style="font-weight: 700; color: white;">${formatarMoeda(utilizado)}</span> 
+                <span style="color: #94a3b8; font-size: 0.75rem;"> utilizados de </span>
+                <span style="font-weight: 600; color: #94a3b8;">${formatarMoeda(limite)}</span>
+            `;
+        }
 
-    // 3. Melhoria na Mensagem de Uso (Texto Profissional)
-    const gastoText = document.getElementById('gasto-total-text');
-    if (gastoText) {
-        gastoText.innerHTML = `
-            <span style="font-weight: 700; color: white;">${formatarMoeda(utilizado)}</span> 
-            <span style="color: #94a3b8; font-size: 0.75rem;"> utilizados de </span>
-            <span style="font-weight: 600; color: #94a3b8;">${formatarMoeda(limite)}</span>
-        `;
-    }
-
-    // 4. Exibição de Saldo (Positivo ou Negativo)
-    const dispText = document.getElementById('disponivel-text');
-    if (dispText) {
-        if (saldo < 0) {
-            // Se negativo: Vermelho e com símbolo de menos
-            dispText.innerText = `Excedido: - ${formatarMoeda(Math.abs(saldo))}`;
-            dispText.style.color = '#ef4444';
-        } else {
-            // Se positivo: Cor padrão ciano
-            dispText.innerText = `Disponível: ${formatarMoeda(saldo)}`;
-            dispText.style.color = '#22d3ee';
+        const dispText = document.getElementById('disponivel-text');
+        if (dispText) {
+            dispText.innerText = saldo < 0 
+                ? `Excedido: - ${formatarMoeda(Math.abs(saldo))}` 
+                : `Disponível: ${formatarMoeda(saldo)}`;
+            dispText.style.color = saldo < 0 ? '#ef4444' : '#22d3ee';
         }
     }
-}
-}
-
+};
 
 window.abrirModalAporte = (index) => {
-    document.getElementById('indexMetaAporte').value = index;
-    document.getElementById('modalAporteMeta').style.display = 'flex';
+    const inputIndex = document.getElementById('indexMetaAporte');
+    const modal = document.getElementById('modalAporteMeta');
+    if (inputIndex && modal) {
+        inputIndex.value = index;
+        modal.style.display = 'flex';
+    }
 };

@@ -2466,3 +2466,501 @@ td { padding: 1rem 0; border-top: 1px solid #1e293b; font-size: 0.9rem; }
     display: block;
     margin-top: 5px;
 }
+
+.perfil-container {
+    max-width: 800px;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.perfil-card {
+    background: #111827;
+    border: 1px solid #1f2937;
+    border-radius: 16px;
+    padding: 30px;
+    margin-bottom: 24px;
+}
+
+.avatar-large {
+    background: #22d3ee;
+    color: #0891b2;
+    font-weight: bold;
+    box-shadow: 0 0 20px rgba(34, 211, 238, 0.2);
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 20px;
+    margin-top: 20px;
+}
+
+.stat-box {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    background: #1f2937;
+    padding: 20px;
+    border-radius: 12px;
+    transition: transform 0.2s;
+}
+
+.stat-box:hover { transform: translateY(-3px); }
+
+.stat-icon.income { color: #22c55e; background: rgba(34, 197, 94, 0.1); padding: 10px; border-radius: 8px; }
+.stat-icon.expense { color: #ef4444; background: rgba(239, 68, 68, 0.1); padding: 10px; border-radius: 8px; }
+
+/* Botões e Inputs */
+input {
+    background: #0f172a;
+    border: 1px solid #334155;
+    color: white;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+}
+
+.btn-save {
+    background: #334155; /* Cor desativada */
+    color: #94a3b8;
+    cursor: not-allowed;
+    transition: 0.3s;
+}
+
+.btn-save.active {
+    background: #22d3ee;
+    color: #0f172a;
+    cursor: pointer;
+}
+
+/* Modal Detalhes */
+.detail-item {
+    display: flex;
+    justify-content: space-between;
+    padding: 15px;
+    border-bottom: 1px solid #334155;
+}
+
+.meta-item {
+    background: rgba(34, 211, 238, 0.05);
+    border-left: 4px solid #22d3ee;
+}
+
+.badge {
+    background: #334155;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+}
+
+/* --- ESTILOS DO PERFIL (Adicionar ao dashboard.css) --- */
+
+.perfil-container { max-width: 850px; margin: 0 auto; padding: 20px; }
+
+.perfil-card {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 20px;
+}
+
+.avatar-large {
+    width: 85px; height: 85px;
+    background: #22d3ee; color: #0891b2;
+    border-radius: 50%; display: flex;
+    align-items: center; justify-content: center;
+    font-size: 2rem; font-weight: bold;
+    box-shadow: 0 0 15px rgba(34, 211, 238, 0.2);
+}
+
+.btn-outline-sm {
+    background: transparent; border: 1px solid #334155;
+    color: #94a3b8; padding: 5px 12px;
+    border-radius: 6px; cursor: pointer; font-size: 0.8rem;
+    margin-top: 10px; transition: 0.2s;
+}
+.btn-outline-sm:hover { border-color: #22d3ee; color: #22d3ee; }
+
+.btn-primary-perfil {
+    width: 100%; padding: 12px; border-radius: 8px; border: none;
+    background: #334155; color: #64748b; font-weight: bold;
+    cursor: not-allowed; transition: 0.3s;
+}
+.btn-primary-perfil.active {
+    background: #22d3ee; color: #0f172a; cursor: pointer;
+    box-shadow: 0 4px 12px rgba(34, 211, 238, 0.3);
+}
+
+/* Modal e Listas */
+.modal-content-perfil {
+    background: #1e293b; padding: 30px; border-radius: 15px;
+    width: 420px; max-width: 95%; border: 1px solid #334155;
+}
+
+.perfil-item {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 15px; border-bottom: 1px solid #334155;
+}
+
+.meta-border { border-left: 4px solid #22d3ee; background: rgba(34, 211, 238, 0.05); }
+.text-highlight { color: #22d3ee; font-weight: 600; }
+
+.perfil-tag { background: #0f172a; padding: 2px 6px; border-radius: 4px; font-size: 0.7rem; color: #94a3b8; }
+
+.btn-secondary-full {
+    width: 100%; margin-top: 20px; padding: 10px;
+    background: #ef4444; color: white; border: none;
+    border-radius: 6px; cursor: pointer;
+}
+
+/* --- Boxes de Receitas e Despesas (Destaque) --- */
+.stat-box {
+    background: #1e293b;
+    border: 1px solid #334155;
+    border-radius: 12px;
+    padding: 20px;
+    display: flex;
+    gap: 15px;
+    align-items: center;
+    transition: transform 0.2s, border-color 0.2s;
+    cursor: pointer;
+}
+
+.stat-box:hover {
+    transform: translateY(-3px);
+    background: #263349;
+}
+
+/* Cores vibrantes para as boxes */
+.income-box { border-left: 4px solid #22c55e; }
+.income-box h3 { color: #22c55e !important; font-size: 1.5rem; text-shadow: 0 0 10px rgba(34, 197, 94, 0.2); }
+
+.expense-box { border-left: 4px solid #ef4444; }
+.expense-box h3 { color: #ef4444 !important; font-size: 1.5rem; text-shadow: 0 0 10px rgba(239, 68, 68, 0.2); }
+
+.stat-icon-circle {
+    width: 45px; height: 45px;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+}
+
+/* --- Modais (Layout Corrigido) --- */
+.modal-card {
+    background: #1e293b;
+    width: 450px;
+    border-radius: 16px;
+    border: 1px solid #334155;
+    position: relative;
+    overflow: hidden;
+    animation: modalFadeIn 0.3s ease;
+}
+
+.modal-header {
+    padding: 20px 25px;
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.btn-close-x {
+    background: none; border: none;
+    color: #94a3b8; font-size: 1.8rem;
+    cursor: pointer; line-height: 1;
+}
+
+.modal-body { padding: 25px; }
+
+.modal-footer {
+    padding: 20px 25px;
+    border-top: 1px solid #334155;
+}
+
+/* Estilo para Itens da Lista de Gastos */
+.perfil-item {
+    padding: 15px 0;
+    border-bottom: 1px solid #334155;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+.meta-item-destaque {
+    background: rgba(34, 211, 238, 0.08);
+    margin: 10px 0; padding: 15px;
+    border-radius: 8px; border-left: 4px solid #22d3ee;
+}
+
+/* Botões Modernos */
+.btn-accent {
+    background: #22d3ee; color: #0f172a;
+    padding: 12px 20px; border-radius: 8px;
+    font-weight: bold; border: none; cursor: pointer;
+    box-shadow: 0 4px 14px rgba(34, 211, 238, 0.3);
+}
+
+.btn-primary-full {
+    width: 100%; background: #ef4444; color: white;
+    padding: 12px; border: none; border-radius: 8px;
+    font-weight: bold; cursor: pointer;
+}
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* --- ESTILOS DO PERFIL (dashboard.css) --- */
+/* --- ESTILOS DO PERFIL & MODAIS (CORRIGIDO) --- */
+
+.perfil-container { max-width: 900px; margin: 0 auto; padding: 20px; }
+
+.perfil-card {
+    background: #1e293b; 
+    border: 1px solid #334155;
+    border-radius: 12px; 
+    padding: 25px; 
+    margin-bottom: 20px;
+}
+
+/* Grids e Boxes de Resumo (Alto Contraste) */
+.stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+
+.stat-box {
+    background: rgba(15, 23, 42, 0.6); /* Fundo mais escuro para destacar o texto */
+    border: 1px solid #334155;
+    border-radius: 12px; 
+    padding: 20px; 
+    display: flex;
+    gap: 15px; 
+    align-items: center; 
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+}
+
+.stat-box:hover {
+    transform: translateY(-3px);
+    border-color: #4b5563;
+    background: rgba(15, 23, 42, 0.8);
+}
+
+/* Cores Vibrantes para Receitas e Despesas */
+.income-box { border-left: 5px solid #22c55e; }
+.income-box h3 { color: #22c55e !important; font-size: 1.6rem; text-shadow: 0 0 12px rgba(34, 197, 94, 0.25); }
+
+.expense-box { border-left: 5px solid #ef4444; }
+.expense-box h3 { color: #ef4444 !important; font-size: 1.6rem; text-shadow: 0 0 12px rgba(239, 68, 68, 0.25); }
+
+.stat-icon-circle {
+    width: 45px; height: 45px; 
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 1.2rem;
+    background: rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+}
+
+/* --- Modais Profissionais (Ajuste de Alinhamento) --- */
+.modal-card {
+    background: #1e293b; 
+    width: 450px;
+    border-radius: 16px; 
+    border: 1px solid #334155;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5);
+    overflow: hidden; 
+    animation: modalFadeIn 0.3s ease-out;
+}
+
+.modal-header {
+    padding: 20px 25px; 
+    background: #1e293b;
+    border-bottom: 1px solid #334155;
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.modal-header h2 { font-size: 1.25rem; font-weight: 600; color: #f8fafc; margin: 0; }
+
+.btn-close-x {
+    background: none; border: none;
+    color: #94a3b8; font-size: 1.5rem;
+    cursor: pointer; line-height: 1;
+    transition: color 0.2s;
+}
+
+.btn-close-x:hover { color: #f1f5f9; }
+
+.modal-body { padding: 25px; }
+
+.modal-instruction { color: #94a3b8; font-size: 0.9rem; margin-bottom: 20px; line-height: 1.5; }
+
+.modal-footer {
+    padding: 20px 25px; 
+    background: rgba(15, 23, 42, 0.2);
+    border-top: 1px solid #334155;
+}
+
+/* Itens da Lista e Filtros */
+.perfil-select-modern {
+    width: 100%; padding: 10px; border-radius: 8px;
+    background: #0f172a; border: 1px solid #334155;
+    color: white; margin-bottom: 15px;
+}
+
+.perfil-item {
+    padding: 12px 0; border-bottom: 1px solid #1e293b;
+    display: flex; justify-content: space-between; align-items: center;
+}
+
+/* Botões de Ação */
+.btn-accent-blue {
+    background: #22d3ee; color: #0f172a;
+    padding: 12px 24px; border-radius: 8px;
+    font-weight: 700; border: none; cursor: pointer;
+    transition: all 0.2s;
+    box-shadow: 0 4px 10px rgba(34, 211, 238, 0.2);
+}
+
+.btn-accent-blue:hover { background: #06b6d4; transform: translateY(-1px); }
+
+.btn-primary-full {
+    width: 100%; background: #ef4444; color: white;
+    padding: 12px; border: none; border-radius: 8px;
+    font-weight: 600; cursor: pointer; transition: background 0.2s;
+}
+
+.btn-primary-full:hover { background: #dc2626; }
+
+@keyframes modalFadeIn {
+    from { opacity: 0; transform: scale(0.95) translateY(-10px); }
+    to { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+/* Estilização Profissional do "Esqueceu a senha?" */
+.btn-link-sm {
+    background: none;
+    border: none;
+    color: #94a3b8; /* Cor cinza suave para não chamar atenção excessiva */
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.2s ease;
+    text-decoration: none; /* Remove o sublinhado feio */
+    font-weight: 500;
+}
+
+.btn-link-sm:hover {
+    color: #22d3ee; /* Ganha a cor destaque (ciano) apenas no hover */
+    text-decoration: underline;
+}
+
+/* Ajuste no container para alinhar o link e o botão */
+.modal-footer-actions {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 25px;
+    gap: 15px;
+}
+
+/* Estilo para campos que não podem ser editados */
+.input-readonly {
+    background: rgba(255, 255, 255, 0.03) !important; /* Mais escuro que o normal */
+    color: #64748b !important; /* Cor de texto cinza "apagada" */
+    border: 1px solid #1e293b !important; /* Borda quase invisível */
+    cursor: not-allowed; /* Cursor de bloqueio */
+    user-select: none; /* Impede seleção acidental */
+}
+
+/* Garante que o rótulo (label) também siga o tom mais discreto */
+.form-group:has(.input-readonly) label {
+    color: #475569;
+}
+
+/* Ajuste para as colunas ficarem lado a lado */
+.form-row-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 15px;
+    margin-bottom: 15px;
+}
+
+/* Estilização dos Selects e Switches de Configuração */
+.config-select {
+    width: 100%;
+    padding: 12px;
+    background: #1e293b;
+    border: 1px solid #334155;
+    color: white;
+    border-radius: 8px;
+    margin-top: 8px;
+}
+
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 0;
+}
+
+.config-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.config-info strong {
+    color: #f1f5f9;
+    font-size: 1rem;
+}
+
+.config-info span {
+    color: #94a3b8;
+    font-size: 0.85rem;
+}
+
+.divider {
+    border: 0;
+    border-top: 1px solid #1e293b;
+    margin: 10px 0;
+}
+
+/* Toggle Switch (Ciano) */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #334155;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px; width: 16px;
+    left: 3px; bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: #22d3ee; } /* Cor ciano do tema */
+input:checked + .slider:before { transform: translateX(22px); }
+
+.sub-item {
+    padding-left: 20px;
+    opacity: 0.8;
+}

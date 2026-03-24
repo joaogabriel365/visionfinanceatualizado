@@ -1,146 +1,143 @@
-import { formatarMoeda } from './common.js';
-
 export const PerfilModulo = {
-    tipoAtivo: '', // 'receitas' ou 'despesas'
+    tipoAtivo: '',
+    dadosOriginais: {},
 
     init() {
-        this.renderizarTotaisIniciais();
-        this.configurarFormulario();
+        // Salva estado inicial para controle do botão 'Salvar'
+        this.dadosOriginais = {
+            nome: document.getElementById('perfilNome').value,
+            sobrenome: document.getElementById('perfilSobrenome').value,
+            email: document.getElementById('perfilEmail').value
+        };
         
-        // Listener para o filtro do modal
-        const filtro = document.getElementById('filtroPeriodo');
-        if (filtro) {
-            filtro.addEventListener('change', () => this.atualizarListaDetalhada());
-        }
+        this.configurarListeners();
+        this.renderizarTotaisResumo();
+        window.PerfilModulo = this; // Garante acesso global para os 'onclick' do HTML
     },
 
-    // 1. Renderiza o que aparece nos cards assim que abre a tela (Mês Atual)
-    renderizarTotaisIniciais() {
-        const hoje = new Date();
-        const mesAtual = hoje.getMonth();
-        const anoAtual = hoje.getFullYear();
+    configurarListeners() {
+        const formPerfil = document.getElementById('formPerfil');
+        const btnSalvar = document.getElementById('btnSalvarPerfil');
+        const inputs = formPerfil.querySelectorAll('input');
 
-        // Receitas (Vem do Planejamento - Orçamento Mensal)
-        const orcamento = parseFloat(localStorage.getItem('budget_total')) || 0;
+        // Ativa botão salvar apenas se houver mudanças
+        inputs.forEach(input => {
+            input.addEventListener('input', () => {
+                const alterado = 
+                    document.getElementById('perfilNome').value !== this.dadosOriginais.nome ||
+                    document.getElementById('perfilSobrenome').value !== this.dadosOriginais.sobrenome ||
+                    document.getElementById('perfilEmail').value !== this.dadosOriginais.email;
+                
+                btnSalvar.disabled = !alterado;
+                btnSalvar.classList.toggle('active', alterado);
+            });
+        });
 
-        // Despesas (Apenas do mês atual)
-        const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
-        const totalD = despesas.reduce((acc, d) => {
-            const dataD = new Date(d.data + 'T00:00:00'); // Garante leitura correta da data
-            if (dataD.getMonth() === mesAtual && dataD.getFullYear() === anoAtual) {
-                return acc + (parseFloat(d.valor) || 0);
+        formPerfil.onsubmit = (e) => {
+            e.preventDefault();
+            const nome = document.getElementById('perfilNome').value;
+            const sobrenome = document.getElementById('perfilSobrenome').value;
+            
+            document.getElementById('userNameDisplay').innerText = `${nome} ${sobrenome}`;
+            this.dadosOriginais = { 
+                nome, 
+                sobrenome, 
+                email: document.getElementById('perfilEmail').value 
+            };
+            
+            btnSalvar.disabled = true;
+            btnSalvar.classList.remove('active');
+            alert("Alterações salvas com sucesso!");
+        };
+
+        // Validação de Senha
+        document.getElementById('formSenha').onsubmit = (e) => {
+            e.preventDefault();
+            const nova = document.getElementById('novaSenha').value;
+            const confirma = document.getElementById('confirmaSenha').value;
+
+            if (nova !== confirma) {
+                alert("Erro: A nova senha e a confirmação não coincidem.");
+                return;
             }
+            alert("Senha alterada com sucesso!");
+            this.fecharModal('modalSenha');
+            e.target.reset();
+        };
+    },
+
+    obterDadosConsolidados() {
+        const despesasGerais = JSON.parse(localStorage.getItem('despesas')) || [];
+        const metas = JSON.parse(localStorage.getItem('metas')) || [];
+        
+        const despesasMetas = metas.map(m => ({
+            titulo: `Meta: ${m.nome}`,
+            valor: parseFloat(m.guardado) || 0,
+            data: new Date().toISOString().split('T')[0],
+            categoria: 'Planejamento'
+        }));
+
+        return [...despesasGerais, ...despesasMetas];
+    },
+
+    renderizarTotaisResumo() {
+        const hoje = new Date();
+        const dados = this.obterDadosConsolidados();
+        
+        const totalD = dados.reduce((acc, item) => {
+            const dataItem = new Date(item.data + 'T00:00:00');
+            if (dataItem.getMonth() === hoje.getMonth()) return acc + item.valor;
             return acc;
         }, 0);
-        
-        const elDespesas = document.getElementById('totalDespesas');
-        const elReceitas = document.getElementById('totalReceitas');
 
-        if (elDespesas) elDespesas.innerText = formatarMoeda(totalD);
-        if (elReceitas) elReceitas.innerText = formatarMoeda(orcamento);
+        const totalR = parseFloat(localStorage.getItem('budget_total')) || 0;
+
+        document.getElementById('totalDespesas').innerText = `R$ ${totalD.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
+        document.getElementById('totalReceitas').innerText = `R$ ${totalR.toLocaleString('pt-BR', {minimumFractionDigits: 2})}`;
     },
 
     abrirDetalhamento(tipo) {
         this.tipoAtivo = tipo;
-        const modal = document.getElementById('modalDetalhamento');
-        if (modal) {
-            modal.style.display = 'flex';
-        }
-        
-        const titulo = document.getElementById('modalDetalhamentoTitulo');
-        if (titulo) {
-            titulo.innerText = tipo === 'receitas' ? 'Detalhamento de Receitas' : 'Detalhamento de Despesas';
-        }
-        
+        document.getElementById('modalDetalhamento').style.display = 'flex';
+        document.getElementById('modalDetalhamentoTitulo').innerText = tipo === 'receitas' ? 'Orçamento Mensal' : 'Detalhamento de Gastos';
         this.atualizarListaDetalhada();
     },
 
-    fecharModal() {
-        const modal = document.getElementById('modalDetalhamento');
-        if (modal) modal.style.display = 'none';
+    abrirModalSenha() {
+        document.getElementById('modalSenha').style.display = 'flex';
     },
 
-    // 2. Lógica rigorosa de filtros de período
-    atualizarListaDetalhada() {
-        const filtroEl = document.getElementById('filtroPeriodo');
-        const container = document.getElementById('listaDetalhada');
-        
-        if (!filtroEl || !container) return;
+    fecharModal(id) {
+        document.getElementById(id).style.display = 'none';
+    },
 
-        const periodo = filtroEl.value;
-        const hoje = new Date();
-        hoje.setHours(23, 59, 59, 999); // Final do dia de hoje
+    atualizarListaDetalhada() {
+        const container = document.getElementById('listaDetalhada');
+        container.innerHTML = '';
 
         if (this.tipoAtivo === 'receitas') {
-            const valor = parseFloat(localStorage.getItem('budget_total')) || 0;
+            const valor = localStorage.getItem('budget_total') || '0';
             container.innerHTML = `
-                <div class="detail-item" style="padding: 20px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between;">
-                    <div>
-                        <span style="display: block; color: white;">Orçamento Mensal Definido</span>
-                        <small style="color: #64748b;">Fonte: Planejamento Financeiro</small>
+                <div class="perfil-item income-border">
+                    <div class="item-info">
+                        <span>Teto de Gastos Definido</span>
+                        <small>Mensal</small>
                     </div>
-                    <strong style="color: #22d3ee; font-size: 1.2rem;">${formatarMoeda(valor)}</strong>
+                    <strong class="text-success">R$ ${parseFloat(valor).toFixed(2)}</strong>
                 </div>`;
         } else {
-            const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
-            
-            const filtradas = despesas.filter(d => {
-                const dataD = new Date(d.data + 'T00:00:00');
-                
-                // Cálculo de diferença de dias
-                const diffTime = hoje - dataD;
-                const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-                switch (periodo) {
-                    case 'mes': 
-                        return dataD.getMonth() === hoje.getMonth() && dataD.getFullYear() === hoje.getFullYear();
-                    case '7': return diffDays >= 0 && diffDays <= 7;
-                    case '15': return diffDays >= 0 && diffDays <= 15;
-                    case '30': return diffDays >= 0 && diffDays <= 30;
-                    case '90': return diffDays >= 0 && diffDays <= 90;
-                    case '180': return diffDays >= 0 && diffDays <= 180;
-                    case '365': return diffDays >= 0 && diffDays <= 365;
-                    default: return true;
-                }
+            const filtradas = this.obterDadosConsolidados();
+            filtradas.forEach(item => {
+                const isMeta = item.titulo.includes("Meta:");
+                container.innerHTML += `
+                    <div class="perfil-item ${isMeta ? 'meta-border' : ''}">
+                        <div class="item-info">
+                            <span class="${isMeta ? 'text-highlight' : ''}">${item.titulo}</span>
+                            <small class="perfil-tag">${item.categoria}</small>
+                        </div>
+                        <strong class="text-danger">R$ ${item.valor.toFixed(2)}</strong>
+                    </div>`;
             });
-
-            // Ordenar por data (mais recente primeiro)
-            filtradas.sort((a, b) => new Date(b.data) - new Date(a.data));
-
-            container.innerHTML = filtradas.map(d => `
-                <div class="detail-item" style="padding: 15px; border-bottom: 1px solid #1e293b; display: flex; justify-content: space-between; align-items: center;">
-                    <div>
-                        <span style="display: block; color: white; font-weight: 500;">${d.titulo}</span>
-                        <small style="color: #64748b;">${d.data.split('-').reverse().join('/')} • ${d.categoria}</small>
-                    </div>
-                    <strong style="color: white;">${formatarMoeda(d.valor)}</strong>
-                </div>
-            `).join('') || '<p style="color:#94a3b8; text-align:center; padding: 20px;">Nenhum gasto encontrado neste período.</p>';
-        }
-    },
-
-    configurarFormulario() {
-        const form = document.getElementById('formPerfil');
-        if (form) {
-            form.onsubmit = (e) => {
-                e.preventDefault();
-                const nome = document.getElementById('perfilNome').value;
-                const email = document.getElementById('perfilEmail').value;
-                
-                // Atualiza displays se existirem
-                if(document.getElementById('userNameDisplay')) document.getElementById('userNameDisplay').innerText = nome;
-                if(document.getElementById('userEmailDisplay')) document.getElementById('userEmailDisplay').innerText = email;
-                
-                alert("Alterações salvas com sucesso!");
-            };
         }
     }
 };
-
-// Torna o módulo visível para o HTML (onclick)
-window.PerfilModulo = PerfilModulo;
-
-// Inicialização automática ao carregar o script
-document.addEventListener('DOMContentLoaded', () => {
-    PerfilModulo.init();
-});

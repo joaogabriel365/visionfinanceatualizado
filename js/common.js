@@ -8,15 +8,27 @@ export let metas = JSON.parse(localStorage.getItem('metas')) || [];
 export let limiteMensal = parseFloat(localStorage.getItem('budget_total')) || 0;
 
 // Utilitários de Formatação
-export const formatarMoeda = (valor) => new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valor);
+export const formatarMoeda = (valor) => {
+    const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || { moeda: 'BRL' };
+    const moedasConfig = {
+        'BRL': { locale: 'pt-BR', currency: 'BRL' },
+        'USD': { locale: 'en-US', currency: 'USD' },
+        'EUR': { locale: 'de-DE', currency: 'EUR' },
+        'GBP': { locale: 'en-GB', currency: 'GBP' }
+    };
+    const config = moedasConfig[settings.moeda] || moedasConfig['BRL'];
+    return new Intl.NumberFormat(config.locale, { style: 'currency', currency: config.currency }).format(valor);
+};
+
 export const tratarClasseCategoria = (cat) => cat.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/\s/g, '-');
 export const getHojeFormatado = () => new Date().toLocaleDateString('pt-BR');
 
 // Persistência
 export function salvarNoStorage() {
+    const limiteAtual = localStorage.getItem('budget_total') || "0";
     localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
     localStorage.setItem('metas', JSON.stringify(metas));
-    localStorage.setItem('budget_total', limiteMensal.toString());
+    localStorage.setItem('budget_total', limiteAtual);
 }
 
 // Máscaras
@@ -25,6 +37,3 @@ export function aplicarMascaraValor(input) {
     let valorFloat = (parseFloat(value) / 100).toFixed(2);
     input.value = isNaN(valorFloat) ? "" : new Intl.NumberFormat('pt-BR', { minimumFractionDigits: 2 }).format(valorFloat);
 }
-
-
-    
