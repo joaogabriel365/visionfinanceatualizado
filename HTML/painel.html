@@ -1,29 +1,26 @@
-<div class="stats-grid">
-    <div class="stat-card">
+<div class="stats-grid dashboard-top-cards">
+    <div class="stat-card small-card">
         <div class="stat-info">
             <p>Total Gasto</p>
             <h3 id="totalGastoText">R$ 0,00</h3>
         </div>
     </div>
-
-    <div class="stat-card">
+    <div class="stat-card small-card">
         <div class="stat-info">
-            <p>Limite Estabelecido</p>
+            <p>Limite Mensal</p>
             <h3 id="limiteText">R$ 0,00</h3>
         </div>
     </div>
-
-    <div class="stat-card">
+    <div class="stat-card small-card">
         <div class="stat-info">
             <p>Saldo Restante</p>
             <h3 id="saldoText">R$ 0,00</h3>
         </div>
     </div>
-
-    <div class="stat-card">
+    <div class="stat-card small-card">
         <div class="stat-info">
-            <p>Principal Categoria</p>
-            <h3 id="categoriaPrincipalText">---</h3>
+            <p>Pagamento mais usado</p>
+            <h3 id="metodoPrincipalText">---</h3>
         </div>
     </div>
 </div>
@@ -44,7 +41,10 @@
 </div>
 
 <div class="table-card">
-    <h3>Despesas Recentes</h3>
+    <div class="table-header-flex">
+        <h3>Despesas Recentes</h3>
+        <span id="dataAtualBadge" class="date-badge"></span>
+    </div>
     <table class="dash-table">
         <thead>
             <tr>
@@ -58,3 +58,10 @@
         <tbody id="expenseTableBody"></tbody>
     </table>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script type="module" src="../js/main.js"></script>
+
+</body>
+</html>

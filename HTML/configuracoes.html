@@ -1,12 +1,11 @@
 <div class="config-container">
-    <h1 class="page-title">Configurações</h1>
 
-    <div class="perfil-card">
+    <div class="config-card">
         <h3 class="card-subtitle">Preferências do Sistema</h3>
         
         <form id="formConfiguracoes">
             <div class="form-group">
-                <label for="selectMoeda">Moeda Principal</label>
+                <label for="selectMoeda" class="config-label">Moeda Principal</label>
                 <select id="selectMoeda" class="config-select">
                     <option value="BRL">R$ - Real Brasileiro</option>
                     <option value="USD">$ - Dólar Americano</option>
@@ -15,13 +14,13 @@
                 </select>
             </div>
 
-            <hr class="divider">
+            <hr class="config-divider">
 
             <div class="config-section">
                 <div class="config-item">
                     <div class="config-info">
                         <strong>Modo Escuro</strong>
-                        <span>Usar tema escuro como padrão</span>
+                        <p>Usar tema escuro como padrão</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="checkTemaEscuro" checked>
@@ -30,7 +29,7 @@
                 </div>
             </div>
 
-            <hr class="divider">
+            <hr class="config-divider">
 
             <div class="config-section">
                 <h4 class="section-inner-title">Notificações</h4>
@@ -38,7 +37,7 @@
                 <div class="config-item">
                     <div class="config-info">
                         <strong>Ativar Notificações</strong>
-                        <span>Permitir alertas do sistema no navegador</span>
+                        <p>Permitir alertas do sistema no navegador</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="checkNotificacoesGeral">
@@ -49,7 +48,7 @@
                 <div class="config-item sub-item">
                     <div class="config-info">
                         <strong>Alertas de Orçamento</strong>
-                        <span>Notificar ao se aproximar do limite</span>
+                        <p>Notificar ao se aproximar do limite</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="checkAlertaOrcamento">
@@ -59,8 +58,19 @@
 
                 <div class="config-item sub-item">
                     <div class="config-info">
+                        <strong>Alertas de Orçamento (Meta)</strong>
+                        <p>Notificar ao se aproximar do limite estabelecido</p>
+                    </div>
+                    <label class="switch">
+                        <input type="checkbox" id="checkAlertaOrcamentoMeta">
+                        <span class="slider"></span>
+                    </label>
+                </div>
+
+                <div class="config-item sub-item">
+                    <div class="config-info">
                         <strong>Lembretes de Metas</strong>
-                        <span>Ser notificado sobre prazos das metas</span>
+                        <p>Ser notificado sobre prazos das metas</p>
                     </div>
                     <label class="switch">
                         <input type="checkbox" id="checkLembreteMetas">

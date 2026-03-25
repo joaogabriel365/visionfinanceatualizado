@@ -2964,3 +2964,315 @@ input:checked + .slider:before { transform: translateX(22px); }
     padding-left: 20px;
     opacity: 0.8;
 }
+
+/* --- Estilos da Seção de Configurações --- */
+.config-card {
+    background-color: #111827; /* Azul escuro do card de metas */
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.config-divider {
+    border: 0;
+    border-top: 1px solid #1f2937;
+    margin: 20px 0;
+}
+
+.config-label {
+    display: block;
+    color: #9ca3af;
+    font-size: 0.9rem;
+    margin-bottom: 8px;
+}
+
+.config-select {
+    width: 100%;
+    background-color: #0f172a;
+    border: 1px solid #334155;
+    color: #f3f4f6;
+    padding: 10px;
+    border-radius: 6px;
+    outline: none;
+    cursor: pointer;
+}
+
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.config-info strong {
+    display: block;
+    color: #f3f4f6;
+    font-size: 1rem;
+}
+
+.config-info p {
+    color: #6b7280;
+    font-size: 0.85rem;
+    margin: 0;
+}
+
+.sub-item {
+    padding-left: 20px;
+}
+
+.section-inner-title {
+    color: #f3f4f6;
+    font-size: 1.1rem;
+    margin-bottom: 15px;
+}
+
+.btn-save-config {
+    background-color: #06b6d4; /* Ciano do botão Salvar Planejamento */
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    margin-top: 10px;
+}
+
+.btn-save-config:hover {
+    background-color: #22d3ee;
+    transform: translateY(-1px);
+}
+
+.btn-save-config.success {
+    background-color: #22c55e !important;
+    color: #fff;
+}
+
+/* Switch Estilizado */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.switch input { 
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider {
+    background-color: #06b6d4;
+}
+
+input:checked + .slider:before {
+    transform: translateX(22px);
+}
+
+input:disabled + .slider {
+    background-color: #1f2937;
+    cursor: not-allowed;
+}
+
+/* --- Estilização Profissional Configurações --- */
+.config-card {
+    background-color: #111827; /* Fundo idêntico aos cards de planejamento */
+    border: 1px solid #1f2937;
+    border-radius: 12px;
+    padding: 24px;
+    margin-top: 20px;
+}
+
+.page-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 24px;
+    color: #fff;
+}
+
+.card-subtitle {
+    font-size: 18px;
+    font-weight: 600;
+    margin-bottom: 20px;
+    color: #fff;
+}
+
+.config-label {
+    font-size: 14px;
+    color: #9ca3af;
+    margin-bottom: 8px;
+    display: block;
+}
+
+.config-select {
+    background-color: #0b1120;
+    border: 1px solid #1f2937;
+    color: #fff;
+    padding: 12px;
+    border-radius: 8px;
+    width: 100%;
+    font-size: 14px;
+}
+
+.config-divider {
+    border: 0;
+    border-top: 1px solid #1f2937;
+    margin: 24px 0;
+}
+
+.config-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+}
+
+.config-info strong {
+    color: #fff;
+    font-size: 16px;
+    display: block;
+}
+
+.config-info p {
+    color: #9ca3af;
+    font-size: 13px;
+    margin: 4px 0 0 0;
+}
+
+.section-inner-title {
+    font-size: 16px;
+    font-weight: 600;
+    margin-bottom: 16px;
+    color: #fff;
+}
+
+.sub-item {
+    padding-left: 24px;
+    border-left: 2px solid #1f2937;
+    margin-left: 4px;
+}
+
+/* Botão seguindo o estilo do 'Salvar' do Planejamento */
+.btn-accent-blue {
+    background-color: #00d1ff; /* Ciano vibrante */
+    color: #000;
+    border: none;
+    padding: 10px 24px;
+    border-radius: 8px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.btn-accent-blue:hover {
+    background-color: #00b8e6;
+    transform: scale(1.02);
+}
+
+/* Switches Customizados */
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 44px;
+    height: 22px;
+}
+
+.switch input { opacity: 0; width: 0; height: 0; }
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background-color: #374151;
+    transition: .4s;
+    border-radius: 34px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 16px;
+    width: 16px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: .4s;
+    border-radius: 50%;
+}
+
+input:checked + .slider { background-color: #00d1ff; }
+input:checked + .slider:before { transform: translateX(22px); }
+input:disabled + .slider { background-color: #1f2937; opacity: 0.3; }
+
+.sub-item {
+    padding-left: 24px;
+    border-left: 2px solid #1f2937;
+    margin-left: 4px;
+    margin-bottom: 8px; /* Espaçamento extra entre itens de notificação */
+}
+
+/* Layout das boxes superiores */
+.dashboard-top-cards {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr); /* 4 colunas iguais */
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+.small-card {
+    padding: 15px 20px !important; /* Reduz o padding interno */
+    min-height: 90px; /* Altura fixa menor */
+    display: flex;
+    align-items: center;
+}
+
+.small-card h3 {
+    font-size: 1.25rem !important; /* Texto um pouco menor para caber */
+    margin-top: 5px;
+}
+
+.table-header-flex {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.date-badge {
+    background: rgba(34, 211, 238, 0.1);
+    color: #22d3ee;
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-size: 0.8rem;
+    font-weight: 600;
+}
+
+/* Responsividade: em telas pequenas, vira 2x2 */
+@media (max-width: 1024px) {
+    .dashboard-top-cards {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
