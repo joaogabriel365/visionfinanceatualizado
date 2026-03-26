@@ -121,7 +121,8 @@ export const CarteirasModulo = {
             'Cartão de Débito': '🏦',
             'Conta Corrente': '💰',
             'Dinheiro': '💵',
-            'Vale Refeição': '🍴'
+            'VR': '🍴', // Padronizado para o filtro
+            'VA': '🛒'  // Padronizado para o filtro
         };
         return icones[tipo] || '💳';
     },

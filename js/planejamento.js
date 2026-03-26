@@ -8,7 +8,6 @@ export const PlanejamentoModulo = {
         this.atualizarProgressoGlobal();
     },
 
-    // 1. ORÇAMENTO MENSAL
     atualizarInterfaceOrcamento() {
         const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
         const display = document.getElementById('valor-limite-display');
@@ -18,9 +17,7 @@ export const PlanejamentoModulo = {
     salvarOrcamento() {
         const input = document.getElementById('orcamentoMensalInput');
         if (!input) return;
-        
         const novoValor = parseFloat(input.value);
-
         if (!isNaN(novoValor) && novoValor > 0) {
             localStorage.setItem('budget_total', novoValor);
             this.atualizarInterfaceOrcamento();
@@ -31,7 +28,6 @@ export const PlanejamentoModulo = {
         }
     },
 
-    // 2. GESTÃO DE METAS (CRIAR E EXCLUIR)
     abrirModalNovaMeta() {
         document.getElementById('modalNovaMeta').style.display = 'flex';
     },
@@ -55,10 +51,8 @@ export const PlanejamentoModulo = {
                 alvo: alvo,
                 guardado: 0
             };
-
             metas.push(novaMeta);
             salvarNoStorage();
-            
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
             this.fecharModalNovaMeta();
@@ -76,7 +70,6 @@ export const PlanejamentoModulo = {
         }
     },
 
-    // 3. APORTES (ADICIONAR DINHEIRO NA META)
     confirmarAporte() {
         const index = document.getElementById('indexMetaAporte').value;
         const valInput = document.getElementById('valorAporteMetaInput');
@@ -85,7 +78,6 @@ export const PlanejamentoModulo = {
         if (!isNaN(valorAporte) && valorAporte > 0) {
             const atual = parseFloat(metas[index].guardado) || 0;
             metas[index].guardado = atual + valorAporte;
-            
             salvarNoStorage();
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
@@ -100,7 +92,6 @@ export const PlanejamentoModulo = {
         if (input) input.value = '';
     },
 
-    // 4. RENDERIZAÇÃO E PROGRESSO
     renderizarMetas() {
         const tbody = document.getElementById('goalsTableBody');
         if (!tbody) return;
@@ -114,7 +105,6 @@ export const PlanejamentoModulo = {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
-            
             return `
                 <tr style="border-bottom: 1px solid #1e293b; color: white;">
                     <td style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
@@ -138,19 +128,18 @@ export const PlanejamentoModulo = {
                             </button>
                         </div>
                     </td>
-                </tr>
-            `;
+                </tr>`;
         }).join('');
     },
 
     atualizarProgressoGlobal() {
-        // CORREÇÃO: Ler direto do storage para ignorar a variável 'limiteMensal' desatualizada
         const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
-        
         const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
+        
+        // CÁLCULO CORRIGIDO: Soma despesas + o que já foi guardado nas metas
         const totalDespesas = despesas.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
         const totalAlocadoMetas = metas.reduce((sum, item) => sum + (parseFloat(item.guardado) || 0), 0);
-
+        
         const utilizado = totalDespesas + totalAlocadoMetas;
         const saldo = limite - utilizado;
         
@@ -162,7 +151,6 @@ export const PlanejamentoModulo = {
 
         const fill = document.getElementById('progressBudgetFill');
         if (fill) {
-            // Garante que o CSS renderize a transição de largura
             requestAnimationFrame(() => {
                 fill.style.width = `${porcentagemDisplay}%`;
                 fill.style.background = corStatus;

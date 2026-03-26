@@ -3,6 +3,7 @@ import { formatarMoeda, tratarClasseCategoria, getHojeFormatado } from './common
 export const Painel = {
     init() {
         const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
+        const metas = JSON.parse(localStorage.getItem('metas')) || []; // Puxar metas para o cálculo
         const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
         const hoje = getHojeFormatado();
         const ocultarAtivo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
@@ -10,14 +11,19 @@ export const Painel = {
         const badge = document.getElementById('dataAtualBadge');
         if (badge) badge.innerText = hoje;
 
-        this.renderizarCards(despesas, limite);
+        this.renderizarCards(despesas, metas, limite); // Passando metas agora
         this.renderizarTabelaHoje(despesas, hoje);
         this.gerarGraficoPizza(despesas, ocultarAtivo);    
-        this.gerarGraficoBarras(despesas, ocultarAtivo);   
+        this.gerarGraficoBarras(despesas, ocultarAtivo);
+        this.melhorarBotaoOlho(); // Adicionado para nitidez
     },
 
-    renderizarCards(despesas, limite) {
-        const totalGasto = despesas.reduce((acc, d) => acc + d.valor, 0);
+    renderizarCards(despesas, metas, limite) {
+        // CORREÇÃO CÁLCULO: Soma despesas + total guardado em metas
+        const totalDespesas = despesas.reduce((acc, d) => acc + d.valor, 0);
+        const totalMetas = metas.reduce((acc, m) => acc + (parseFloat(m.guardado) || 0), 0);
+        
+        const totalGasto = totalDespesas + totalMetas;
         const saldo = limite - totalGasto;
 
         const totalEl = document.getElementById('totalGastoText');
@@ -48,6 +54,15 @@ export const Painel = {
         const tbody = document.getElementById('expenseTableBody');
         if (!tbody) return;
         
+        // Cores padrões usadas no módulo de despesas
+        const coresFixo = {
+            'Alimentação': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },
+            'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
+            'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
+            'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
+            'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' }
+        };
+
         const despesasHoje = despesas.filter(d => {
             if (!d.data) return false;
             let dataFormatada = d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data;
@@ -59,26 +74,48 @@ export const Painel = {
             return;
         }
 
-        tbody.innerHTML = despesasHoje.map(d => `
+        tbody.innerHTML = despesasHoje.map(d => {
+            const cor = coresFixo[d.categoria] || { bg: 'rgba(148, 163, 184, 0.1)', text: '#94a3b8' };
+            return `
             <tr>
                 <td>${d.titulo}</td>
-                <td><span class="category-tag ${tratarClasseCategoria(d.categoria)}">${d.categoria}</span></td>
+                <td>
+                    <span style="background:${cor.bg}; color:${cor.text}; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase;">
+                        ${d.categoria}
+                    </span>
+                </td>
                 <td>${d.pagamento}</td>
                 <td><strong style="color: white;">${formatarMoeda(d.valor)}</strong></td>
                 <td>${d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data}</td>
-            </tr>`).join('');
+            </tr>`;
+        }).join('');
+    },
+
+    melhorarBotaoOlho() {
+        const btn = document.getElementById('btnToggleOlho');
+        if (!btn) return;
+
+        const atualizarIcone = () => {
+            const ativo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
+            // SVG em alta resolução substituindo a imagem de baixa qualidade
+            btn.innerHTML = ativo ? 
+                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>` : 
+                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+        };
+
+        btn.addEventListener('click', () => {
+            setTimeout(atualizarIcone, 50); // Delay para garantir o localStorage
+        });
+        atualizarIcone();
     },
 
     gerarGraficoPizza(despesas, ocultarAtivo) {
         const canvas = document.getElementById('categoryChart');
         if (!canvas) return;
-
         const instance = Chart.getChart("categoryChart");
         if (instance) instance.destroy();
-
         const dadosCat = {};
         despesas.forEach(d => dadosCat[d.categoria] = (dadosCat[d.categoria] || 0) + d.valor);
-
         new Chart(canvas, {
             type: 'doughnut',
             data: {
@@ -104,16 +141,13 @@ export const Painel = {
     gerarGraficoBarras(despesas, ocultarAtivo) {
         const canvas = document.getElementById('paymentChart');
         if (!canvas) return;
-
         const instance = Chart.getChart("paymentChart");
         if (instance) instance.destroy();
-
         const metodos = { 'Crédito': 0, 'Débito': 0, 'VR': 0, 'VA': 0, 'Dinheiro': 0 };
         despesas.forEach(d => {
             let chave = d.pagamento.replace('Cartão de ', '').trim();
             if (metodos.hasOwnProperty(chave)) metodos[chave] += d.valor;
         });
-
         new Chart(canvas, {
             type: 'bar',
             data: {

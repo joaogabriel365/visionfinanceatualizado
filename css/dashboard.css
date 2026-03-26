@@ -3276,3 +3276,200 @@ input:disabled + .slider { background-color: #1f2937; opacity: 0.3; }
         grid-template-columns: repeat(2, 1fr);
     }
 }
+
+/* --- 1. PADRONIZAÇÃO TOTAL DOS FILTROS (Mês, Categoria, Pagamento, Período) --- */
+
+.filter-select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    
+    /* Geometria e Espaçamento */
+    height: 38px;                   /* Aumentado levemente para melhor área de clique */
+    padding: 0 32px 0 14px; 
+    border-radius: 8px;             /* Bordas levemente mais orgânicas */
+    
+    /* Cores e Fontes */
+    background-color: #1a1d23;
+    border: 1px solid #2d343f;
+    color: #e0e0e0;                 /* Branco levemente suavizado para reduzir cansaço visual */
+    font-size: 0.85rem;
+    font-family: 'Inter', sans-serif;
+    font-weight: 500;
+    
+    /* Alinhamento Interno */
+    display: inline-flex;
+    align-items: center;
+    cursor: pointer;
+    outline: none;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Seta customizada - Cor ajustada para #5c636d (mais discreta) */
+    background-image: url('data:image/svg+xml;charset=US-ASCII,<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="%235c636d" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"></polyline></svg>');
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 14px;
+}
+
+.filter-select:hover {
+    border-color: #4a5568;
+    background-color: #1f232a;      /* Feedback sutil de hover */
+}
+
+.filter-select:focus {
+    border-color: #00bcd4;
+    box-shadow: 0 0 0 3px rgba(0, 188, 212, 0.15);
+}
+
+.filter-select:active {
+    transform: scale(0.98);         /* Efeito de clique profissional */
+}
+
+/* --- 2. ALINHAMENTO E REFINAMENTO DAS CATEGORIAS NA TABELA --- */
+
+/* Cabeçalho da coluna */
+th.categoria-header {
+    text-align: center;
+    padding: 12px 0;
+    color: #718096;                 /* Cor de label para cabeçalho */
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+/* Célula da tag */
+td.categoria-cell {
+    text-align: center;       
+    vertical-align: middle;    
+    padding: 12px 0;
+}
+
+/* Estilização da Tag de Categoria */
+.tag-categoria {
+    display: inline-flex;     
+    align-items: center;
+    justify-content: center;
+    
+    width: 105px;                   /* Largura levemente reduzida para elegância */
+    height: 24px;              
+    border-radius: 4px;             /* Border-radius combinando com o sistema de design */
+    
+    font-size: 0.65rem;             /* Menor e com tracking (espaçamento) maior */
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    
+    /* Efeito de profundidade sutil */
+    background: rgba(255, 255, 255, 0.03); 
+    border: 1px solid transparent;  /* Preparado para cores dinâmicas via JS */
+    
+    transition: transform 0.2s ease;
+}
+
+.tag-categoria:hover {
+    filter: brightness(1.2);        /* Realce sutil ao passar o mouse na linha */
+    transform: translateY(-1px);
+}
+
+/* Container principal da seleção de cartões */
+.card-selection-details {
+    display: flex;
+    gap: 15px;
+    align-items: flex-end;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Labels pequenas acima dos valores */
+.card-label {
+    display: block;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    color: #888;
+    margin-bottom: 4px;
+    letter-spacing: 0.5px;
+}
+
+/* Destaque profissional para o nome do cartão (Substituindo o emoji) */
+.card-name {
+    font-weight: 600;
+    color: #00e5ff; /* Tom ciano consistente com seu tema */
+    font-size: 0.95rem;
+}
+
+/* Ajuste no layout horizontal para Cartões de Crédito */
+.card-info, .card-installment {
+    flex: 1;
+}
+
+/* Estilização do select de parcelas para ser mais discreto */
+.select-installments {
+    background: #1a1d26;
+    border: 1px solid #333;
+    color: #fff;
+    padding: 4px 8px;
+    border-radius: 4px;
+    width: 100%;
+}
+
+/* No seu arquivo dashboard.css ou style.css */
+.despesas-table, .form-nova-despesa {
+    color: #FFFFFF; /* Garante o branco total */
+}
+
+.despesas-table td, .despesas-table th {
+    font-size: 14px;
+    letter-spacing: 0.5px; /* Melhora a clareza visual */
+}
+
+/* Identificador para a linha do cartão na tabela */
+.card-name-display {
+    font-weight: 700; /* Aplica o negrito solicitado */
+    display: block;   /* Garante que fique em sua própria linha se necessário */
+    margin-top: 2px;
+}
+
+/* Garante que o texto de todos os campos de entrada seja branco */
+select, 
+select option,
+input,
+textarea {
+    color: #FFFFFF !important;
+    background-color: #1a1d23; /* Mantendo o fundo escuro do seu projeto */
+}
+
+/* Ajuste específico para o estado de foco, removendo o contorno azul padrão */
+select:focus, 
+input:focus {
+    outline: none;
+    border-color: #00bcd4; /* Mantém apenas a borda ciano que você já usa */
+    color: #FFFFFF !important;
+}
+
+/* Remove estilos específicos de navegadores que forçam o azul */
+select {
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+}
+
+.payment-details {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* Espaço entre o '4x' e o 'C6' */
+    justify-content: center; /* Se a coluna for centralizada */
+}
+
+.installments {
+    color: #00e5ff; /* Mantendo o tom de ciano que você já usa */
+    font-weight: bold;
+}
+
+.card-name {
+    color: #ffffff;
+    font-size: 0.85rem;
+    text-transform: uppercase;
+}
