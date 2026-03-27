@@ -1,4 +1,4 @@
-import { salvarNoStorage, formatarMoeda, tratarClasseCategoria } from './common.js';
+import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao } from './common.js';
 
 export const DespesasModulo = {
     init() {
@@ -24,7 +24,9 @@ export const DespesasModulo = {
             'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
             'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
             'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
-            'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' }
+            'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },
+            'Moda': { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc' }, // Roxo/Lilás
+            'Outros': { bg: 'rgba(100, 116, 139, 0.15)', text: '#94a3b8' }  // Slate/Cinza
         };
         return cores[categoria] || { bg: 'rgba(148, 163, 184, 0.1)', text: '#94a3b8' };
     },
@@ -47,11 +49,12 @@ export const DespesasModulo = {
 
         const carteiras = this.getCarteiras();
         
+        // Mapeamento que define quais métodos exigem seleção de uma "carteira/cartão"
         const mapeamentoTipos = {
             'Cartão de Crédito': 'Cartão de Crédito',
             'Cartão de Débito': 'Cartão de Débito',
-            'VA': 'VA',
-            'VR': 'VR'
+            'VA': 'Vale Alimentação',
+            'VR': 'Vale Refeição'
         };
 
         const tipoBusca = mapeamentoTipos[metodo];
@@ -65,14 +68,14 @@ export const DespesasModulo = {
                 const optDefault = document.createElement('option');
                 optDefault.value = "";
                 optDefault.textContent = "Selecionar...";
-                optDefault.style.color = "#FFFFFF"; // Garante texto branco
+                optDefault.style.color = "#FFFFFF"; 
                 selectCartao.appendChild(optDefault);
 
                 cartoesDisponiveis.forEach(c => {
                     const option = document.createElement('option');
                     option.value = c.nome;
                     option.textContent = c.bandeira ? `${c.nome} (${c.bandeira})` : c.nome;
-                    option.style.color = "#FFFFFF"; // Garante texto branco
+                    option.style.color = "#FFFFFF"; 
                     selectCartao.appendChild(option);
                 });
 
@@ -86,7 +89,7 @@ export const DespesasModulo = {
                 optNovo.value = "ADICIONAR_NOVO_ACAO";
                 optNovo.textContent = "+ Adicionar novo cartão"; 
                 optNovo.style.fontWeight = "bold";
-                optNovo.style.color = "#FFFFFF"; // Garante texto branco
+                optNovo.style.color = "#FFFFFF"; 
                 selectCartao.appendChild(optNovo);
 
                 if (metodo === 'Cartão de Crédito') {
@@ -97,6 +100,7 @@ export const DespesasModulo = {
                 tipoMsg.textContent = metodo.toLowerCase();
             }
         } else {
+            // Se for Pix ou Dinheiro, garante que parcelamento e cartões fiquem ocultos
             document.getElementById('foiParcelado').value = 'nao';
             this.toggleSeletorParcelas();
         }
@@ -104,7 +108,6 @@ export const DespesasModulo = {
 
     redirecionarParaCarteira() {
         this.fecharModal();
-        
         if (window.navegar) {
             window.navegar('carteiras');
         } else {
@@ -199,7 +202,11 @@ export const DespesasModulo = {
             document.getElementById('modalTitle').innerText = "Editar Despesa";
             const despesa = this.getDespesas()[index];
             document.getElementById('titulo').value = despesa.titulo;
-            document.getElementById('valor').value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(despesa.valor);
+            
+            // Reconstituir o valor total para edição
+            const valorParaEdicao = despesa.valorTotalOriginal || despesa.valor;
+            document.getElementById('valor').value = new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorParaEdicao);
+            
             document.getElementById('categoria').value = despesa.categoria;
             document.getElementById('metodo').value = despesa.pagamento;
             
@@ -280,7 +287,6 @@ export const DespesasModulo = {
                 const globalIndex = this.getDespesas().findIndex(d => JSON.stringify(d) === JSON.stringify(item));
                 const estilo = this.obterEstiloCategoria(item.categoria);
                 
-                // Alteração solicitada: Nome do cartão ao lado das parcelas
                 let infoExtra = '';
                 if (item.parcelas || item.cartao) {
                     infoExtra += `<div style="display: flex; gap: 5px; align-items: center; margin-top: 4px;">`;
@@ -295,6 +301,9 @@ export const DespesasModulo = {
 
                 const textoObs = item.observacao ? item.observacao : `<div style="text-align: center; width: 100%; opacity: 0.5;">-</div>`;
 
+                // Alteração Solicitada: Mostrar valor cheio na tabela (usando o valorTotalOriginal)
+                const valorExibicao = item.valorTotalOriginal || item.valor;
+
                 htmlFinal += `
                     <tr style="border-bottom: 1px solid rgba(30, 41, 59, 0.3);">
                         <td style="padding: 15px 20px; color: white;">${item.titulo}</td>
@@ -307,7 +316,7 @@ export const DespesasModulo = {
                             ${item.pagamento}
                             ${infoExtra}
                         </td>
-                        <td style="padding: 15px 20px;"><strong style="color: white;">${formatarMoeda(item.valor)}</strong></td>
+                        <td style="padding: 15px 20px;"><strong style="color: white;">${formatarMoeda(valorExibicao)}</strong></td>
                         <td style="padding: 15px 20px; color: white;">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
                         <td style="padding: 15px 20px; color: #94a3b8; font-size: 0.9em; vertical-align: middle;">${textoObs}</td>
                         <td style="padding: 15px 20px; text-align: center;">
@@ -361,15 +370,26 @@ export const DespesasModulo = {
             const metodo = document.getElementById('metodo').value;
             const foiParcelado = document.getElementById('foiParcelado').value;
             const cartaoSel = document.getElementById('cartaoSelecionado').value;
-            const parcelas = (metodo === 'Cartão de Crédito' && foiParcelado === 'sim') ? document.getElementById('numParcelas').value : null;
+            const parcelasInput = (metodo === 'Cartão de Crédito' && foiParcelado === 'sim') ? document.getElementById('numParcelas').value : null;
+
+            const valorTotalOriginal = parseFloat(valorLimpo);
+            let valorFinalParaCalculo = valorTotalOriginal;
+
+            // Lógica de Parcelamento: O valor real da despesa vira o valor da parcela (ex: 125)
+            if (parcelasInput) {
+                const numParcelasMatch = parcelasInput.match(/\d+/);
+                const numParcelas = numParcelasMatch ? parseInt(numParcelasMatch[0]) : 1;
+                valorFinalParaCalculo = valorTotalOriginal / numParcelas;
+            }
 
             const novaDespesa = {
                 titulo: document.getElementById('titulo').value,
-                valor: parseFloat(valorLimpo),
+                valor: valorFinalParaCalculo, // Valor da parcela para somas/limites
+                valorTotalOriginal: valorTotalOriginal, // Valor cheio para exibição
                 categoria: document.getElementById('categoria').value,
                 pagamento: metodo,
                 cartao: (cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO") ? cartaoSel : null,
-                parcelas: parcelas,
+                parcelas: parcelasInput,
                 data: `${a}-${m}-${d}`,
                 observacao: document.getElementById('observacao').value
             };
@@ -379,9 +399,33 @@ export const DespesasModulo = {
             else despesas[index] = novaDespesa;
 
             localStorage.setItem('despesas', JSON.stringify(despesas));
+            
+            // Forçar atualização das carteiras (limite) imediatamente após salvar
+            this.sincronizarGastoCarteiras();
+
             this.renderizarTabelaCompleta();
             this.fecharModal();
         };
+    },
+
+    // Garante que o gasto nas carteiras reflita a soma das parcelas (125)
+    sincronizarGastoCarteiras() {
+        const despesas = this.getDespesas();
+        const carteiras = this.getCarteiras();
+
+        // Zerar gastos para recalcular
+        carteiras.forEach(c => c.gasto = 0);
+
+        despesas.forEach(d => {
+            if (d.cartao) {
+                const carteira = carteiras.find(c => c.nome === d.cartao);
+                if (carteira) {
+                    carteira.gasto += d.valor; // d.valor já é o valor da parcela (125)
+                }
+            }
+        });
+
+        localStorage.setItem('carteiras', JSON.stringify(carteiras));
     },
 
     configurarFiltros() {
@@ -434,18 +478,19 @@ export const DespesasModulo = {
     }
 };
 
-window.deletarDespesa = (index) => {
-    const modal = document.getElementById('modalConfirmacao');
-    const btnConfirmar = document.getElementById('btnConfirmarExclusao');
-    if(modal) modal.style.display = 'flex';
+window.deletarDespesa = async (index) => {
+    const confirmado = await confirmarAcao(
+        "Confirmar Exclusão", 
+        "Você tem certeza que deseja remover esta despesa? Esta ação não pode ser desfeita."
+    );
     
-    btnConfirmar.onclick = () => {
+    if (confirmado) {
         let despesas = DespesasModulo.getDespesas();
         despesas.splice(index, 1);
         localStorage.setItem('despesas', JSON.stringify(despesas));
+        DespesasModulo.sincronizarGastoCarteiras();
         DespesasModulo.renderizarTabelaCompleta();
-        modal.style.display = 'none';
-    };
+    }
 };
 
 window.editarDespesa = (index) => DespesasModulo.abrirModal(index);

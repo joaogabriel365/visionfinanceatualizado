@@ -55,13 +55,16 @@ export const Painel = {
         if (!tbody) return;
         
         // Cores padrões usadas no módulo de despesas
-        const coresFixo = {
-            'Alimentação': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },
-            'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
-            'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
-            'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
-            'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' }
-        };
+        // Dentro de renderizarTabelaHoje(despesas, hoje)
+const coresFixo = {
+    'Alimentação': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },
+    'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
+    'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
+    'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
+    'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },
+    'Moda': { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc' }, // Adicionado
+    'Outros': { bg: 'rgba(100, 116, 139, 0.15)', text: '#94a3b8' }  // Adicionado
+};
 
         const despesasHoje = despesas.filter(d => {
             if (!d.data) return false;
@@ -121,10 +124,11 @@ export const Painel = {
             data: {
                 labels: Object.keys(dadosCat),
                 datasets: [{
-                    data: Object.values(dadosCat),
-                    backgroundColor: ['#f59e0b', '#8b5cf6', '#22d3ee', '#ec4899', '#3b82f6'],
-                    borderWidth: 0
-                }]
+    data: Object.values(dadosCat),
+    // Adicionei #c084fc (Moda) e #64748b (Outros) ao final da lista
+    backgroundColor: ['#f59e0b', '#8b5cf6', '#22d3ee', '#ec4899', '#3b82f6', '#c084fc', '#64748b'],
+    borderWidth: 0
+}]
             },
             options: { 
                 responsive: true, 
@@ -143,9 +147,10 @@ export const Painel = {
         if (!canvas) return;
         const instance = Chart.getChart("paymentChart");
         if (instance) instance.destroy();
-        const metodos = { 'Crédito': 0, 'Débito': 0, 'VR': 0, 'VA': 0, 'Dinheiro': 0 };
+        const metodos = { 'Crédito': 0, 'Débito': 0, 'Pix': 0, 'VR': 0, 'VA': 0, 'Dinheiro': 0 };   
         despesas.forEach(d => {
             let chave = d.pagamento.replace('Cartão de ', '').trim();
+            if (chave.toLowerCase() === 'pix') chave = 'Pix';
             if (metodos.hasOwnProperty(chave)) metodos[chave] += d.valor;
         });
         new Chart(canvas, {

@@ -64,3 +64,45 @@ export function aplicarMascaraValor(input) {
         minimumFractionDigits: 2 
     }).format(valorFloat);
 }
+
+/**
+ * Sistema de Confirmação Profissional
+ * Substitui o confirm() nativo por um modal alinhado ao design do sistema.
+ */
+export const confirmarAcao = (titulo = "Confirmar Exclusão", mensagem = "Esta ação não poderá ser desfeita. Deseja continuar?") => {
+    return new Promise((resolve) => {
+        const modal = document.getElementById('confirmModal');
+        if (!modal) {
+            // Fallback caso o modal não esteja no DOM
+            resolve(confirm(mensagem));
+            return;
+        }
+
+        const txtTitulo = modal.querySelector('h3');
+        const txtMensagem = modal.querySelector('p');
+        const btnCancel = document.getElementById('btnConfirmCancel');
+        const btnConfirm = document.getElementById('btnConfirmDelete');
+
+        // Atualiza textos se fornecidos
+        if (txtTitulo) txtTitulo.innerText = titulo;
+        if (txtMensagem) txtMensagem.innerText = mensagem;
+
+        modal.style.display = 'flex';
+
+        const fechar = (confirmado) => {
+            modal.style.display = 'none';
+            // Remove os listeners para evitar execuções duplicadas no futuro
+            btnCancel.onclick = null;
+            btnConfirm.onclick = null;
+            resolve(confirmado);
+        };
+
+        btnCancel.onclick = () => fechar(false);
+        btnConfirm.onclick = () => fechar(true);
+        
+        // Fechar ao clicar fora do card (opcional para UX)
+        modal.onclick = (e) => {
+            if (e.target === modal) fechar(false);
+        };
+    });
+};
