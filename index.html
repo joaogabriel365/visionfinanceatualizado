@@ -210,6 +210,29 @@
 
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800&display=swap" rel="stylesheet">
    
+    <script>
+        // Aplicar tema salvo ao carregar a página
+        function aplicarTema() {
+            const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+            const isDark = settings.temaEscuro === true; // Padrão claro
+            const body = document.body;
+
+            if (isDark) {
+                body.classList.remove('light-theme');
+            } else {
+                body.classList.add('light-theme');
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            aplicarTema();
+        });
+
+        // Listener para quando as configurações são atualizadas
+        window.addEventListener('settingsUpdated', function() {
+            aplicarTema();
+        });
+    </script>
     <script src="./js/script.js"></script>
 </body>
 </html>

@@ -275,18 +275,21 @@ export const PlanejamentoModulo = {
             return;
         }
 
+        const isLight = document.body.classList.contains('light-theme');
+        const progressBg = isLight ? '#e8e8e8' : '#1a253a';
+
         tbody.innerHTML = metas.map((meta, index) => {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
             return `
-                <tr style="border-bottom: 1px solid #1e293b; color: white;">
+                <tr style="border-bottom: 1px solid #1e293b; color: #1f2937;">
                     <td style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
                     <td style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
                     <td style="padding: 20px 15px;">${meta.prazo}</td>
                     <td style="padding: 20px 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="flex: 1; height: 8px; background: #1a253a; border-radius: 4px; overflow: hidden;">
+                            <div style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
                                 <div style="width: ${porcentagem}%; height: 100%; background: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);"></div>
                             </div>
                             <span style="font-size: 0.8rem; min-width: 35px;">${porcentagem}%</span>
@@ -339,7 +342,7 @@ export const PlanejamentoModulo = {
         const gastoText = document.getElementById('gasto-total-text');
         if (gastoText) {
             // Alterado para exibir apenas o valor de gastos conforme solicitado
-            gastoText.innerHTML = `<span style="font-weight: 700; color: white;">${formatarMoeda(utilizado)}</span>`;
+            gastoText.innerHTML = `<span style="font-weight: 700; color: #1f2937;">${formatarMoeda(utilizado)}</span>`;
         }
 
         const dispText = document.getElementById('disponivel-text');

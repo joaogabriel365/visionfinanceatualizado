@@ -294,7 +294,7 @@ export const DespesasModulo = {
                         infoExtra += `<span style="color: #22d3ee; font-size: 11px; font-weight: 700;">${item.parcelas}</span>`;
                     }
                     if (item.cartao) {
-                        infoExtra += `<span style="color: #FFFFFF; font-size: 10px; font-weight: 700;">${item.cartao}</span>`;
+                        infoExtra += `<span style="color: #1f2937; font-size: 10px; font-weight: 700;">${item.cartao}</span>`;
                     }
                     infoExtra += `</div>`;
                 }
@@ -306,25 +306,25 @@ export const DespesasModulo = {
 
                 htmlFinal += `
                     <tr style="border-bottom: 1px solid rgba(30, 41, 59, 0.3);">
-                        <td style="padding: 15px 20px; color: white;">${item.titulo}</td>
+                        <td style="padding: 15px 20px; color: #1f2937;">${item.titulo}</td>
                         <td style="padding: 15px 20px; text-align: center;">
                             <span style="background: ${estilo.bg}; color: ${estilo.text}; padding: 6px 0; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid ${estilo.text}33; display: inline-block; width: 110px; text-align: center;">
                                 ${item.categoria}
                             </span>
                         </td>
-                        <td style="padding: 15px 20px; color: white;">
+                        <td style="padding: 15px 20px; color: #1f2937;">
                             ${item.pagamento}
                             ${infoExtra}
                         </td>
-                        <td style="padding: 15px 20px;"><strong style="color: white;">${formatarMoeda(valorExibicao)}</strong></td>
-                        <td style="padding: 15px 20px; color: white;">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
+                        <td style="padding: 15px 20px;"><strong style="color: #1f2937;">${formatarMoeda(valorExibicao)}</strong></td>
+                        <td style="padding: 15px 20px; color: #1f2937;">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
                         <td style="padding: 15px 20px; color: #94a3b8; font-size: 0.9em; vertical-align: middle;">${textoObs}</td>
                         <td style="padding: 15px 20px; text-align: center;">
                             <div style="display: flex; justify-content: center; gap: 15px;">
-                                <button class="btn-action" onclick="window.editarDespesa(${globalIndex})">
+                                <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})">
                                     <img src="img/lapis.png" style="width: 16px; opacity: 0.7;">
                                 </button>
-                                <button class="btn-action" onclick="window.deletarDespesa(${globalIndex})">
+                                <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})">
                                     <img src="img/lixeira.png" style="width: 16px; opacity: 0.7;">
                                 </button>
                             </div>

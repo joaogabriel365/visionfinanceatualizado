@@ -1,6 +1,6 @@
 <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h2 style="color: white; font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>
-    <button class="btn-primary" onclick="DespesasModulo.abrirModal()" style="background: #22d3ee; color: #0f172a; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer; transition: 0.2s;">
+    <h2 style="color: #1f2937; font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>
+    <button class="btn btn-primary" onclick="DespesasModulo.abrirModal()">
         + Nova Despesa
     </button>
 </div>
@@ -54,13 +54,13 @@
 <div class="table-card" style="background: #0f172a; border-radius: 16px; padding: 10px; border: 1px solid #1e293b; overflow: hidden;">
     <table style="width: 100%; border-collapse: collapse; color: #FFFFFF;"> <thead>
             <tr style="text-align: left; border-bottom: 1px solid #1e293b;">
-                <th style="padding: 20px; color: white; font-weight: 600;">Título</th>
-                <th class="categoria-header" style="padding: 20px; color: white; font-weight: 600;">Categoria</th>
-                <th style="padding: 20px; color: white; font-weight: 600;">Pagamento</th>
-                <th style="padding: 20px; color: white; font-weight: 600;">Valor</th>
-                <th style="padding: 20px; color: white; font-weight: 600;">Data</th>
-                <th style="padding: 20px; color: white; font-weight: 600; text-align: center;">Descrição</th>
-                <th style="padding: 20px; color: white; font-weight: 600; text-align: center;">Ações</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600;">Título</th>
+                <th class="categoria-header" style="padding: 20px; color: #1f2937; font-weight: 600;">Categoria</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600;">Pagamento</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600;">Valor</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600;">Data</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600; text-align: center;">Descrição</th>
+                <th style="padding: 20px; color: #1f2937; font-weight: 600; text-align: center;">Ações</th>
             </tr>
         </thead>
         <tbody id="fullExpenseTableBody"></tbody>
@@ -69,21 +69,21 @@
 
 <div id="modalDespesa" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
     <div class="modal-content-card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 30px; width: 100%; max-width: 450px; box-shadow: 0 20px 40px rgba(0,0,0,0.4);">
-        <h3 id="modalTitle" style="color: white; text-align: center; margin-bottom: 25px; font-size: 22px; font-weight: 700;">Nova Despesa</h3>
+        <h3 id="modalTitle" style="color: #1f2937; text-align: center; margin-bottom: 25px; font-size: 22px; font-weight: 700;">Nova Despesa</h3>
         <form id="formDespesa">
             <input type="hidden" id="editIndex" value="-1">
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Título da despesa</label>
-                <input type="text" id="titulo" placeholder="Ex: Supermercado" required class="dark-input" style="color: white;">
+                <input type="text" id="titulo" placeholder="Ex: Supermercado" required class="dark-input" style="color: #1f2937;">
             </div>
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Valor</label>
-                <input type="text" id="valor" placeholder="R$ 0,00" required class="dark-input" style="color: white;">
+                <input type="text" id="valor" placeholder="R$ 0,00" required class="dark-input" style="color: #1f2937;">
             </div>
             <div class="form-row" style="display: flex; gap: 15px; margin-bottom: 15px;">
                 <div style="flex: 1;">
                     <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Categoria</label>
-                    <select id="categoria" required class="dark-input dark-select" style="color: white;">
+                    <select id="categoria" required class="dark-input dark-select" style="color: #1f2937;">
                         <option value="">Selecione</option>
                         <option value="Alimentação">Alimentação</option>
                         <option value="Transporte">Transporte</option>
@@ -96,7 +96,7 @@
                 </div>
                 <div style="flex: 1;">
                     <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Método</label>
-                    <select id="metodo" required class="dark-input dark-select" onchange="DespesasModulo.verificarMetodoPagamento()" style="color: white;">
+                    <select id="metodo" required class="dark-input dark-select" onchange="DespesasModulo.verificarMetodoPagamento()" style="color: #1f2937;">
                         <option value="">Selecione</option>
                         <option value="Cartão de Crédito">Crédito</option>
                         <option value="Cartão de Débito">Débito</option>
@@ -119,7 +119,7 @@
                     <div id="containerParcelamento" style="display: none; flex: 1; border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 12px;">
                         <label style="color: #94a3b8; display: block; margin-bottom: 6px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.5px;">Parcelas</label>
                         <div style="display: flex; gap: 8px;">
-                            <select id="foiParcelado" class="dark-input dark-select" style="font-size: 12px; padding: 8px; color: white;" onchange="DespesasModulo.toggleSeletorParcelas()">
+                            <select id="foiParcelado" class="dark-input dark-select" style="font-size: 12px; padding: 8px; color: #1f2937;" onchange="DespesasModulo.toggleSeletorParcelas()">
                                 <option value="nao">1x</option>
                                 <option value="sim">Parc.</option>
                             </select>
@@ -136,22 +136,22 @@
                     Você não possui um cartão <span id="tipoCartaoMsg" style="font-weight: 800;"></span> cadastrado. Deseja cadastrar agora?
                 </p>
                 <div style="display: flex; gap: 10px;">
-                    <button type="button" onclick="DespesasModulo.redirecionarParaCarteira()" style="background: #ef4444; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Sim</button>
-                    <button type="button" onclick="document.getElementById('avisoCartaoInexistente').style.display='none'" style="background: #334155; color: white; border: none; padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 700; cursor: pointer;">Não</button>
+                    <button type="button" onclick="DespesasModulo.redirecionarParaCarteira()" class="btn btn-success">Sim</button>
+                    <button type="button" onclick="document.getElementById('avisoCartaoInexistente').style.display='none'" class="btn btn-secondary">Não</button>
                 </div>
             </div>
 
             <div class="form-group" style="margin-bottom: 15px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Data</label>
-                <input type="text" id="data" placeholder="dd/mm/aaaa" required class="dark-input" style="color: white;">
+                <input type="text" id="data" placeholder="dd/mm/aaaa" required class="dark-input" style="color: #1f2937;">
             </div>
             <div class="form-group" style="margin-bottom: 25px;">
                 <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Descrição</label>
                 <textarea id="observacao" placeholder="Observações adicionais..." rows="3" class="dark-input" style="resize: none; color: white;"></textarea>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
-                <button type="submit" class="btn-save-full" style="background: #22d3ee; color: #0f172a; border: none; padding: 14px; border-radius: 12px; font-weight: 800; font-size: 16px; cursor: pointer; transition: 0.2s;">Salvar Despesa</button>
-                <button type="button" onclick="DespesasModulo.fecharModal()" style="background: transparent; color: #94a3b8; border: none; padding: 10px; cursor: pointer; font-size: 14px; font-weight: 500;">Cancelar</button>
+                <button type="submit" class="btn btn-primary">Salvar Despesa</button>
+                <button type="button" onclick="DespesasModulo.fecharModal()" class="btn btn-secondary">Cancelar</button>
             </div>
         </form>
     </div>
@@ -163,8 +163,8 @@
         <h3 style="color: white; margin-bottom: 10px; font-size: 20px; font-weight: 700;">Excluir Despesa?</h3>
         <p style="color: #94a3b8; font-size: 14px; margin-bottom: 25px; line-height: 1.5;">Esta ação não pode ser desfeita. Deseja continuar?</p>
         <div style="display: flex; gap: 12px;">
-            <button id="btnConfirmarExclusao" style="flex: 1; background: #ef4444; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Excluir</button>
-            <button onclick="document.getElementById('modalConfirmacao').style.display='none'" style="flex: 1; background: #334155; color: white; border: none; padding: 12px; border-radius: 10px; font-weight: 700; cursor: pointer;">Voltar</button>
+            <button id="btnConfirmarExclusao" class="btn btn-danger">Excluir</button>
+            <button onclick="document.getElementById('modalConfirmacao').style.display='none'" class="btn btn-secondary">Voltar</button>
         </div>
     </div>
 </div>

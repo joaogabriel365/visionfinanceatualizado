@@ -88,7 +88,7 @@ const coresFixo = {
                     </span>
                 </td>
                 <td>${d.pagamento}</td>
-                <td><strong style="color: white;">${formatarMoeda(d.valor)}</strong></td>
+                <td><strong style="color: #1f2937;">${formatarMoeda(d.valor)}</strong></td>
                 <td>${d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data}</td>
             </tr>`;
         }).join('');

@@ -70,6 +70,19 @@ async function navegar(sectionId) {
     }
 }
 
+// === APLICAR TEMA GLOBAL ===
+function aplicarTemaGlobal() {
+    const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+    const isDark = settings.temaEscuro === true; // Padrão é claro
+    const body = document.body;
+    
+    if (isDark) {
+        body.classList.remove('light-theme');
+    } else {
+        body.classList.add('light-theme');
+    }
+}
+
 // === FUNCIONALIDADE OCULTAR VALORES ===
 function gerenciarBotaoOlho() {
     const headerActions = document.querySelector('.user-info'); 
@@ -137,6 +150,16 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    aplicarTemaGlobal();
     gerenciarBotaoOlho();
     navegar('painel');
+});
+
+// Listener para quando as configurações são atualizadas
+window.addEventListener('settingsUpdated', () => {
+    aplicarTemaGlobal();
+    // Re-renderiza o módulo ativo para aplicar totalmente as cores atualizadas (ex: gráficos de relatórios)
+    if (modulos[secaoAtiva] && typeof modulos[secaoAtiva].init === 'function') {
+        modulos[secaoAtiva].init();
+    }
 });

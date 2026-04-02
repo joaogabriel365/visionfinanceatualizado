@@ -5,6 +5,7 @@ export const ConfiguracoesModulo = {
             if (this.form) {
                 this.bindEvents();
                 this.loadSettings();
+                this.applyTheme(); // Aplicar tema ao inicializar
             }
         }, 100);
     },
@@ -27,7 +28,71 @@ export const ConfiguracoesModulo = {
 
         this.checkNotificacoesGeral.addEventListener('change', (e) => {
             this.toggleSubNotifications(e.target.checked);
+            this.toggleNotificacoes(e.target.checked);
         });
+
+        // Adicionar evento para toggle de tema
+        this.checkTemaEscuro.addEventListener('change', (e) => {
+            this.toggleTheme(e.target.checked);
+        });
+    },
+
+    toggleNotificacoes: function(isEnabled) {
+        if (isEnabled) {
+            this.solicitarPermissaoNotificacoes();
+        } else {
+            // Desabilitar notificações - não há método direto, mas podemos armazenar o estado
+            console.log('Notificações desabilitadas');
+        }
+    },
+
+    solicitarPermissaoNotificacoes: function() {
+        if ('Notification' in window) {
+            Notification.requestPermission().then((permission) => {
+                if (permission === 'granted') {
+                    console.log('Permissão para notificações concedida');
+                    // Mostrar notificação de teste
+                    this.mostrarNotificacaoTeste();
+                } else {
+                    console.log('Permissão para notificações negada');
+                    // Desmarcar o checkbox se permissão negada
+                    this.checkNotificacoesGeral.checked = false;
+                    alert('Permissão para notificações foi negada. Para ativar, permita notificações no navegador.');
+                }
+            });
+        } else {
+            alert('Este navegador não suporta notificações.');
+            this.checkNotificacoesGeral.checked = false;
+        }
+    },
+
+    mostrarNotificacaoTeste: function() {
+        const notificacao = new Notification('Vision Finance', {
+            body: 'Notificações ativadas com sucesso!',
+            icon: './img/logo.png'
+        });
+
+        // Fechar automaticamente após 3 segundos
+        setTimeout(() => {
+            notificacao.close();
+        }, 3000);
+    },
+
+    toggleTheme: function(isDark) {
+        const body = document.body;
+        if (isDark) {
+            body.classList.remove('light-theme');
+        } else {
+            body.classList.add('light-theme');
+        }
+        // Não salvar aqui - deixar para o saveSettings
+    },
+
+    applyTheme: function() {
+        const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+        const isDark = settings.temaEscuro === true; // Padrão é false (claro)
+        this.checkTemaEscuro.checked = isDark;
+        this.toggleTheme(isDark);
     },
 
     toggleSubNotifications: function(isEnabled) {
@@ -67,14 +132,17 @@ export const ConfiguracoesModulo = {
         localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
         this.mostrarFeedback();
         window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settings }));
+
+        // Aplicar o tema imediatamente após salvar
+        this.applyTheme();
     },
 
     loadSettings: function() {
         const saved = JSON.parse(localStorage.getItem('visionFinance_settings'));
-        
+
         if (saved) {
             this.selectMoeda.value = saved.moeda || 'BRL';
-            this.checkTemaEscuro.checked = saved.temaEscuro;
+            this.checkTemaEscuro.checked = saved.temaEscuro === true;
             this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
             this.checkAlertaOrcamento.checked = saved.notificacoes?.orcamento || false;
             this.checkAlertaOrcamentoMeta.checked = saved.notificacoes?.orcamentoMeta || false;
@@ -82,16 +150,21 @@ export const ConfiguracoesModulo = {
 
             this.toggleSubNotifications(this.checkNotificacoesGeral.checked);
         }
+
+        // Aplicar tema após carregar as configurações
+        this.applyTheme();
     },
 
     mostrarFeedback: function() {
-        const btn = this.form.querySelector('.btn-accent-blue');
+        const btn = this.form.querySelector('.btn-primary');
+        if (!btn) return; // Verificar se o botão existe
+
         const originalText = btn.innerText;
-        
+
         btn.innerText = "✓ Configurações Salvas";
         const originalBg = btn.style.background;
-        btn.style.background = "#22c55e"; 
-        
+        btn.style.background = "#22c55e";
+
         setTimeout(() => {
             btn.innerText = originalText;
             btn.style.background = originalBg;

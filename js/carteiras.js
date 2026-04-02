@@ -110,9 +110,12 @@ export const CarteirasModulo = {
             const dispValor = w.ilimitado ? "Sem Limite" : formatarMoeda(w.limite);
             const porcentagem = w.ilimitado ? 0 : Math.min((gastoAtual / w.limite) * 100, 100).toFixed(0);
             const corFundo = w.cor || '#1e293b';
+            const isLight = document.body.classList.contains('light-theme');
+            const darkColor = isLight ? '#f0f0f0' : '#0f172a';
+            const borderColor = isLight ? '#d0d0d0' : '#334155';
 
             return `
-            <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, #0f172a 100%); border: 1px solid #334155; border-radius: 20px; padding: 25px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
+            <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, ${darkColor} 100%); border: 1px solid ${borderColor}; border-radius: 20px; padding: 25px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
                 
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
                     <div style="font-size: 28px;">${this.getIconePorTipo(w.tipo)}</div>
@@ -128,7 +131,7 @@ export const CarteirasModulo = {
 
                 <div style="z-index: 2; margin-top: 15px;">
                     <h4 style="color: #94a3b8; margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;">${w.nome}</h4>
-                    <span style="color: white; font-weight: 800; font-size: 24px; display: block; margin-top: 4px;">${dispValor}</span>
+                    <span style="color: #1f2937; font-weight: 800; font-size: 24px; display: block; margin-top: 4px;">${dispValor}</span>
                     
                     ${!w.ilimitado ? `
                         <div style="margin-top: 15px;">
