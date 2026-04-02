@@ -1,3 +1,5 @@
+import { applyStoredTheme, applyThemeClasses } from './common.js';
+
 export const ConfiguracoesModulo = {
     init: function() {
         setTimeout(() => {
@@ -79,20 +81,14 @@ export const ConfiguracoesModulo = {
     },
 
     toggleTheme: function(isDark) {
-        const body = document.body;
-        if (isDark) {
-            body.classList.remove('light-theme');
-        } else {
-            body.classList.add('light-theme');
-        }
-        // Não salvar aqui - deixar para o saveSettings
+        applyThemeClasses(isDark, document.body);
     },
 
     applyTheme: function() {
         const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
-        const isDark = settings.temaEscuro === true; // Padrão é false (claro)
+        const isDark = settings.temaEscuro === true;
         this.checkTemaEscuro.checked = isDark;
-        this.toggleTheme(isDark);
+        applyStoredTheme(document.body);
     },
 
     toggleSubNotifications: function(isEnabled) {
@@ -163,7 +159,7 @@ export const ConfiguracoesModulo = {
 
         btn.innerText = "✓ Configurações Salvas";
         const originalBg = btn.style.background;
-        btn.style.background = "#22c55e";
+        btn.style.background = "var(--success)";
 
         setTimeout(() => {
             btn.innerText = originalText;

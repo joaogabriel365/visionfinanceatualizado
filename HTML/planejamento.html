@@ -1,66 +1,66 @@
-<div class="planning-card-prof" style="background: #e0e0e0; border: 1px solid #c0c0c0; border-radius: 16px; padding: 25px;">
+﻿<div class="planning-card-prof" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
     <div style="display: flex; justify-content: space-between; align-items: start;">
         <div>
-            <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Orçamento Mensal</h3>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 5px 0 20px 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
+            <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Orçamento Mensal</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 20px 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
         </div>
         <div style="text-align: right;">
-            <p style="color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">LIMITE ESTABELECIDO:</p>
+            <p style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">LIMITE ESTABELECIDO:</p>
             <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 5px;">
-                <button onclick="PlanejamentoModulo.abrirModalAdicionarValor()" 
+                <button class="budget-limit-add-btn" onclick="PlanejamentoModulo.abrirModalAdicionarValor()" 
                         style="background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;" 
                         title="Somar ao limite atual">
-                    <img src="img/+.png" alt="Adicionar" style="width: 20px; height: 20px; filter: brightness(0) invert(1);">
+                    <img src="img/+.png" alt="Adicionar" style="width: 20px; height: 20px;">
                 </button>
-                <h3 id="valor-limite-display" style="color: #22d3ee; margin: 0; font-size: 1.6rem; font-weight: bold;">R$ 0,00</h3>
+                <h3 id="valor-limite-display" style="color: var(--text-primary); margin: 0; font-size: 1.6rem; font-weight: bold;">R$ 0,00</h3>
             </div>
         </div>
     </div>
 
     <div style="display: flex; gap: 10px; margin-bottom: 30px; max-width: 350px;">
         <input type="text" id="orcamentoMensalInput" placeholder="R$ 0,00" 
-               style="flex: 1; background: #e0e0e0; border: 1px solid #c0c0c0; border-radius: 8px; padding: 12px; color: #1f2937; outline: none;">
+               style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 12px; color: var(--text-primary); outline: none;">
         <button onclick="PlanejamentoModulo.salvarOrcamento()"
-                style="background: #22d3ee; color: #f0f0f0; border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
             SALVAR
         </button>
     </div>
 
     <div style="margin-top: 20px;">
         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
-            <span style="color: white; font-size: 0.85rem; font-weight: 600;">Uso do Orçamento <span style="color:#94a3b8">(Alocado em Metas)</span></span>
-            <span id="progresso-porcentagem-text" style="color: white; font-size: 0.85rem; font-weight: bold;">0%</span>
+            <span style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Uso do Orçamento <span style="color:var(--text-secondary)">(Alocado em Metas)</span></span>
+            <span id="progresso-porcentagem-text" style="color: var(--text-primary); font-size: 0.85rem; font-weight: bold;">0%</span>
         </div>
-        <div style="height: 10px; background: #e8e8e8; border-radius: 5px; overflow: hidden;">
-            <div id="progressBudgetFill" style="width: 0%; height: 100%; background: #22d3ee; transition: width 0.3s;"></div>
+        <div style="height: 10px; background: var(--border-color); border-radius: 5px; overflow: hidden;">
+            <div id="progressBudgetFill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
         </div>
         <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
-            <span id="gasto-total-text" style="color: white; font-size: 0.8rem;">R$ 0,00 gastos/alocados</span>
-            <span id="disponivel-text" style="color: #22d3ee; font-size: 0.8rem; font-weight: 600;">Disponível: R$ 0,00</span>
+            <span id="gasto-total-text" style="color: var(--text-primary); font-size: 0.8rem;">R$ 0,00 gastos/alocados</span>
+            <span id="disponivel-text" style="color: var(--text-primary); font-size: 0.8rem; font-weight: 600;">Disponível: R$ 0,00</span>
         </div>
     </div>
 </div>
 
-<div class="planning-card-prof" style="margin-top: 2rem; background: #e0e0e0; border: 1px solid #c0c0c0; border-radius: 16px; padding: 25px;">
+<div class="planning-card-prof" style="margin-top: 2rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
     <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
         <div>
-            <h3 style="color: white; margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
-            <p style="color: #94a3b8; font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de médio e longo prazo.</p>
+            <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de médio e longo prazo.</p>
         </div>
         <button onclick="PlanejamentoModulo.abrirModalNovaMeta()"
-                style="background: #22d3ee; color: #f0f0f0; border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">
+                style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">
             + NOVA META
         </button>
     </div>
 
     <table style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="text-align: left; border-bottom: 1px solid #1e293b;">
-                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Meta</th>
-                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Valor Alvo</th>
-                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Prazo</th>
-                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase;">Progresso</th>
-                <th style="padding: 15px; color: #94a3b8; font-size: 0.75rem; text-transform: uppercase; text-align: center;">Ações</th>
+            <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
+                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Meta</th>
+                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Valor Alvo</th>
+                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Prazo</th>
+                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Progresso</th>
+                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; text-align: center;">Ações</th>
             </tr>
         </thead>
         <tbody id="goalsTableBody"></tbody>
@@ -77,58 +77,61 @@
                style="width: 100%; background: #f0f0f0; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; color: #1f2937; margin: 8px 0 25px 0; outline: none; font-size: 1.1rem;">
 
         <div style="display: flex; gap: 10px;">
-            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" style="flex: 1; background: #22d3ee; color: #f0f0f0; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">CONFIRMAR</button>
-            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" style="flex: 1; background: transparent; color: #475569; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
+            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" style="flex: 1; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">CONFIRMAR</button>
+            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
         </div>
     </div>
 </div>
 
-<div id="modalNovaMeta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; color: white;">
-        <h3 id="tituloModalMeta" style="margin-top: 0;">Nova Meta</h3>
+<div id="modalNovaMeta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; color: var(--text-primary); box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
+        <h3 id="tituloModalMeta" style="margin-top: 0; color: var(--text-primary);">Nova Meta</h3>
         <input type="hidden" id="indexMetaEdicao">
         
-        <label style="font-size: 0.8rem; color: #94a3b8;">Nome da meta</label>
-        <input type="text" id="nomeMeta" placeholder="Ex: Reserva de Emergência" style="width: 100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; color: white; margin: 8px 0 20px 0; outline: none;">
+        <label style="font-size: 0.8rem; color: var(--text-secondary);">Nome da meta</label>
+        <input type="text" id="nomeMeta" placeholder="Ex: Reserva de Emergência" style="width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); padding: 12px; border-radius: 8px; color: var(--text-primary); margin: 8px 0 20px 0; outline: none;">
         
-        <label style="font-size: 0.8rem; color: #94a3b8;">Valor alvo (R$)</label>
-        <input type="text" id="valorAlvoMeta" placeholder="R$ 0,00" style="width: 100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; color: white; margin: 8px 0 20px 0; outline: none;">
+        <label style="font-size: 0.8rem; color: var(--text-secondary);">Valor alvo (R$)</label>
+        <input type="text" id="valorAlvoMeta" placeholder="R$ 0,00" style="width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); padding: 12px; border-radius: 8px; color: var(--text-primary); margin: 8px 0 20px 0; outline: none;">
         
-        <label style="font-size: 0.8rem; color: #94a3b8;">Data limite </label>
-        <input type="text" id="prazoMeta" placeholder="00/00/0000" maxlength="10" style="width: 100%; background: #1e293b; border: 1px solid #334155; padding: 12px; border-radius: 8px; color: white; margin: 8px 0 5px 0; outline: none;">
+        <label style="font-size: 0.8rem; color: var(--text-secondary);">Data limite </label>
+        <input type="text" id="prazoMeta" placeholder="00/00/0000" maxlength="10" style="width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); padding: 12px; border-radius: 8px; color: var(--text-primary); margin: 8px 0 5px 0; outline: none;">
         
         <p id="erro-data-meta" style="color: #ef4444; font-size: 0.75rem; margin: 0 0 20px 0; display: none;">Por favor, insira uma data válida.</p>
 
         <div style="display: flex; gap: 10px; margin-top: 15px;">
-            <button id="btnSalvarMeta" onclick="PlanejamentoModulo.criarNovaMeta()" style="flex: 1; background: #22d3ee; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">SALVAR</button>
-            <button onclick="PlanejamentoModulo.fecharModalNovaMeta()" style="flex: 1; background: transparent; color: #94a3b8; border: 1px solid #334155; padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
+            <button id="btnSalvarMeta" onclick="PlanejamentoModulo.criarNovaMeta()" style="flex: 1; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">SALVAR</button>
+            <button onclick="PlanejamentoModulo.fecharModalNovaMeta()" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
         </div>
     </div>
 </div>
 
-<div id="modalAporteMeta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 35px; width: 100%; max-width: 400px;">
-        <h3 style="color: white; margin-top: 0;">Adicionar Economia</h3>
-        <p style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 25px;">Quanto você deseja poupar para esta meta?</p>
+<div id="modalAporteMeta" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1100; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 35px; width: 100%; max-width: 400px; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
+        <h3 style="color: var(--text-primary); margin-top: 0;">Adicionar Economia</h3>
+        <p style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Quanto você deseja poupar para esta meta?</p>
         <input type="hidden" id="indexMetaAporte">
         <input type="text" id="valorAporteMetaInput" placeholder="R$ 0,00" 
-               style="width: 100%; background: #0f172a; border: 1px solid #1e293b; border-radius: 10px; padding: 15px; color: white; font-size: 1.2rem; margin-bottom: 25px; outline: none;">
+               style="width: 100%; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 10px; padding: 15px; color: var(--text-primary); font-size: 1.2rem; margin-bottom: 25px; outline: none;">
         <div style="display: flex; gap: 12px;">
             <button onclick="PlanejamentoModulo.confirmarAporte()" 
-                    style="flex: 1; background: #22d3ee; color: #0f172a; border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer;">CONFIRMAR</button>
+                        style="flex: 1; background: var(--accent); color: var(--text-on-accent); border: none; padding: 14px; border-radius: 10px; font-weight: 800; cursor: pointer;">CONFIRMAR</button>
             <button onclick="PlanejamentoModulo.fecharModalAporte()" 
-                    style="flex: 1; background: transparent; color: #94a3b8; border: 1px solid #1e293b; padding: 14px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
+                        style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 14px; border-radius: 10px; cursor: pointer;">CANCELAR</button>
         </div>
     </div>
 </div>
 
-<div id="modalConfirmacaoSistema" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
-    <div style="background: #0f172a; border: 1px solid #1e293b; border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center;">
-        <h3 id="confirm-title" style="color: white; margin: 0 0 10px 0;">Confirmar</h3>
-        <p id="confirm-text" style="color: #94a3b8; font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta ação?</p>
+<div id="modalConfirmacaoSistema" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
+    <div style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
+        <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.22); display: flex; align-items: center; justify-content: center;">
+            <img src="./img/lixeira.png" alt="Excluir meta" style="width: 24px; height: 24px; filter: brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%);">
+        </div>
+        <h3 id="confirm-title" style="color: var(--text-primary); margin: 0 0 10px 0;">Confirmar</h3>
+        <p id="confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta ação?</p>
         <div style="display: flex; gap: 10px;">
-            <button id="btn-confirm-yes" style="flex: 1; background: #22d3ee; color: #0f172a; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
-            <button id="btn-confirm-no" style="flex: 1; background: transparent; color: #94a3b8; border: 1px solid #334155; padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+            <button id="btn-confirm-yes" style="flex: 1; background: #ef4444; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
+            <button id="btn-confirm-no" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
         </div>
     </div>
 </div>

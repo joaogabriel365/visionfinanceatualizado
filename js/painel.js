@@ -1,4 +1,4 @@
-import { formatarMoeda, tratarClasseCategoria, getHojeFormatado } from './common.js';
+import { formatarMoeda, tratarClasseCategoria, getHojeFormatado, getThemeVar } from './common.js';
 
 export const Painel = {
     init() {
@@ -36,7 +36,7 @@ export const Painel = {
         
         if (saldoEl) {
             saldoEl.innerText = formatarMoeda(saldo);
-            saldoEl.style.color = saldo < 0 ? '#ef4444' : '#22d3ee';
+            saldoEl.style.color = saldo < 0 ? '#ef4444' : getThemeVar('--accent');
         }
 
         if (metodoEl) {
@@ -100,10 +100,10 @@ const coresFixo = {
 
         const atualizarIcone = () => {
             const ativo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
-            // SVG em alta resolução substituindo a imagem de baixa qualidade
+            btn.style.color = ativo ? getThemeVar('--text-secondary') : getThemeVar('--accent');
             btn.innerHTML = ativo ? 
-                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#64748b" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>` : 
-                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#22d3ee" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
+                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>` : 
+                `<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`;
         };
 
         btn.addEventListener('click', () => {
@@ -119,23 +119,37 @@ const coresFixo = {
         if (instance) instance.destroy();
         const dadosCat = {};
         despesas.forEach(d => dadosCat[d.categoria] = (dadosCat[d.categoria] || 0) + d.valor);
+
+        const coresCategoria = {
+            'Alimentação': '#f59e0b',
+            'Transporte': '#3b82f6',
+            'Lazer': '#ec4899',
+            'Saúde': '#10b981',
+            'Moradia': '#8b5cf6',
+            'Moda': '#c084fc',
+            'Outros': '#94a3b8'
+        };
+
+        const categories = Object.keys(dadosCat);
+        const values = Object.values(dadosCat);
+        const backgroundColor = categories.map(cat => coresCategoria[cat] || '#c9aa6a');
+
         new Chart(canvas, {
             type: 'doughnut',
             data: {
-                labels: Object.keys(dadosCat),
+                labels: categories,
                 datasets: [{
-    data: Object.values(dadosCat),
-    // Adicionei #c084fc (Moda) e #64748b (Outros) ao final da lista
-    backgroundColor: ['#f59e0b', '#8b5cf6', '#22d3ee', '#ec4899', '#3b82f6', '#c084fc', '#64748b'],
-    borderWidth: 0
-}]
+                    data: values,
+                    backgroundColor: backgroundColor,
+                    borderWidth: 0
+                }]
             },
-            options: { 
-                responsive: true, 
+            options: {
+                responsive: true,
                 maintainAspectRatio: false,
                 cutout: '70%',
-                plugins: { 
-                    legend: { position: 'bottom', labels: { color: '#94a3b8' } },
+                plugins: {
+                    legend: { position: 'bottom', labels: { color: '#bfa877' } },
                     tooltip: { enabled: !ocultarAtivo }
                 }
             }
@@ -147,6 +161,10 @@ const coresFixo = {
         if (!canvas) return;
         const instance = Chart.getChart("paymentChart");
         if (instance) instance.destroy();
+        const accentColor = getThemeVar('--accent') || '#0b63ce';
+        const accentSoft = getThemeVar('--accent-soft') || 'rgba(11, 99, 206, 0.12)';
+        const textSecondary = getThemeVar('--text-secondary') || '#475569';
+        const borderColor = getThemeVar('--border-color') || '#d6e2ef';
         const metodos = { 'Crédito': 0, 'Débito': 0, 'Pix': 0, 'VR': 0, 'VA': 0, 'Dinheiro': 0 };   
         despesas.forEach(d => {
             let chave = d.pagamento.replace('Cartão de ', '').trim();
@@ -160,8 +178,13 @@ const coresFixo = {
                 datasets: [{
                     label: 'Total por Método',
                     data: Object.values(metodos),
-                    backgroundColor: '#22d3ee',
-                    borderRadius: 4
+                    backgroundColor: accentColor,
+                    borderColor: accentColor,
+                    borderWidth: 1,
+                    borderRadius: 4,
+                    barPercentage: 0.72,
+                    categoryPercentage: 0.85,
+                    borderSkipped: false
                 }]
             },
             options: {
@@ -174,10 +197,13 @@ const coresFixo = {
                 scales: {
                     y: { 
                         beginAtZero: true, 
-                        grid: { color: 'rgba(255,255,255,0.05)' },
-                        ticks: { display: !ocultarAtivo, color: '#64748b' }
+                        grid: { color: accentSoft },
+                        ticks: { display: !ocultarAtivo, color: textSecondary }
                     },
-                    x: { grid: { display: false }, ticks: { color: '#64748b' } }
+                    x: { grid: { display: false }, ticks: { color: textSecondary }, border: { display: true, color: borderColor } }
+                },
+                layout: {
+                    padding: { left: 6, right: 6, top: 8, bottom: 6 }
                 }
             }
         });

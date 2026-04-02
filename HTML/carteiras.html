@@ -1,30 +1,30 @@
 <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding: 0 10px;">
     <div>
-        <h2 style="color: #1f2937; font-size: 24px; font-weight: 700; margin: 0;">Carteiras e Métodos de Pagamento</h2>
-        <p style="color: #94a3b8; font-size: 14px; margin-top: 5px;">Gerencie seus cartões, contas e vales em um só lugar.</p>
+        <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700; margin: 0;">Carteiras e Métodos de Pagamento</h2>
+        <p style="color: var(--text-secondary); font-size: 14px; margin-top: 5px;">Gerencie seus cartões, contas e vales em um só lugar.</p>
     </div>
     <button class="btn btn-primary" id="btnNewWallet" onclick="document.getElementById('walletModal').style.display = 'flex'">
         <i class="fas fa-plus"></i> Nova Carteira
     </button>
 </div>
 
-<div id="walletsGrid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px; padding: 10px;">
+<div id="walletsGrid" class="wallets-grid">
 </div>
 
-<div id="walletModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
-    <div class="modal-content-card" style="background: #0f172a; border: 1px solid #1e293b; border-radius: 20px; padding: 35px; width: 100%; max-width: 400px;">
-        <h3 id="walletModalTitle" style="color: #1f2937; text-align: center; margin-bottom: 25px; font-size: 22px; font-weight: 700;">Nova Carteira</h3>
+<div id="walletModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1000; align-items: center; justify-content: center; backdrop-filter: blur(5px);">
+    <div class="modal-content-card" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; padding: 35px; width: 100%; max-width: 400px;">
+        <h3 id="walletModalTitle" style="color: var(--text-primary); text-align: center; margin-bottom: 25px; font-size: 22px; font-weight: 700;">Nova Carteira</h3>
         <form id="walletForm">
             <input type="hidden" id="editWalletIndex" value="-1">
             <input type="hidden" id="walletColor" value="#1e293b">
 
             <div style="margin-bottom: 15px;">
-                <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Nome da carteira</label>
+                <label style="color: var(--text-secondary); display: block; margin-bottom: 8px; font-size: 14px;">Nome da carteira</label>
                 <input type="text" id="walletName" placeholder="Ex: Nubank" required class="input">
             </div>
             
             <div style="margin-bottom: 15px;">
-                <label style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Tipo</label>
+                <label style="color: var(--text-secondary); display: block; margin-bottom: 8px; font-size: 14px;">Tipo</label>
                 <select id="walletType" required class="select">
                     <option value="Cartão de Crédito">Cartão de Crédito</option>
                     <option value="Cartão de Débito">Cartão de Débito</option>
@@ -35,17 +35,17 @@
             </div>
 
             <div id="limitContainer" style="margin-bottom: 15px;">
-                <label id="labelLimit" style="color: #94a3b8; display: block; margin-bottom: 8px; font-size: 14px;">Limite</label>
+                <label id="labelLimit" style="color: var(--text-secondary); display: block; margin-bottom: 8px; font-size: 14px;">Limite</label>
                 <input type="text" id="walletLimit" placeholder="R$ 0,00" required class="input">
                 
                 <div id="unlimitedBox" style="display: flex; align-items: center; gap: 10px; margin-top: 10px;">
                     <input type="checkbox" id="isUnlimited" style="width: 18px; height: 18px; cursor: pointer;">
-                    <label for="isUnlimited" style="color: #94a3b8; font-size: 13px; cursor: pointer;">Cartão sem limite / Sem Limite</label>
+                    <label for="isUnlimited" style="color: var(--text-secondary); font-size: 13px; cursor: pointer;">Cartão sem limite / Sem Limite</label>
                 </div>
             </div>
 
             <div style="margin-bottom: 25px;">
-                <label style="color: #94a3b8; display: block; margin-bottom: 10px; font-size: 14px;">Cor do Cartão</label>
+                <label style="color: var(--text-secondary); display: block; margin-bottom: 10px; font-size: 14px;">Cor do Cartão</label>
                 <div id="colorPickerContainer" style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px;">
                 </div>
             </div>

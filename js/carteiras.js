@@ -1,9 +1,9 @@
-import { formatarMoeda } from './common.js';
+import { formatarMoeda, getThemeVar } from './common.js';
 
 export const CarteirasModulo = {
     lista: JSON.parse(localStorage.getItem('carteiras')) || [],
     coresPredefinidas: [
-        '#1e293b', '#4c1d95', '#1e3a8a', '#14532d', 
+        '#1e293b', '#4c1d95', '#1e3a8a', '#14532d',
         '#7c2d12', '#701a75', '#450a0a', '#064e3b'
     ],
 
@@ -18,30 +18,35 @@ export const CarteirasModulo = {
     renderizarSeletorCores() {
         const container = document.getElementById('colorPickerContainer');
         if (!container) return;
-        
-        container.innerHTML = this.coresPredefinidas.map(cor => `
+
+        container.innerHTML = this.coresPredefinidas.map((cor) => `
             <div class="color-option" data-color="${cor}" style="background: ${cor}; height: 35px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s;"></div>
         `).join('');
 
-        container.querySelectorAll('.color-option').forEach(opt => {
+        container.querySelectorAll('.color-option').forEach((opt) => {
             opt.onclick = () => {
-                container.querySelectorAll('.color-option').forEach(o => o.style.borderColor = 'transparent');
-                opt.style.borderColor = '#22d3ee';
+                container.querySelectorAll('.color-option').forEach((option) => {
+                    option.style.borderColor = 'transparent';
+                });
+                opt.style.borderColor = getThemeVar('--accent');
                 document.getElementById('walletColor').value = opt.dataset.color;
             };
         });
-        // Selecionar primeira por padrão
+
         if (container.firstElementChild) container.firstElementChild.click();
     },
 
     configurarMascara() {
         const inputLimit = document.getElementById('walletLimit');
         if (!inputLimit) return;
+
         inputLimit.addEventListener('input', (e) => {
             let value = e.target.value.replace(/\D/g, '');
             if (value.length > 9) value = value.slice(0, 9);
             const valorFloat = parseFloat(value) / 100;
-            e.target.value = isNaN(valorFloat) ? "" : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorFloat);
+            e.target.value = Number.isNaN(valorFloat)
+                ? ''
+                : new Intl.NumberFormat('pt-BR', { style: 'currency', currency: 'BRL' }).format(valorFloat);
         });
     },
 
@@ -58,16 +63,18 @@ export const CarteirasModulo = {
                     'Cartão de Débito': 'Saldo Disponível',
                     'default': 'Valor/Saldo'
                 };
-                if (labelLimit) labelLimit.innerText = labels[e.target.value] || labels['default'];
+                if (labelLimit) {
+                    labelLimit.innerText = labels[e.target.value] || labels.default;
+                }
             });
         }
 
         if (checkUnlimited) {
             checkUnlimited.addEventListener('change', (e) => {
                 inputLimit.disabled = e.target.checked;
-                inputLimit.style.opacity = e.target.checked ? "0.4" : "1";
+                inputLimit.style.opacity = e.target.checked ? '0.4' : '1';
                 inputLimit.required = !e.target.checked;
-                if(e.target.checked) inputLimit.value = "R$ 0,00";
+                if (e.target.checked) inputLimit.value = 'R$ 0,00';
             });
         }
     },
@@ -75,27 +82,27 @@ export const CarteirasModulo = {
     calcularGastoCartao(nomeCartao) {
         const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
         return despesas
-            .filter(d => d.cartao === nomeCartao)
-            .reduce((acc, d) => acc + (parseFloat(d.valor) || 0), 0);
+            .filter((despesa) => despesa.cartao === nomeCartao)
+            .reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
     },
 
     abrirModalEdicao(index) {
-        const w = this.lista[index];
+        const wallet = this.lista[index];
         const modal = document.getElementById('walletModal');
-        document.getElementById('walletModalTitle').innerText = "Editar Carteira";
+        document.getElementById('walletModalTitle').innerText = 'Editar Carteira';
         document.getElementById('editWalletIndex').value = index;
-        document.getElementById('walletName').value = w.nome;
-        document.getElementById('walletType').value = w.tipo;
-        document.getElementById('isUnlimited').checked = w.ilimitado;
-        document.getElementById('walletColor').value = w.cor || '#1e293b';
-        
-        const inputLimit = document.getElementById('walletLimit');
-        inputLimit.value = formatarMoeda(w.limite);
-        inputLimit.disabled = w.ilimitado;
-        inputLimit.style.opacity = w.ilimitado ? "0.4" : "1";
+        document.getElementById('walletName').value = wallet.nome;
+        document.getElementById('walletType').value = wallet.tipo;
+        document.getElementById('isUnlimited').checked = wallet.ilimitado;
+        document.getElementById('walletColor').value = wallet.cor || '#1e293b';
 
-        const corOpt = document.querySelector(`[data-color="${w.cor || '#1e293b'}"]`);
-        if(corOpt) corOpt.click();
+        const inputLimit = document.getElementById('walletLimit');
+        inputLimit.value = formatarMoeda(wallet.limite);
+        inputLimit.disabled = wallet.ilimitado;
+        inputLimit.style.opacity = wallet.ilimitado ? '0.4' : '1';
+
+        const colorOption = document.querySelector(`[data-color="${wallet.cor || '#1e293b'}"]`);
+        if (colorOption) colorOption.click();
 
         modal.style.display = 'flex';
     },
@@ -104,54 +111,82 @@ export const CarteirasModulo = {
         const grid = document.getElementById('walletsGrid');
         if (!grid) return;
 
-        grid.innerHTML = this.lista.map((w, index) => {
-            const gastoAtual = this.calcularGastoCartao(w.nome);
-            // Alteração 2: Ajuste de texto para "Sem Limite"
-            const dispValor = w.ilimitado ? "Sem Limite" : formatarMoeda(w.limite);
-            const porcentagem = w.ilimitado ? 0 : Math.min((gastoAtual / w.limite) * 100, 100).toFixed(0);
-            const corFundo = w.cor || '#1e293b';
-            const isLight = document.body.classList.contains('light-theme');
-            const darkColor = isLight ? '#f0f0f0' : '#0f172a';
-            const borderColor = isLight ? '#d0d0d0' : '#334155';
-
-            return `
-            <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, ${darkColor} 100%); border: 1px solid ${borderColor}; border-radius: 20px; padding: 25px; min-height: 200px; display: flex; flex-direction: column; justify-content: space-between; position: relative; overflow: hidden; box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.3);">
-                
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; z-index: 2;">
-                    <div style="font-size: 28px;">${this.getIconePorTipo(w.tipo)}</div>
-                    <div style="display: flex; gap: 10px;">
-                        <button onclick="window.CarteirasModulo.abrirModalEdicao(${index})" style="background: rgba(255,255,255,0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer;">
-                            <img src="./img/lapis.png" style="width: 16px; opacity: 0.8;">
-                        </button>
-                        <button onclick="confirmarExclusaoCarteira(${index})" style="background: rgba(239, 68, 68, 0.1); border: none; padding: 8px; border-radius: 8px; cursor: pointer;">
-                            <img src="./img/lixeira.png" style="width: 16px; filter: invert(37%) sepia(93%) saturate(3734%) hue-rotate(346deg);">
-                        </button>
+        if (this.lista.length === 0) {
+            grid.innerHTML = `
+                <div class="wallet-empty-state">
+                    <div class="wallet-empty-card">
+                        <div class="wallet-empty-icon">💳</div>
+                        <h3>Nenhuma carteira cadastrada ainda</h3>
+                        <p>Cadastre seu primeiro cartão, conta ou vale para acompanhar limites, visualizar gastos e manter seus meios de pagamento organizados com clareza.</p>
+                        <div class="wallet-empty-actions">
+                            <button class="btn btn-primary" type="button" onclick="document.getElementById('walletModal').style.display = 'flex'">
+                                <i class="fas fa-plus"></i> Cadastrar Novo Cartão
+                            </button>
+                        </div>
                     </div>
                 </div>
+            `;
+            return;
+        }
 
-                <div style="z-index: 2; margin-top: 15px;">
-                    <h4 style="color: #94a3b8; margin: 0; font-size: 12px; text-transform: uppercase; letter-spacing: 1.5px;">${w.nome}</h4>
-                    <span style="color: #1f2937; font-weight: 800; font-size: 24px; display: block; margin-top: 4px;">${dispValor}</span>
-                    
-                    ${!w.ilimitado ? `
-                        <div style="margin-top: 15px;">
-                            <div style="display: flex; justify-content: space-between; margin-bottom: 6px; font-size: 11px;">
-                                <span style="color: #94a3b8;">Uso do limite</span>
-                                <span style="color: #22d3ee; font-weight: bold;">${porcentagem}%</span>
-                            </div>
-                            <div style="height: 6px; background: rgba(0,0,0,0.3); border-radius: 10px; overflow: hidden;">
-                                <div style="width: ${porcentagem}%; height: 100%; background: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.5); transition: width 0.5s ease;"></div>
-                            </div>
-                            <p style="color: #64748b; font-size: 10px; margin-top: 6px; font-weight: 600;">Gasto: ${formatarMoeda(gastoAtual)}</p>
+        grid.innerHTML = this.lista.map((wallet, index) => {
+            const gastoAtual = this.calcularGastoCartao(wallet.nome);
+            const displayValue = wallet.ilimitado ? 'Sem Limite' : formatarMoeda(wallet.limite);
+            const porcentagem = wallet.ilimitado ? 0 : Math.min((gastoAtual / wallet.limite) * 100, 100).toFixed(0);
+            const corFundo = wallet.cor || '#1e293b';
+            const isLight = document.body.classList.contains('light-theme');
+            const darkColor = isLight ? '#425468' : '#0f172a';
+            const borderColor = isLight ? 'rgba(167, 190, 217, 0.95)' : '#334155';
+            const accentColor = getThemeVar('--accent');
+            const accentSoft = getThemeVar('--accent-soft');
+
+            return `
+                <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, ${darkColor} 100%); border: 1px solid ${borderColor};">
+                    <div class="wallet-card-top">
+                        <div class="wallet-card-icon">${this.getIconePorTipo(wallet.tipo)}</div>
+                        <div class="wallet-card-actions">
+                            <button class="btn-action btn-edit" onclick="window.CarteirasModulo.abrirModalEdicao(${index})">
+                                <img src="./img/lapis.png" alt="Editar">
+                            </button>
+                            <button class="btn-action btn-delete" onclick="confirmarExclusaoCarteira(${index})">
+                                <img src="./img/lixeira.png" alt="Excluir">
+                            </button>
                         </div>
-                    ` : `<p style="color: #475569; margin: 15px 0 0 0; font-size: 11px; font-weight: 700;">USO SEM LIMITE</p>`}
+                    </div>
+
+                    <div class="wallet-card-content">
+                        <div>
+                            <h4 class="wallet-name">${wallet.nome}</h4>
+                            <span class="wallet-balance">${displayValue}</span>
+                        </div>
+
+                        ${!wallet.ilimitado ? `
+                            <div class="wallet-progress-block">
+                                <div class="wallet-progress-head">
+                                    <span class="wallet-limit-label">Uso do limite</span>
+                                    <span class="wallet-progress-value">${porcentagem}%</span>
+                                </div>
+                                <div class="wallet-progress-track">
+                                    <div class="wallet-progress-fill" style="width: ${porcentagem}%; background: ${accentColor}; box-shadow: 0 0 12px ${accentSoft}; transition: width 0.5s ease;"></div>
+                                </div>
+                                <p class="wallet-spent">Gasto: ${formatarMoeda(gastoAtual)}</p>
+                            </div>
+                        ` : '<p class="wallet-unlimited">Uso sem limite</p>'}
+                    </div>
                 </div>
-            </div>`;
+            `;
         }).join('');
     },
 
     getIconePorTipo(tipo) {
-        const icones = { 'Cartão de Crédito': '💳', 'Cartão de Débito': '💳', 'Conta Corrente': '💳', 'Vale Refeição': '💳', 'Vale Alimentação': '💳', 'Vale Transporte': '💳' };
+        const icones = {
+            'Cartão de Crédito': '💳',
+            'Cartão de Débito': '💳',
+            'Conta Corrente': '💳',
+            'Vale Refeição': '💳',
+            'Vale Alimentação': '💳',
+            'Vale Transporte': '💳'
+        };
         return icones[tipo] || '💳';
     },
 
@@ -161,7 +196,7 @@ export const CarteirasModulo = {
 
         form.onsubmit = (e) => {
             e.preventDefault();
-            const index = parseInt(document.getElementById('editWalletIndex').value);
+            const index = parseInt(document.getElementById('editWalletIndex').value, 10);
             const rawValue = document.getElementById('walletLimit').value.replace(/[^\d,]/g, '').replace(',', '.');
 
             const dados = {
@@ -179,30 +214,40 @@ export const CarteirasModulo = {
             this.renderizarWallets();
             document.getElementById('walletModal').style.display = 'none';
             form.reset();
-            document.getElementById('editWalletIndex').value = "-1";
-            document.getElementById('walletModalTitle').innerText = "Nova Carteira";
+            document.getElementById('editWalletIndex').value = '-1';
+            document.getElementById('walletModalTitle').innerText = 'Nova Carteira';
         };
     }
 };
 
 window.CarteirasModulo = CarteirasModulo;
 
-// Alteração 1: Mensagem de confirmação customizada e profissional
 window.confirmarExclusaoCarteira = (index) => {
     const modalConfirm = document.getElementById('confirmModal');
     if (!modalConfirm) {
-        // Fallback caso o elemento HTML do modal ainda não exista
-        if (confirm("Deseja excluir esta carteira?")) {
+        if (confirm('Deseja excluir esta carteira?')) {
             executarExclusao(index);
         }
         return;
     }
 
     modalConfirm.style.display = 'flex';
-    
-    // Configura os botões do modal de confirmação
+
+    const wallet = CarteirasModulo.lista[index];
+    const confirmTitle = document.getElementById('confirmModalTitle');
+    const confirmMessage = document.getElementById('confirmModalMessage');
     const btnConfirmar = document.getElementById('btnConfirmDelete');
     const btnCancelar = document.getElementById('btnConfirmCancel');
+
+    if (confirmTitle) {
+        confirmTitle.innerText = 'Excluir carteira';
+    }
+
+    if (confirmMessage) {
+        confirmMessage.innerText = wallet
+            ? `Tem certeza que deseja excluir a carteira ${wallet.nome}? Esta ação não poderá ser desfeita.`
+            : 'Tem certeza que deseja excluir esta carteira? Esta ação não poderá ser desfeita.';
+    }
 
     btnConfirmar.onclick = () => {
         executarExclusao(index);

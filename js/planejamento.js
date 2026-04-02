@@ -1,4 +1,4 @@
-import { formatarMoeda, metas, salvarNoStorage } from './common.js';
+import { formatarMoeda, metas, salvarNoStorage, getThemeVar } from './common.js';
 
 export const PlanejamentoModulo = {
     init() {
@@ -277,34 +277,47 @@ export const PlanejamentoModulo = {
 
         const isLight = document.body.classList.contains('light-theme');
         const progressBg = isLight ? '#e8e8e8' : '#1a253a';
+        const rowBorder = isLight ? '#cbd5e1' : '#1e293b';
+        const rowText = isLight ? '#1f2937' : '#e2e8f0';
+        const percentageColor = isLight ? '#0f172a' : '#e2e8f0';
+        const actionButtonStyle = isLight
+            ? 'border: none;'
+            : 'background: var(--bg-surface);';
+        const addFilter = isLight
+            ? 'brightness(0) saturate(100%)'
+            : 'brightness(0) invert(1)';
+        const editFilter = isLight
+            ? 'brightness(0) saturate(100%)'
+            : 'brightness(0) saturate(100%) invert(26%) sepia(86%) saturate(1932%) hue-rotate(204deg) brightness(88%) contrast(95%)';
+        const deleteFilter = 'brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%)';
 
         tbody.innerHTML = metas.map((meta, index) => {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
             return `
-                <tr style="border-bottom: 1px solid #1e293b; color: #1f2937;">
+                <tr style="border-bottom: 1px solid ${rowBorder}; color: ${rowText};">
                     <td style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
                     <td style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
                     <td style="padding: 20px 15px;">${meta.prazo}</td>
                     <td style="padding: 20px 15px;">
                         <div style="display: flex; align-items: center; gap: 10px;">
                             <div style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
-                                <div style="width: ${porcentagem}%; height: 100%; background: #22d3ee; box-shadow: 0 0 10px rgba(34, 211, 238, 0.3);"></div>
+                                <div style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar('--accent')}; box-shadow: 0 0 10px ${getThemeVar('--accent-soft')};"></div>
                             </div>
-                            <span style="font-size: 0.8rem; min-width: 35px;">${porcentagem}%</span>
+                            <span style="font-size: 0.8rem; min-width: 35px; color: ${percentageColor}; font-weight: 700;">${porcentagem}%</span>
                         </div>
                     </td>
                     <td style="padding: 20px 15px; text-align: center;">
                         <div style="display: flex; justify-content: center; gap: 15px;">
-                            <button onclick="window.abrirModalAporte(${index})" style="background:transparent; border:none; cursor:pointer;">
-                                 <img src="./img/+.png" style="width:18px;" title="Adicionar valor">
+                               <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})" style="${actionButtonStyle}">
+                                   <img src="./img/+.png" style="width:28px; height:28px; filter: ${addFilter};" title="Adicionar valor">
                             </button>
-                            <button onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})" style="background:transparent; border:none; cursor:pointer;">
-                                 <img src="./img/lapis.png" style="width:18px;" title="Editar meta">
+                               <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})" style="${actionButtonStyle}">
+                                   <img src="./img/lapis.png" alt="Editar meta" title="Editar meta" style="width:28px; height:28px; filter: ${editFilter};">
                             </button>
-                            <button onclick="PlanejamentoModulo.removerMeta(${index})" style="background:transparent; border:none; cursor:pointer;">
-                                 <img src="./img/lixeira.png" style="width:18px;" title="Excluir meta">
+                               <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})" style="${actionButtonStyle}">
+                                   <img src="./img/lixeira.png" alt="Excluir meta" title="Excluir meta" style="width:28px; height:28px; filter: ${deleteFilter};">
                             </button>
                         </div>
                     </td>
@@ -321,8 +334,8 @@ export const PlanejamentoModulo = {
         const saldo = limite - utilizado;
         const porcentagemValor = limite > 0 ? (utilizado / limite) * 100 : 0;
         const porcentagemDisplay = Math.min(porcentagemValor, 100).toFixed(0);
-        const corStatus = porcentagemValor >= 100 ? '#ef4444' : '#22d3ee';
-        const sombraStatus = porcentagemValor >= 100 ? '0 0 15px rgba(239, 68, 68, 0.5)' : '0 0 15px rgba(34, 211, 238, 0.5)';
+        const corStatus = porcentagemValor >= 100 ? '#ef4444' : getThemeVar('--accent');
+        const sombraStatus = porcentagemValor >= 100 ? '0 0 15px rgba(239, 68, 68, 0.5)' : `0 0 15px ${getThemeVar('--accent-soft')}`;
 
         const fill = document.getElementById('progressBudgetFill');
         if (fill) {
@@ -336,7 +349,7 @@ export const PlanejamentoModulo = {
         const percText = document.getElementById('progresso-porcentagem-text');
         if (percText) {
             percText.innerText = `${porcentagemDisplay}%`;
-            percText.style.color = corStatus;
+            percText.style.color = document.body.classList.contains('light-theme') ? '#0f172a' : corStatus;
         }
 
         const gastoText = document.getElementById('gasto-total-text');
@@ -348,7 +361,9 @@ export const PlanejamentoModulo = {
         const dispText = document.getElementById('disponivel-text');
         if (dispText) {
             dispText.innerText = saldo < 0 ? `Excedido: - ${formatarMoeda(Math.abs(saldo))}` : `Disponível: ${formatarMoeda(saldo)}`;
-            dispText.style.color = saldo < 0 ? '#ef4444' : '#22d3ee';
+            dispText.style.color = document.body.classList.contains('light-theme')
+                ? '#0f172a'
+                : (saldo < 0 ? '#ef4444' : getThemeVar('--accent'));
         }
     }
 };

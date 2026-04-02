@@ -1,4 +1,4 @@
-import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao } from './common.js';
+import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, getThemeVar } from './common.js';
 
 export const DespesasModulo = {
     init() {
@@ -32,6 +32,8 @@ export const DespesasModulo = {
     },
 
     verificarMetodoPagamento() {
+        const textPrimary = getThemeVar('--text-primary') || '#0f172a';
+        const accent = getThemeVar('--accent') || '#0b63ce';
         const metodo = document.getElementById('metodo').value;
         const containerParcelamento = document.getElementById('containerParcelamento');
         const containerCartao = document.getElementById('containerCartao');
@@ -68,28 +70,28 @@ export const DespesasModulo = {
                 const optDefault = document.createElement('option');
                 optDefault.value = "";
                 optDefault.textContent = "Selecionar...";
-                optDefault.style.color = "#FFFFFF"; 
+                optDefault.style.color = textPrimary;
                 selectCartao.appendChild(optDefault);
 
                 cartoesDisponiveis.forEach(c => {
                     const option = document.createElement('option');
                     option.value = c.nome;
                     option.textContent = c.bandeira ? `${c.nome} (${c.bandeira})` : c.nome;
-                    option.style.color = "#FFFFFF"; 
+                    option.style.color = textPrimary;
                     selectCartao.appendChild(option);
                 });
 
                 const separator = document.createElement('option');
                 separator.disabled = true;
                 separator.textContent = "──────────────────";
-                separator.style.color = "#FFFFFF";
+                separator.style.color = textPrimary;
                 selectCartao.appendChild(separator);
 
                 const optNovo = document.createElement('option');
                 optNovo.value = "ADICIONAR_NOVO_ACAO";
                 optNovo.textContent = "+ Adicionar novo cartão"; 
                 optNovo.style.fontWeight = "bold";
-                optNovo.style.color = "#FFFFFF"; 
+                optNovo.style.color = accent;
                 selectCartao.appendChild(optNovo);
 
                 if (metodo === 'Cartão de Crédito') {
@@ -196,7 +198,8 @@ export const DespesasModulo = {
         document.getElementById('avisoCartaoInexistente').style.display = 'none';
         document.getElementById('numParcelas').style.display = 'none';
 
-        form.querySelectorAll('select, input').forEach(el => el.style.color = "#FFFFFF");
+        const textPrimary = getThemeVar('--text-primary') || '#0f172a';
+        form.querySelectorAll('select, input, textarea').forEach(el => el.style.color = textPrimary);
 
         if (index !== -1) {
             document.getElementById('modalTitle').innerText = "Editar Despesa";
@@ -251,6 +254,10 @@ export const DespesasModulo = {
         const tbody = document.getElementById('fullExpenseTableBody');
         const totalElement = document.getElementById('totalFiltrado');
         if (!tbody) return;
+        const isLightTheme = document.body.classList.contains('light-theme');
+        const sectionRowBackground = isLightTheme ? (getThemeVar('--accent') || '#0b63ce') : 'rgba(30, 41, 59, 0.5)';
+        const sectionRowText = isLightTheme ? '#ffffff' : (getThemeVar('--accent') || '#d4af37');
+        const sectionRowBorder = isLightTheme ? (getThemeVar('--accent-hover') || '#084da0') : (getThemeVar('--border-color') || '#2a3948');
 
         let despesas = dadosFiltrados || this.getDespesas();
         
@@ -277,8 +284,8 @@ export const DespesasModulo = {
 
         datasOrdenadas.forEach(dataKey => {
             htmlFinal += `
-                <tr style="background: rgba(30, 41, 59, 0.5);">
-                    <td colspan="7" style="padding: 12px 20px; color: #22d3ee; font-weight: 700; font-size: 13px; border-bottom: 1px solid #1e293b;">
+                <tr style="background: ${sectionRowBackground};">
+                    <td colspan="7" style="padding: 12px 20px; color: ${sectionRowText}; font-weight: 700; font-size: 13px; border-bottom: 1px solid ${sectionRowBorder};">
                         ${this.formatarDataExibicao(dataKey)}
                     </td>
                 </tr>`;
@@ -291,7 +298,7 @@ export const DespesasModulo = {
                 if (item.parcelas || item.cartao) {
                     infoExtra += `<div style="display: flex; gap: 5px; align-items: center; margin-top: 4px;">`;
                     if (item.parcelas) {
-                        infoExtra += `<span style="color: #22d3ee; font-size: 11px; font-weight: 700;">${item.parcelas}</span>`;
+                        infoExtra += `<span style="color: ${getThemeVar('--accent')}; font-size: 11px; font-weight: 700;">${item.parcelas}</span>`;
                     }
                     if (item.cartao) {
                         infoExtra += `<span style="color: #1f2937; font-size: 10px; font-weight: 700;">${item.cartao}</span>`;
@@ -322,10 +329,10 @@ export const DespesasModulo = {
                         <td style="padding: 15px 20px; text-align: center;">
                             <div style="display: flex; justify-content: center; gap: 15px;">
                                 <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})">
-                                    <img src="img/lapis.png" style="width: 16px; opacity: 0.7;">
+                                    <img src="img/lapis.png" alt="Editar">
                                 </button>
                                 <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})">
-                                    <img src="img/lixeira.png" style="width: 16px; opacity: 0.7;">
+                                    <img src="img/lixeira.png" alt="Excluir">
                                 </button>
                             </div>
                         </td>
@@ -338,20 +345,21 @@ export const DespesasModulo = {
     configurarFormulario() {
         const form = document.getElementById('formDespesa');
         if (!form) return;
+        const getFormTextColor = () => getThemeVar('--text-primary') || '#0f172a';
 
         const selectCartao = document.getElementById('cartaoSelecionado');
         if (selectCartao) {
             selectCartao.addEventListener('change', (e) => {
-                e.target.style.color = "#FFFFFF";
+                e.target.style.color = getFormTextColor();
                 if (e.target.value === "ADICIONAR_NOVO_ACAO") {
                     this.redirecionarParaCarteira();
                 }
             });
         }
 
-        form.querySelectorAll('select, input').forEach(campo => {
-            campo.addEventListener('change', (e) => e.target.style.color = "#FFFFFF");
-            campo.style.color = "#FFFFFF";
+        form.querySelectorAll('select, input, textarea').forEach(campo => {
+            campo.addEventListener('change', (e) => e.target.style.color = getFormTextColor());
+            campo.style.color = getFormTextColor();
         });
 
         form.onsubmit = (e) => {

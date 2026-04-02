@@ -47,6 +47,29 @@ export const getHojeFormatado = () => {
     return `${dia}/${mes}/${ano}`;
 };
 
+export const getThemeSettings = () => {
+    return JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+};
+
+export const applyThemeClasses = (isDark, element = document.body) => {
+    if (!element) return isDark;
+
+    element.dataset.theme = isDark ? 'dark' : 'light';
+    element.classList.toggle('dark-theme', isDark);
+    element.classList.toggle('light-theme', !isDark);
+    return isDark;
+};
+
+export const applyStoredTheme = (element = document.body) => {
+    const settings = getThemeSettings();
+    return applyThemeClasses(settings.temaEscuro === true, element);
+};
+
+export const getThemeVar = (name, element = document.body) => {
+    if (!element) return '';
+    return getComputedStyle(element).getPropertyValue(name).trim();
+};
+
 export function salvarNoStorage() {
     localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
     localStorage.setItem('metas', JSON.stringify(metas));

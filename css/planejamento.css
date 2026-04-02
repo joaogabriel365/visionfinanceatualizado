@@ -1,0 +1,206 @@
+/* planejamento.css */
+.planning-card-prof,
+.plan-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  padding: 1.25rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
+}
+
+.planning-card-prof h3,
+.plan-card h4 {
+  color: var(--text-primary);
+  margin: 0 0 0.5rem 0;
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.planning-card-prof p,
+.plan-card p {
+  color: var(--text-secondary);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.planning-card-prof .form-row,
+.planning-card-prof .actions,
+.plan-card .plan-list {
+  display: flex;
+  gap: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.planning-card-prof .input-text,
+.plan-card input[type="text"],
+.plan-card select,
+.planning-card-prof select {
+  width: 100%;
+  max-width: 320px;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 0.8rem 0.9rem;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.planning-card-prof button,
+.plan-card button {
+  background: var(--accent);
+  color: #fff;
+  border: 1px solid transparent;
+  border-radius: 10px;
+  padding: 0.65rem 1rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.planning-card-prof button:hover,
+.plan-card button:hover {
+  background: var(--accent-hover);
+  transform: translateY(-1px);
+}
+
+.planning-card-prof .progress-bar-container,
+.plan-card .plan-item {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+}
+
+.planejamento-panel {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1rem;
+  gap: 1rem;
+  margin-top: 1rem;
+}
+
+.plan-card {
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 18px;
+  padding: 1.2rem;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
+  transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
+}
+
+.plan-card:hover {
+  transform: translateY(-3px);
+  border-color: var(--accent);
+  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+}
+
+.plan-card h4 {
+  color: var(--text-primary);
+  margin-bottom: 0.75rem;
+  font-size: 1.2rem;
+}
+
+.plan-card p {
+  color: var(--text-secondary);
+  line-height: 1.6;
+  margin-bottom: 1rem;
+}
+
+.plan-card .plan-list {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.plan-card .plan-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(191, 160, 95, 0.25);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.6);
+}
+
+.plan-card .plan-item span {
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.table-responsive {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.92rem;
+}
+
+.table th,
+.table td {
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  text-align: left;
+}
+
+.table th {
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  font-size: 0.75rem;
+  font-weight: 700;
+}
+
+.table tbody tr:hover {
+  background: rgba(201,170,106,0.08);
+}
+
+body.light-theme .budget-limit-add-btn img {
+  filter: brightness(0) saturate(100%);
+}
+
+body.dark-theme .budget-limit-add-btn img {
+  filter: brightness(0) invert(1);
+}
+
+body.light-theme #valor-limite-display,
+body.light-theme #progresso-porcentagem-text,
+body.light-theme #disponivel-text {
+  color: #0f172a !important;
+}
+
+body.light-theme .planning-card-prof .btn-action {
+  width: 50px;
+  height: 50px;
+  border: none !important;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08) !important;
+  border-radius: 14px;
+  background: rgba(15, 23, 42, 0.05) !important;
+}
+
+body.light-theme .planning-card-prof .btn-action:hover {
+  background: rgba(15, 23, 42, 0.09) !important;
+}
+
+body.light-theme .planning-card-prof .btn-action img {
+  width: 28px !important;
+  height: 28px !important;
+  object-fit: contain;
+  image-rendering: -webkit-optimize-contrast;
+  image-rendering: crisp-edges;
+}
+
+body.light-theme .planning-card-prof .btn-action.btn-delete {
+  background: rgba(239, 68, 68, 0.08) !important;
+}
+
+body.light-theme .planning-card-prof .btn-action.btn-delete:hover {
+  background: rgba(239, 68, 68, 0.14) !important;
+}
+
+body.light-theme .planning-card-prof .btn-action.btn-edit,
+body.light-theme .planning-card-prof .btn-action.btn-add {
+  background: rgba(15, 23, 42, 0.05) !important;
+}
+

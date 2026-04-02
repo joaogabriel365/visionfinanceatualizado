@@ -1,21 +1,25 @@
 /* --- VARIÁVEIS E CONFIGURAÇÕES GERAIS --- */
 :root {
-    /* Tema Escuro (Padrão) */
-    --primary: #22d3ee;
-    --bg-dark: #050a0f;
-    --card-bg: #0b1118;
-    --text-white: #ffffff;
-    --text-gray: #94a3b8;
-    --border: #1e293b;
-    --border-active: rgba(34, 211, 238, 0.4);
-    --input-bg: #1e293b;
-    --input-border: #334155;
-    --modal-bg: #0f172a;
-    --modal-overlay: rgba(0,0,0,0.8);
-    --btn-hover: rgba(34, 211, 238, 0.1);
-    --navbar-bg: rgba(5, 10, 15, 0.95);
-    --shadow: rgba(0, 0, 0, 0.15);
-    --shadow-strong: rgba(0, 0, 0, 0.25);
+    --accent-rgb: 8, 76, 160;
+    --primary: #084ca0;
+    --accent-hover: #063b7d;
+    --bg-dark: #ffffff;
+    --card-bg: #f2f7fd;
+    --panel-bg: #f2f7fd;
+    --text-primary: #0f172a;
+    --text-white: #0f172a;
+    --text-on-accent: #ffffff;
+    --text-gray: #475569;
+    --border: #d6e2ef;
+    --border-active: rgba(var(--accent-rgb), 0.35);
+    --input-bg: #f5f8fc;
+    --input-border: #c8d5e4;
+    --modal-bg: #ffffff;
+    --modal-overlay: rgba(15, 23, 42, 0.44);
+    --btn-hover: rgba(var(--accent-rgb), 0.12);
+    --navbar-bg: rgba(255, 255, 255, 0.94);
+    --shadow: rgba(15, 23, 42, 0.08);
+    --shadow-strong: rgba(15, 23, 42, 0.14);
     
     /* Cores específicas para elementos */
     --success: #10b981;
@@ -24,9 +28,9 @@
     --purple: #8b5cf6;
     --pink: #ec4899;
     --blue: #3b82f6;
-    --cyan-light: #06b6d4;
-    --cyan-dark: #0891b2;
-    --cyan-lighter: #67e8f9;
+    --cyan-light: #0a5fcb;
+    --cyan-dark: #063b7d;
+    --cyan-lighter: #dcebff;
 }
 
 /* Força um padrão de box clean e profissional usado em cards e contêineres */
@@ -49,33 +53,30 @@
 }
 
 
-/* Tema Claro */
-.light-theme {
-    --bg-dark: linear-gradient(135deg, #f4f5f8 0%, #f0f0f0 100%);
-    --card-bg: #f7e8d8; /* bege mais forte para destaque */
-    --text-white: #1f2937; /* texto escuro no modo claro */
-    --text-gray: #475569;
-    --border: #d4b08a;
-    --border-active: rgba(34, 211, 238, 0.35);
-    --input-bg: #ffffff;
-    --input-border: #c6c8cc;
-    --modal-bg: #ffffff;
-    --modal-overlay: rgba(0,0,0,0.12);
-    --btn-hover: rgba(34, 211, 238, 0.15);
-    --navbar-bg: rgba(255, 255, 255, 0.96);
-    --shadow: rgba(0, 0, 0, 0.06);
-    --shadow-strong: rgba(0, 0, 0, 0.1);
-
-    /* Cores específicas para elementos (mantém as mesmas no tema claro) */
-    --success: #10b981;
-    --danger: #ef4444;
-    --warning: #f59e0b;
-    --purple: #8b5cf6;
-    --pink: #ec4899;
-    --blue: #3b82f6;
-    --cyan-light: #06b6d4;
-    --cyan-dark: #0891b2;
-    --cyan-lighter: #67e8f9;
+body.dark-theme {
+    --accent-rgb: 212, 175, 55;
+    --primary: #d4af37;
+    --accent-hover: #b88a17;
+    --bg-dark: #050a0f;
+    --card-bg: #0d141c;
+    --panel-bg: #0d141c;
+    --text-primary: #f8fafc;
+    --text-white: #f8fafc;
+    --text-on-accent: #111827;
+    --text-gray: #b6c2d0;
+    --border: #2a3948;
+    --border-active: rgba(var(--accent-rgb), 0.35);
+    --input-bg: #111a24;
+    --input-border: #334155;
+    --modal-bg: #0b1118;
+    --modal-overlay: rgba(0,0,0,0.82);
+    --btn-hover: rgba(var(--accent-rgb), 0.14);
+    --navbar-bg: rgba(5, 10, 15, 0.95);
+    --shadow: rgba(0, 0, 0, 0.24);
+    --shadow-strong: rgba(0, 0, 0, 0.35);
+    --cyan-light: #e6c86a;
+    --cyan-dark: #b88a17;
+    --cyan-lighter: #f3de92;
 }
 
 /* forçar subtileza extra para containers claros */
@@ -93,7 +94,7 @@
 .light-theme .section-wrapper {
     background: var(--card-bg) !important; /* bege forte constante */
     border-color: var(--border) !important;
-    color: var(--text-white) !important;
+    color: var(--text-primary) !important;
     box-shadow: 0 6px 18px rgba(0, 0, 0, 0.07) !important;
 }
 
@@ -105,33 +106,37 @@
 .light-theme .btn-action-add:hover,
 .light-theme .btn-danger:hover,
 .light-theme .btn-success:hover {
-    background: #f0ddc9 !important;
+    background: var(--btn-hover) !important;
+}
+
+.light-theme .highlight {
+    color: var(--primary) !important;
 }
 
 .light-theme .btn-primary {
-    background: #0d8ba1 !important;
-    color: #ffffff !important;
-    border: 1px solid #0c7b8f !important;
-    box-shadow: 0 6px 18px rgba(13, 139, 161, 0.35) !important;
+    background: var(--primary) !important;
+    color: var(--text-on-accent) !important;
+    border: 1px solid var(--primary) !important;
+    box-shadow: 0 6px 18px rgba(var(--accent-rgb), 0.28) !important;
 }
 
 .light-theme .btn-secondary {
-    color: #1f2937 !important;
-    border: 1px solid #c4b1a1 !important;
-    background: #fff8f0 !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
+    background: var(--panel-bg) !important;
     box-shadow: 0 4px 14px rgba(0,0,0,0.08) !important;
 }
 
 .light-theme input,
 .light-theme select,
 .light-theme textarea {
-    background: #ffffff !important;
-    border: 1px solid #c9bbb0 !important;
-    color: #1f2937 !important;
+    background: var(--input-bg) !important;
+    border: 1px solid var(--input-border) !important;
+    color: var(--text-primary) !important;
 }
 
 .light-theme .list-container::-webkit-scrollbar-thumb {
-    background: #b8a794 !important;
+    background: var(--primary) !important;
 }
 
 .light-theme .box-standard,
@@ -143,9 +148,9 @@
 .light-theme .sidebar,
 .light-theme .table-card,
 .light-theme .main-content {
-    background: #f7ede0 !important; /* bege mais uniforme */
-    color: #1f2937 !important;
-    border: 1px solid #e2dace !important;
+    background: var(--bg-dark) !important;
+    color: var(--text-primary) !important;
+    border: 1px solid var(--border) !important;
     box-shadow: 0 8px 20px rgba(0, 0, 0, 0.07) !important;
 }
 
@@ -160,7 +165,7 @@
 
 body {
     background-color: var(--bg-dark);
-    color: var(--text-white);
+    color: var(--text-primary);
     line-height: 1.6;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased; /* Melhora a renderização da fonte */
@@ -168,7 +173,7 @@ body {
 
 /* --- BOTÕES --- */
 button {
-    font-family: 'Inter', sans-serif;
+    font-family: 'Montserrat', sans-serif;
     cursor: pointer;
     border: none;
     transition: 0.3s;
@@ -198,7 +203,7 @@ button:hover {
 
 .btn-primary {
     background-color: var(--primary);
-    color: var(--text-white);
+    color: var(--text-on-accent);
     padding: 12px 24px;
     font-size: 14px;
     border-radius: 8px;
@@ -221,7 +226,7 @@ button:hover {
 
 .btn-secondary {
     background-color: transparent;
-    color: var(--text-white);
+    color: var(--text-primary);
     border: 1px solid var(--border);
     padding: 12px 24px;
     font-size: 14px;
@@ -237,7 +242,7 @@ button:hover {
 }
 
 .btn-secondary:hover {
-    background-color: rgba(34, 211, 238, 0.1);
+    background-color: var(--btn-hover);
     border-color: var(--primary);
     transform: translateY(-2px);
 }
@@ -426,26 +431,26 @@ button:hover {
 }
 
 .light-theme .btn-primary {
-    background-color: #0e8ba9 !important;
-    color: #ffffff !important;
-    border: 1px solid #0d7c96;
-    box-shadow: 0 6px 22px rgba(14, 139, 169, 0.35);
+    background-color: var(--primary) !important;
+    color: var(--text-on-accent) !important;
+    border: 1px solid var(--primary);
+    box-shadow: 0 6px 22px rgba(var(--accent-rgb), 0.35);
 }
 
 .light-theme .btn-primary:hover {
-    background-color: #0f9db8 !important;
-    box-shadow: 0 8px 26px rgba(14, 139, 169, 0.45);
+    background-color: var(--accent-hover) !important;
+    box-shadow: 0 8px 26px rgba(var(--accent-rgb), 0.4);
 }
 
 .light-theme .btn-secondary {
-    color: #0f172a;
-    border: 1px solid #c0a78f;
-    background-color: #fffdf8;
+    color: var(--text-primary);
+    border: 1px solid var(--border);
+    background-color: var(--panel-bg);
     box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
 .light-theme .btn-secondary:hover {
-    background-color: #f9f2e7;
+    background-color: var(--btn-hover);
     transform: translateY(-1px);
 }
 
@@ -649,7 +654,7 @@ button:hover {
 }
 
 .showcase-description {
-    color: #94a3b8;
+    color: var(--text-gray);
     font-size: 1.1rem;
     line-height: 1.7;
     margin-bottom: 40px;
@@ -805,9 +810,9 @@ button:hover {
 }
 
 .sidebar-logo { 
-    width: 60px; /* Logo maior e melhor renderizada */
+    width: 118px; /* Logo maior e melhor renderizada */
     height: auto;
-    filter: drop-shadow(0 0 8px rgba(34, 211, 238, 0.3)); /* Glow suave para melhorar visual */
+    filter: none;
 }
 
 .logo-text {
@@ -834,7 +839,7 @@ button:hover {
 .notification-btn {
     background: none;
     border: none;
-    color: #94a3b8;
+    color: var(--text-gray);
     font-size: 1.3rem;
     cursor: pointer;
     transition: 0.3s;

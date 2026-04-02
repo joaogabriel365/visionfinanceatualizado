@@ -214,14 +214,12 @@
         // Aplicar tema salvo ao carregar a página
         function aplicarTema() {
             const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
-            const isDark = settings.temaEscuro === true; // Padrão claro
+            const isDark = settings.temaEscuro === true;
             const body = document.body;
 
-            if (isDark) {
-                body.classList.remove('light-theme');
-            } else {
-                body.classList.add('light-theme');
-            }
+            body.dataset.theme = isDark ? 'dark' : 'light';
+            body.classList.toggle('dark-theme', isDark);
+            body.classList.toggle('light-theme', !isDark);
         }
 
         document.addEventListener('DOMContentLoaded', function() {

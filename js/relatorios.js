@@ -6,16 +6,14 @@ export const RelatoriosModulo = {
         return JSON.parse(localStorage.getItem('despesas')) || [];
     },
 
+    monthVisibilidade: Array(12).fill(true),
+
     init() {
         this.renderizarResumo();
-        this.criarFiltroMeses();
         this.gerarGraficoComparativo();
         this.renderizarRanking();
 
         const yearSelect = document.getElementById('reportYear');
-        const checkboxes = document.querySelectorAll('.month-checkbox');
-        const toggleAllButton = document.getElementById('toggleAllMonths');
-        const clearAllButton = document.getElementById('clearAllMonths');
 
         const refresh = () => {
             this.gerarGraficoComparativo();
@@ -25,22 +23,7 @@ export const RelatoriosModulo = {
         if (yearSelect) {
             yearSelect.addEventListener('change', refresh);
         }
-
-        if (toggleAllButton) {
-            toggleAllButton.addEventListener('click', () => {
-                document.querySelectorAll('.month-checkbox').forEach(chk => chk.checked = true);
-                refresh();
-            });
-        }
-
-        if (clearAllButton) {
-            clearAllButton.addEventListener('click', () => {
-                document.querySelectorAll('.month-checkbox').forEach(chk => chk.checked = false);
-                refresh();
-            });
-        }
-
-        document.getElementById('monthFilterContainer')?.addEventListener('change', refresh);
+        // Botões de mostrar/ocultar todos os meses removidos
     },
 
     criarFiltroMeses() {
@@ -52,7 +35,7 @@ export const RelatoriosModulo = {
         monthFilterContainer.innerHTML = monthNames.map((name, index) => {
             return `
                 <label style="cursor:pointer; display:flex; align-items:center; gap: 6px; border: 1px solid #d1d5db; border-radius: 8px; padding: 6px 8px; background: #f8fafc; color: #1f2937; font-size: 0.8rem;">
-                    <input class="month-checkbox" type="checkbox" value="${index + 1}" checked style="accent-color: #22d3ee;">
+                    <input class="month-checkbox" type="checkbox" value="${index + 1}" checked style="accent-color: var(--accent);">
                     ${name}
                 </label>
             `;
@@ -105,18 +88,8 @@ export const RelatoriosModulo = {
         const yearSelect = document.getElementById('reportYear');
         const selectedYear = yearSelect ? Number(yearSelect.value) : new Date().getFullYear();
 
-        const selectedMonthInputs = Array.from(document.querySelectorAll('.month-checkbox'));
-        const selectedMonths = selectedMonthInputs.filter(chk => chk.checked).map(chk => Number(chk.value));
-
-        const allMonths = [1,2,3,4,5,6,7,8,9,10,11,12];
-        const activeMonths = selectedMonths.length > 0 ? selectedMonths : allMonths;
-
         const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
         const monthColors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#10b981','#0284c7','#f97316','#14b8a6','#f43f5e','#0ea5e9'];
-
-        const isLight = document.body.classList.contains('light-theme');
-        const gridColor = isLight ? '#d0d0d0' : '#1e293b';
-        const textColor = isLight ? '#1f2937' : '#94a3b8';
 
         const totalPorMes = Array(12).fill(0);
         this.despesas.forEach(d => {
@@ -128,53 +101,108 @@ export const RelatoriosModulo = {
             totalPorMes[dateData.month - 1] += valor;
         });
 
-        const labels = activeMonths.map(m => monthNames[m - 1]);
-        const values = activeMonths.map(m => totalPorMes[m - 1]);
-        const colors = activeMonths.map(m => monthColors[m - 1]);
-
-        const monthLabelText = activeMonths.length === 12 ? 'Todos os meses' : `Meses selecionados: ${labels.join(', ')}`;
-        const titleEl = document.querySelector('.chart-card-large h3');
-        const subtitleEl = document.querySelector('.chart-card-large p');
-        if (titleEl) titleEl.innerText = 'Comparativo Mensal por Categoria';
-        if (subtitleEl) subtitleEl.innerText = `${monthLabelText} | ${selectedYear}`;
+        const values = totalPorMes.map((valor, index) => this.monthVisibilidade[index] ? valor : null);
+        const colors = monthNames.map((_, index) => (this.monthVisibilidade[index] ? monthColors[index] : 'rgba(203, 213, 225, 0.35)'));
+        const visibleValues = values.filter((valor) => valor !== null);
+        const maxValue = Math.max(...visibleValues, 0);
+        const suggestedMax = this.calcularTetoEscala(maxValue);
+        const stepSize = suggestedMax > 0 ? Math.max(1, suggestedMax / 5) : 20;
 
         window.myChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels,
+                labels: monthNames,
                 datasets: [{
                     label: 'Total de Despesas',
                     data: values,
                     backgroundColor: colors,
-                    borderColor: colors.map(c => c),
-                    borderWidth: 1,
-                    borderRadius: 6,
-                    maxBarThickness: 48
+                    borderColor: monthColors,
+                    borderWidth: 0,
+                    borderRadius: 12,
+                    borderSkipped: false,
+                    hoverBorderWidth: 0,
+                    maxBarThickness: 54,
+                    categoryPercentage: 0.72,
+                    barPercentage: 0.82
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                layout: {
+                    padding: { top: 12, right: 10, bottom: 0, left: 6 }
+                },
                 plugins: {
                     legend: { display: false },
                     tooltip: {
+                        backgroundColor: '#0f172a',
+                        titleColor: '#ffffff',
+                        bodyColor: '#e2e8f0',
+                        padding: 12,
+                        cornerRadius: 12,
+                        displayColors: false,
                         callbacks: {
-                            label: ctx => `${ctx.label}: ${formatarMoeda(ctx.parsed.y)}`
+                            label: ctx => `${ctx.label}: ${formatarMoeda(ctx.parsed.y || 0)}`
                         }
                     }
                 },
                 scales: {
                     y: {
                         beginAtZero: true,
-                        grid: { color: gridColor },
-                        ticks: { color: textColor, font: { weight: '700' } }
+                        suggestedMax,
+                        grid: {
+                            color: 'rgba(8, 76, 160, 0.12)',
+                            drawBorder: false
+                        },
+                        border: { display: false },
+                        ticks: {
+                            stepSize,
+                            padding: 10,
+                            color: '#0b5fc2',
+                            font: { weight: '800', size: 12 },
+                            callback: (value) => this.formatarEixoValor(value)
+                        }
                     },
                     x: {
                         grid: { display: false },
-                        ticks: { color: textColor, font: { weight: '700' } }
+                        border: { display: false },
+                        ticks: {
+                            color: '#1f2937',
+                            font: { weight: '700', size: 12 },
+                            padding: 8
+                        }
                     }
                 }
             }
+        });
+
+        this.gerarControlesMeses();
+    },
+
+    gerarControlesMeses() {
+        const container = document.getElementById('monthToggleButtons');
+        if (!container) return;
+
+        const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+
+        container.innerHTML = monthNames.map((name, index) => {
+            const active = this.monthVisibilidade[index];
+            return `
+                <button class="${active ? 'active' : ''}" data-month="${index}" aria-pressed="${active}">
+                    <span>${name}</span>
+                </button>
+            `;
+        }).join('');
+
+        container.querySelectorAll('button').forEach(btn => {
+            btn.addEventListener('click', (evt) => {
+                const idx = Number(btn.getAttribute('data-month'));
+                this.monthVisibilidade[idx] = !this.monthVisibilidade[idx];
+                btn.classList.toggle('active', this.monthVisibilidade[idx]);
+                btn.setAttribute('aria-pressed', this.monthVisibilidade[idx]);
+                this.gerarGraficoComparativo();
+                evt.preventDefault();
+            });
         });
     },
 
@@ -253,5 +281,29 @@ export const RelatoriosModulo = {
         }
 
         return null;
+    },
+
+    calcularTetoEscala(maxValue) {
+        if (maxValue <= 0) return 1000;
+
+        const roughStep = maxValue / 5;
+        const magnitude = 10 ** Math.floor(Math.log10(roughStep || 1));
+        const normalized = roughStep / magnitude;
+
+        let niceNormalized = 1;
+        if (normalized > 1 && normalized <= 2) niceNormalized = 2;
+        else if (normalized > 2 && normalized <= 5) niceNormalized = 5;
+        else if (normalized > 5) niceNormalized = 10;
+
+        const niceStep = niceNormalized * magnitude;
+        return Math.ceil(maxValue / niceStep) * niceStep;
+    },
+
+    formatarEixoValor(value) {
+        const numero = Number(value) || 0;
+        return numero.toLocaleString('pt-BR', {
+            minimumFractionDigits: 0,
+            maximumFractionDigits: 0
+        });
     }
 };

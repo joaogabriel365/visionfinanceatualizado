@@ -1,3 +1,5 @@
+import { applyStoredTheme, getThemeVar } from './common.js';
+
 // 1. IMPORTS DOS MÓDULOS
 import { Painel } from './painel.js';
 import { DespesasModulo } from './despesas.js';
@@ -72,15 +74,7 @@ async function navegar(sectionId) {
 
 // === APLICAR TEMA GLOBAL ===
 function aplicarTemaGlobal() {
-    const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
-    const isDark = settings.temaEscuro === true; // Padrão é claro
-    const body = document.body;
-    
-    if (isDark) {
-        body.classList.remove('light-theme');
-    } else {
-        body.classList.add('light-theme');
-    }
+    applyStoredTheme(document.body);
 }
 
 // === FUNCIONALIDADE OCULTAR VALORES ===
@@ -103,26 +97,25 @@ function gerenciarBotaoOlho() {
     btn.style.borderRadius = '8px';
     btn.style.transition = 'all 0.3s ease';
 
-    // SVG interno para garantir nitidez e controle de cor
+    const corOlho = getThemeVar('--accent') || '#0b63ce';
     btn.innerHTML = `
-        <img src="./img/olho.png" alt="Ocultar" 
-             style="width: 22px; height: 22px; object-fit: contain; filter: brightness(0) invert(1); opacity: 0.8;">
+        <svg xmlns="http://www.w3.org/2000/svg" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="opacity:0.8;">
+            <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
+            <circle cx="12" cy="12" r="3"></circle>
+        </svg>
     `;
+    btn.style.color = corOlho;
 
-    // Efeito de hover simples
-    btn.onmouseover = () => btn.style.backgroundColor = 'rgba(255, 255, 255, 0.05)';
+    btn.onmouseover = () => btn.style.backgroundColor = getThemeVar('--accent-soft');
     btn.onmouseout = () => btn.style.backgroundColor = 'transparent';
 
     headerActions.prepend(btn);
 
     const atualizarEstadoBotao = () => {
         const ativo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
-        const img = btn.querySelector('img');
-        if (img) {
-            // Se estiver oculto, o ícone fica mais apagado (opacidade 0.3)
-            img.style.opacity = ativo ? '0.3' : '0.8';
-            btn.title = ativo ? 'Mostrar valores' : 'Ocultar valores';
-        }
+        btn.style.color = ativo ? getThemeVar('--text-secondary') : (getThemeVar('--accent') || corOlho);
+        btn.style.opacity = ativo ? '0.65' : '1';
+        btn.title = ativo ? 'Mostrar valores' : 'Ocultar valores';
     };
 
     atualizarEstadoBotao();
