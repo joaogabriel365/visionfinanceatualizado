@@ -10,6 +10,7 @@
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
 .stats-grid {
@@ -53,6 +54,13 @@
   transform: translateY(-2px);
 }
 
+body.light-theme .dashboard-top-cards .stat-card.small-card,
+body.light-theme .chart-card,
+body.light-theme .table-card,
+body.light-theme .charts-grid > :nth-child(2) {
+  background: var(--dashboard-box-bg) !important;
+}
+
 .table-header-flex {
   display: flex;
   justify-content: space-between;
@@ -70,30 +78,71 @@
   border: 1px solid rgba(var(--accent-rgb), 0.18);
 }
 
+body.light-theme .date-badge {
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12) 0%, rgba(var(--accent-rgb), 0.06) 100%);
+  border-color: rgba(var(--accent-rgb), 0.16);
+}
+
 .dash-table {
   width: 100%;
   border-collapse: collapse;
+  table-layout: fixed;
+}
+
+body.light-theme .dash-table thead tr {
+  background: rgba(255, 255, 255, 0.42);
 }
 
 body.light-theme .dash-table th {
   color: var(--text-primary);
+  font-weight: 800;
 }
 
 body.light-theme .dash-table td {
   color: var(--text-secondary);
 }
 
-.dash-table th,
-.dash-table td {
-  padding: 0.7rem 0;
-  border-top: 1px solid var(--border-color);
-  color: var(--text-secondary);
+body.light-theme .dash-table tbody tr:nth-child(even) {
+  background: rgba(255, 255, 255, 0.34);
 }
 
-.category-tag {
-  padding: 0.25rem 0.6rem;
-  border-radius: 6px;
-  font-size: 0.75rem;
-  background: var(--accent-soft);
-  color: var(--accent);
+body.light-theme .dash-table tbody tr:hover {
+  background: rgba(var(--accent-rgb), 0.05);
+}
+
+.dash-table th,
+.dash-table td {
+  padding: 0.9rem 0.85rem;
+  border-top: 1px solid var(--border-color);
+  color: var(--text-secondary);
+  text-align: center;
+  vertical-align: middle;
+}
+
+.dash-table thead th:first-child,
+.dash-table tbody td:first-child {
+  padding-left: 0;
+  text-align: left;
+}
+
+.dash-table thead th:last-child,
+.dash-table tbody td:last-child {
+  padding-right: 0;
+}
+
+.expense-col-title,
+.expense-col-payment,
+.expense-col-value,
+.expense-col-date,
+.expense-col-category {
+  text-align: center;
+}
+
+.expense-col-value strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.expense-col-category .category-tag {
+  margin-inline: auto;
 }

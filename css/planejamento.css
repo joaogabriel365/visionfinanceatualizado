@@ -156,12 +156,56 @@
   background: rgba(201,170,106,0.08);
 }
 
-body.light-theme .budget-limit-add-btn img {
+.budget-limit-add-icon {
+  width: 14px !important;
+  height: 14px !important;
+  transition: filter 0.2s ease;
+}
+
+.budget-limit-add-btn {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px !important;
+  display: inline-flex !important;
+  align-items: center;
+  justify-content: center;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease, background 0.2s ease, opacity 0.2s ease;
+}
+
+.budget-limit-add-btn:hover {
+  transform: translateY(-1px);
+}
+
+body.light-theme .budget-limit-add-btn img,
+body.light-theme .budget-limit-add-icon {
+  filter: brightness(0) invert(1);
+}
+
+body.light-theme .budget-limit-add-btn {
+  background: var(--accent) !important;
+  border: 1px dashed rgba(var(--accent-rgb), 0.9) !important;
+  box-shadow: 0 6px 12px rgba(var(--accent-rgb), 0.14);
+}
+
+body.light-theme .budget-limit-add-btn:hover {
+  background: var(--accent-hover) !important;
+  box-shadow: 0 8px 16px rgba(var(--accent-rgb), 0.2);
+}
+
+body.dark-theme .budget-limit-add-btn img,
+body.dark-theme .budget-limit-add-icon {
   filter: brightness(0) saturate(100%);
 }
 
-body.dark-theme .budget-limit-add-btn img {
-  filter: brightness(0) invert(1);
+body.dark-theme .budget-limit-add-btn {
+  background: var(--accent) !important;
+  border: 1px dashed rgba(var(--accent-rgb), 0.9) !important;
+  box-shadow: 0 6px 12px rgba(var(--accent-rgb), 0.16);
+}
+
+body.dark-theme .budget-limit-add-btn:hover {
+  background: var(--accent-hover) !important;
+  box-shadow: 0 8px 16px rgba(var(--accent-rgb), 0.22);
 }
 
 body.light-theme #valor-limite-display,

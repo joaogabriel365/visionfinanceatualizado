@@ -65,24 +65,36 @@
   width: 40px;
   height: 40px;
   border: none !important;
-  background: rgba(255, 255, 255, 0.14);
+  background: rgba(15, 23, 42, 0.12);
   box-shadow: none;
   backdrop-filter: blur(8px);
 }
 
 .wallet-card .btn-action:hover {
   transform: translateY(-1px);
-  background: rgba(255, 255, 255, 0.22);
+  background: rgba(15, 23, 42, 0.18);
 }
 
 .wallet-card .btn-edit {
-  background: rgba(255, 255, 255, 0.16);
+  background: rgba(15, 23, 42, 0.14);
 }
 
 .wallet-card .btn-edit img,
 .wallet-card .btn-delete img {
   filter: brightness(0) invert(1);
   opacity: 0.95;
+}
+
+.wallet-card .btn-delete {
+  background: rgba(220, 38, 38, 0.18);
+}
+
+.wallet-card .btn-delete:hover {
+  background: rgba(220, 38, 38, 0.28);
+}
+
+.wallet-card .btn-delete img {
+  filter: brightness(0) saturate(100%) invert(17%) sepia(93%) saturate(4820%) hue-rotate(353deg) brightness(94%) contrast(94%);
 }
 
 .wallet-card-content {
@@ -218,6 +230,73 @@
 
 .wallet-empty-actions .btn {
   min-width: 240px;
+}
+
+body.light-theme .wallet-card {
+  color: #ffffff;
+}
+
+body.light-theme .wallet-card::before {
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0.04));
+}
+
+body.light-theme .wallet-card::after {
+  background: radial-gradient(circle, rgba(176, 145, 96, 0.18), transparent 70%);
+  opacity: 0.7;
+}
+
+body.light-theme .wallet-name,
+body.light-theme .wallet-meta,
+body.light-theme .wallet-limit-label,
+body.light-theme .wallet-spent,
+body.light-theme .wallet-unlimited {
+  color: rgba(255, 255, 255, 0.78);
+}
+
+body.light-theme .wallet-balance,
+body.light-theme .wallet-progress-value {
+  color: #ffffff;
+}
+
+body.light-theme .wallet-progress-track {
+  background: rgba(255, 255, 255, 0.18);
+}
+
+body.light-theme .wallet-card .btn-action {
+  background: rgba(15, 23, 42, 0.06);
+  border: none !important;
+  box-shadow: none;
+  backdrop-filter: none;
+}
+
+body.light-theme .wallet-card .btn-action:hover {
+  background: rgba(15, 23, 42, 0.1);
+}
+
+body.light-theme .wallet-card .btn-delete {
+  box-shadow: none;
+}
+
+body.light-theme .wallet-card .btn-edit {
+  background: rgba(15, 23, 42, 0.06);
+}
+
+body.light-theme .wallet-card .btn-delete {
+  background: rgba(220, 38, 38, 0.1);
+}
+
+body.light-theme .wallet-card .btn-delete:hover {
+  background: rgba(220, 38, 38, 0.16);
+}
+
+body.light-theme .wallet-card .btn-edit img {
+  filter: brightness(0) invert(1);
+  opacity: 1;
+}
+
+body.light-theme .wallet-card .btn-delete img {
+  filter: brightness(0) saturate(100%) invert(17%) sepia(93%) saturate(4820%) hue-rotate(353deg) brightness(94%) contrast(94%);
+  opacity: 1;
 }
 
 @media (max-width: 768px) {

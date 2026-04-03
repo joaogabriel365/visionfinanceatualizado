@@ -1,4 +1,4 @@
-import { formatarMoeda, tratarClasseCategoria, getHojeFormatado, getThemeVar } from './common.js';
+import { formatarMoeda, getCategoryBadgeStyle, getHojeFormatado, getThemeVar } from './common.js';
 
 export const Painel = {
     init() {
@@ -53,18 +53,6 @@ export const Painel = {
     renderizarTabelaHoje(despesas, hoje) {
         const tbody = document.getElementById('expenseTableBody');
         if (!tbody) return;
-        
-        // Cores padrões usadas no módulo de despesas
-        // Dentro de renderizarTabelaHoje(despesas, hoje)
-const coresFixo = {
-    'Alimentação': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },
-    'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
-    'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
-    'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
-    'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },
-    'Moda': { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc' }, // Adicionado
-    'Outros': { bg: 'rgba(100, 116, 139, 0.15)', text: '#94a3b8' }  // Adicionado
-};
 
         const despesasHoje = despesas.filter(d => {
             if (!d.data) return false;
@@ -78,18 +66,18 @@ const coresFixo = {
         }
 
         tbody.innerHTML = despesasHoje.map(d => {
-            const cor = coresFixo[d.categoria] || { bg: 'rgba(148, 163, 184, 0.1)', text: '#94a3b8' };
+            const cor = getCategoryBadgeStyle(d.categoria);
             return `
             <tr>
-                <td>${d.titulo}</td>
-                <td>
-                    <span style="background:${cor.bg}; color:${cor.text}; padding: 4px 10px; border-radius: 6px; font-size: 10px; font-weight: 700; text-transform: uppercase;">
+                <td class="expense-col-title">${d.titulo}</td>
+                <td class="expense-col-category">
+                    <span class="category-tag category-tag-strong" style="--tag-bg:${cor.bg}; --tag-text:${cor.text}; --tag-border:${cor.border};">
                         ${d.categoria}
                     </span>
                 </td>
-                <td>${d.pagamento}</td>
-                <td><strong style="color: #1f2937;">${formatarMoeda(d.valor)}</strong></td>
-                <td>${d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data}</td>
+                <td class="expense-col-payment">${d.pagamento}</td>
+                <td class="expense-col-value"><strong>${formatarMoeda(d.valor)}</strong></td>
+                <td class="expense-col-date">${d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data}</td>
             </tr>`;
         }).join('');
     },

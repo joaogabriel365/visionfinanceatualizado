@@ -17,10 +17,21 @@
 <div class="reports-main-layout">
     <div class="chart-card-large">
         <h3 class="report-main-title">Comparativo Mensal por Categoria</h3>
+        <div class="reports-chart-tools">
+            <div class="month-visibility-control" id="monthVisibilityControl">
+                <button type="button" class="month-visibility-trigger" id="monthVisibilityTrigger" aria-expanded="false" aria-controls="monthVisibilityPopover">
+                    <span>Ocultar meses</span>
+                    <span class="month-visibility-count" id="monthVisibilityCount">0</span>
+                </button>
+                <div class="month-visibility-popover" id="monthVisibilityPopover" hidden>
+                    <p class="month-visibility-title">Selecione os meses para ocultar</p>
+                    <div class="month-visibility-list" id="monthVisibilityList"></div>
+                </div>
+            </div>
+        </div>
         <div class="reports-chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
-        <!-- Botões de meses removidos -->
     </div>
 
     <aside class="reports-sidebar">

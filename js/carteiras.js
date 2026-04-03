@@ -13,11 +13,42 @@ export const CarteirasModulo = {
         this.configurarMascara();
         this.configurarLogicaTipo();
         this.renderizarSeletorCores();
+        this.configurarModal();
+    },
+
+    atualizarLabelLimite(tipo) {
+        const labelLimit = document.getElementById('labelLimit');
+        if (!labelLimit) return;
+
+        const labels = {
+            'Cartão de Crédito': 'Limite Total',
+            'Cartão de Débito': 'Saldo Disponível',
+            default: 'Valor/Saldo'
+        };
+
+        labelLimit.innerText = labels[tipo] || labels.default;
+    },
+
+    selecionarCor(cor) {
+        const container = document.getElementById('colorPickerContainer');
+        const inputColor = document.getElementById('walletColor');
+        if (!container || !inputColor) return;
+
+        container.querySelectorAll('.color-option').forEach((option) => {
+            const selecionada = option.dataset.color === cor;
+            option.style.borderColor = selecionada ? getThemeVar('--accent') : 'transparent';
+            option.style.boxShadow = selecionada ? `0 0 0 3px ${getThemeVar('--accent-soft')}` : 'none';
+        });
+
+        inputColor.value = cor;
     },
 
     renderizarSeletorCores() {
         const container = document.getElementById('colorPickerContainer');
         if (!container) return;
+
+        const inputColor = document.getElementById('walletColor');
+        const corAtual = inputColor?.value || this.coresPredefinidas[0];
 
         container.innerHTML = this.coresPredefinidas.map((cor) => `
             <div class="color-option" data-color="${cor}" style="background: ${cor}; height: 35px; border-radius: 8px; cursor: pointer; border: 2px solid transparent; transition: 0.2s;"></div>
@@ -25,15 +56,68 @@ export const CarteirasModulo = {
 
         container.querySelectorAll('.color-option').forEach((opt) => {
             opt.onclick = () => {
-                container.querySelectorAll('.color-option').forEach((option) => {
-                    option.style.borderColor = 'transparent';
-                });
-                opt.style.borderColor = getThemeVar('--accent');
-                document.getElementById('walletColor').value = opt.dataset.color;
+                this.selecionarCor(opt.dataset.color);
             };
         });
 
-        if (container.firstElementChild) container.firstElementChild.click();
+        if (this.coresPredefinidas.includes(corAtual)) {
+            this.selecionarCor(corAtual);
+        } else if (container.firstElementChild) {
+            container.firstElementChild.click();
+        }
+    },
+
+    resetarFormularioCarteira() {
+        const form = document.getElementById('walletForm');
+        const modalTitle = document.getElementById('walletModalTitle');
+        const editIndex = document.getElementById('editWalletIndex');
+        const checkUnlimited = document.getElementById('isUnlimited');
+        const inputLimit = document.getElementById('walletLimit');
+        const selectType = document.getElementById('walletType');
+        const corPadrao = this.coresPredefinidas[0];
+
+        if (form) form.reset();
+        if (modalTitle) modalTitle.innerText = 'Nova Carteira';
+        if (editIndex) editIndex.value = '-1';
+        if (checkUnlimited) checkUnlimited.checked = false;
+
+        if (inputLimit) {
+            inputLimit.disabled = false;
+            inputLimit.style.opacity = '1';
+            inputLimit.required = true;
+            inputLimit.value = '';
+        }
+
+        if (selectType) {
+            selectType.value = 'Cartão de Crédito';
+            this.atualizarLabelLimite(selectType.value);
+        }
+
+        this.selecionarCor(corPadrao);
+    },
+
+    abrirModalNova() {
+        const modal = document.getElementById('walletModal');
+        this.resetarFormularioCarteira();
+        if (modal) modal.style.display = 'flex';
+    },
+
+    fecharModal() {
+        const modal = document.getElementById('walletModal');
+        if (modal) modal.style.display = 'none';
+        this.resetarFormularioCarteira();
+    },
+
+    configurarModal() {
+        const modal = document.getElementById('walletModal');
+        if (!modal || modal.dataset.bound === 'true') return;
+
+        modal.dataset.bound = 'true';
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.fecharModal();
+            }
+        });
     },
 
     configurarMascara() {
@@ -58,14 +142,7 @@ export const CarteirasModulo = {
 
         if (selectType) {
             selectType.addEventListener('change', (e) => {
-                const labels = {
-                    'Cartão de Crédito': 'Limite Total',
-                    'Cartão de Débito': 'Saldo Disponível',
-                    'default': 'Valor/Saldo'
-                };
-                if (labelLimit) {
-                    labelLimit.innerText = labels[e.target.value] || labels.default;
-                }
+                this.atualizarLabelLimite(e.target.value);
             });
         }
 
@@ -89,20 +166,23 @@ export const CarteirasModulo = {
     abrirModalEdicao(index) {
         const wallet = this.lista[index];
         const modal = document.getElementById('walletModal');
+        if (!wallet || !modal) return;
+
         document.getElementById('walletModalTitle').innerText = 'Editar Carteira';
         document.getElementById('editWalletIndex').value = index;
         document.getElementById('walletName').value = wallet.nome;
         document.getElementById('walletType').value = wallet.tipo;
         document.getElementById('isUnlimited').checked = wallet.ilimitado;
         document.getElementById('walletColor').value = wallet.cor || '#1e293b';
+        this.atualizarLabelLimite(wallet.tipo);
 
         const inputLimit = document.getElementById('walletLimit');
         inputLimit.value = formatarMoeda(wallet.limite);
         inputLimit.disabled = wallet.ilimitado;
         inputLimit.style.opacity = wallet.ilimitado ? '0.4' : '1';
+        inputLimit.required = !wallet.ilimitado;
 
-        const colorOption = document.querySelector(`[data-color="${wallet.cor || '#1e293b'}"]`);
-        if (colorOption) colorOption.click();
+        this.selecionarCor(wallet.cor || '#1e293b');
 
         modal.style.display = 'flex';
     },
@@ -119,7 +199,7 @@ export const CarteirasModulo = {
                         <h3>Nenhuma carteira cadastrada ainda</h3>
                         <p>Cadastre seu primeiro cartão, conta ou vale para acompanhar limites, visualizar gastos e manter seus meios de pagamento organizados com clareza.</p>
                         <div class="wallet-empty-actions">
-                            <button class="btn btn-primary" type="button" onclick="document.getElementById('walletModal').style.display = 'flex'">
+                            <button class="btn btn-primary" type="button" onclick="window.CarteirasModulo.abrirModalNova()">
                                 <i class="fas fa-plus"></i> Cadastrar Novo Cartão
                             </button>
                         </div>
@@ -212,10 +292,7 @@ export const CarteirasModulo = {
 
             localStorage.setItem('carteiras', JSON.stringify(this.lista));
             this.renderizarWallets();
-            document.getElementById('walletModal').style.display = 'none';
-            form.reset();
-            document.getElementById('editWalletIndex').value = '-1';
-            document.getElementById('walletModalTitle').innerText = 'Nova Carteira';
+            this.fecharModal();
         };
     }
 };

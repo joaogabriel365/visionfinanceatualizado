@@ -70,6 +70,51 @@ export const getThemeVar = (name, element = document.body) => {
     return getComputedStyle(element).getPropertyValue(name).trim();
 };
 
+export const getCategoryBadgeStyle = (categoria, isDark = document.body.classList.contains('dark-theme')) => {
+    const palette = {
+        'Alimentacao': {
+            light: { bg: '#f6b625', text: '#5c3600', border: '#d18f00' },
+            dark: { bg: 'rgba(245, 158, 11, 0.18)', text: '#fbbf24', border: 'rgba(245, 158, 11, 0.32)' }
+        },
+        'Transporte': {
+            light: { bg: '#57a0ff', text: '#0b3a73', border: '#2f78db' },
+            dark: { bg: 'rgba(59, 130, 246, 0.18)', text: '#60a5fa', border: 'rgba(59, 130, 246, 0.32)' }
+        },
+        'Lazer': {
+            light: { bg: '#ef5ba1', text: '#6f123d', border: '#d92d7e' },
+            dark: { bg: 'rgba(236, 72, 153, 0.18)', text: '#f472b6', border: 'rgba(236, 72, 153, 0.32)' }
+        },
+        'Saude': {
+            light: { bg: '#37c78b', text: '#0c5138', border: '#1fa66f' },
+            dark: { bg: 'rgba(16, 185, 129, 0.18)', text: '#34d399', border: 'rgba(16, 185, 129, 0.32)' }
+        },
+        'Moradia': {
+            light: { bg: '#9b73f3', text: '#41207d', border: '#7e56d8' },
+            dark: { bg: 'rgba(139, 92, 246, 0.18)', text: '#a78bfa', border: 'rgba(139, 92, 246, 0.32)' }
+        },
+        'Moda': {
+            light: { bg: '#b97dff', text: '#52208c', border: '#944ce6' },
+            dark: { bg: 'rgba(168, 85, 247, 0.18)', text: '#c084fc', border: 'rgba(168, 85, 247, 0.32)' }
+        },
+        'Outros': {
+            light: { bg: '#94a3b8', text: '#233044', border: '#64748b' },
+            dark: { bg: 'rgba(100, 116, 139, 0.18)', text: '#94a3b8', border: 'rgba(100, 116, 139, 0.32)' }
+        }
+    };
+
+    const key = tratarClasseCategoria(categoria)
+        .replace(/-/g, ' ')
+        .split(' ')
+        .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
+        .join('');
+
+    const fallback = isDark
+        ? { bg: 'rgba(148, 163, 184, 0.18)', text: '#cbd5e1', border: 'rgba(148, 163, 184, 0.32)' }
+        : { bg: '#b7c1cf', text: '#273444', border: '#8c99ab' };
+
+    return palette[key]?.[isDark ? 'dark' : 'light'] || fallback;
+};
+
 export function salvarNoStorage() {
     localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
     localStorage.setItem('metas', JSON.stringify(metas));

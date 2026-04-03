@@ -6,40 +6,163 @@ export const RelatoriosModulo = {
         return JSON.parse(localStorage.getItem('despesas')) || [];
     },
 
+    monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
     monthVisibilidade: Array(12).fill(true),
+
+    obterCoresGrafico() {
+        const styles = getComputedStyle(document.body);
+        const isDark = document.body.classList.contains('dark-theme');
+
+        return {
+            textPrimary: styles.getPropertyValue('--text-primary').trim() || (isDark ? '#f8fafc' : '#1f2937'),
+            textSecondary: styles.getPropertyValue('--text-secondary').trim() || (isDark ? '#b6c2d0' : '#475569'),
+            accent: styles.getPropertyValue('--accent').trim() || (isDark ? '#d4af37' : '#084ca0'),
+            accentRgb: styles.getPropertyValue('--accent-rgb').trim() || (isDark ? '212, 175, 55' : '8, 76, 160'),
+            xTickInactive: isDark ? 'rgba(182, 194, 208, 0.42)' : 'rgba(71, 85, 105, 0.42)',
+            xTickHover: isDark ? 'rgba(212, 175, 55, 0.95)' : 'rgba(8, 76, 160, 0.92)',
+            hiddenBar: isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(203, 213, 225, 0.35)',
+            tooltipBackground: isDark ? '#0f172a' : '#0f172a'
+        };
+    },
+
+    atualizarVisibilidadeGrafico(chart) {
+        if (!chart) return;
+
+        const totais = chart.$monthlyTotals || [];
+        const monthColors = chart.$monthColors || [];
+        const theme = this.obterCoresGrafico();
+        const values = totais.map((valor, index) => this.monthVisibilidade[index] ? valor : null);
+        const colors = monthColors.map((cor, index) => this.monthVisibilidade[index] ? cor : theme.hiddenBar);
+        const visibleValues = values.filter((valor) => valor !== null);
+        const maxValue = Math.max(...visibleValues, 0);
+        const suggestedMax = this.calcularTetoEscala(maxValue);
+        const stepSize = suggestedMax > 0 ? Math.max(1, suggestedMax / 5) : 20;
+
+        chart.data.datasets[0].data = values;
+        chart.data.datasets[0].backgroundColor = colors;
+        chart.options.scales.y.suggestedMax = suggestedMax;
+        chart.options.scales.y.ticks.stepSize = stepSize;
+        chart.update();
+        this.atualizarControleOcultarMeses();
+    },
+
+    alternarVisibilidadeMes(index, chart) {
+        this.monthVisibilidade[index] = !this.monthVisibilidade[index];
+        this.atualizarVisibilidadeGrafico(chart);
+    },
 
     init() {
         this.renderizarResumo();
         this.gerarGraficoComparativo();
         this.renderizarRanking();
+        this.configurarControleOcultarMeses();
 
         const yearSelect = document.getElementById('reportYear');
 
         const refresh = () => {
             this.gerarGraficoComparativo();
             this.renderizarResumo();
+            this.atualizarControleOcultarMeses();
         };
 
         if (yearSelect) {
-            yearSelect.addEventListener('change', refresh);
+            yearSelect.onchange = refresh;
         }
-        // Botões de mostrar/ocultar todos os meses removidos
     },
 
-    criarFiltroMeses() {
-        const monthFilterContainer = document.getElementById('monthFilterContainer');
-        if (!monthFilterContainer) return;
+    configurarControleOcultarMeses() {
+        const trigger = document.getElementById('monthVisibilityTrigger');
+        const popover = document.getElementById('monthVisibilityPopover');
+        const list = document.getElementById('monthVisibilityList');
+        const control = document.getElementById('monthVisibilityControl');
 
-        const monthNames = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
+        if (!trigger || !popover || !list || !control) return;
 
-        monthFilterContainer.innerHTML = monthNames.map((name, index) => {
-            return `
-                <label style="cursor:pointer; display:flex; align-items:center; gap: 6px; border: 1px solid #d1d5db; border-radius: 8px; padding: 6px 8px; background: #f8fafc; color: #1f2937; font-size: 0.8rem;">
-                    <input class="month-checkbox" type="checkbox" value="${index + 1}" checked style="accent-color: var(--accent);">
-                    ${name}
-                </label>
-            `;
-        }).join('');
+        list.innerHTML = this.monthNames.map((name, index) => `
+            <label class="month-visibility-option ${!this.monthVisibilidade[index] ? 'is-hidden' : ''}" data-month-index="${index}">
+                <input type="checkbox" class="month-visibility-checkbox" data-month-index="${index}" ${!this.monthVisibilidade[index] ? 'checked' : ''}>
+                <span>${name}</span>
+            </label>
+        `).join('');
+
+        trigger.onclick = (event) => {
+            event.stopPropagation();
+            const isOpen = !popover.hasAttribute('hidden');
+            if (isOpen) this.fecharControleOcultarMeses();
+            else this.abrirControleOcultarMeses();
+        };
+
+        list.querySelectorAll('.month-visibility-checkbox').forEach((checkbox) => {
+            checkbox.onchange = () => {
+                const index = Number(checkbox.dataset.monthIndex);
+                this.monthVisibilidade[index] = !checkbox.checked;
+                const chart = window.myChart;
+                if (chart) {
+                    this.atualizarVisibilidadeGrafico(chart);
+                } else {
+                    this.atualizarControleOcultarMeses();
+                }
+            };
+        });
+
+        if (!this.handleClickForaControleMeses) {
+            this.handleClickForaControleMeses = (event) => {
+                const currentControl = document.getElementById('monthVisibilityControl');
+                const currentPopover = document.getElementById('monthVisibilityPopover');
+                if (!currentControl || !currentPopover || currentPopover.hasAttribute('hidden')) return;
+                if (!currentControl.contains(event.target)) {
+                    this.fecharControleOcultarMeses();
+                }
+            };
+            document.addEventListener('click', this.handleClickForaControleMeses);
+        }
+
+        if (!this.handleEscapeControleMeses) {
+            this.handleEscapeControleMeses = (event) => {
+                if (event.key === 'Escape') {
+                    this.fecharControleOcultarMeses();
+                }
+            };
+            document.addEventListener('keydown', this.handleEscapeControleMeses);
+        }
+
+        this.atualizarControleOcultarMeses();
+    },
+
+    abrirControleOcultarMeses() {
+        const trigger = document.getElementById('monthVisibilityTrigger');
+        const popover = document.getElementById('monthVisibilityPopover');
+        if (!trigger || !popover) return;
+
+        popover.removeAttribute('hidden');
+        trigger.setAttribute('aria-expanded', 'true');
+    },
+
+    fecharControleOcultarMeses() {
+        const trigger = document.getElementById('monthVisibilityTrigger');
+        const popover = document.getElementById('monthVisibilityPopover');
+        if (!trigger || !popover) return;
+
+        popover.setAttribute('hidden', '');
+        trigger.setAttribute('aria-expanded', 'false');
+    },
+
+    atualizarControleOcultarMeses() {
+        const count = document.getElementById('monthVisibilityCount');
+        const list = document.getElementById('monthVisibilityList');
+        if (count) {
+            count.textContent = String(this.monthVisibilidade.filter((visible) => !visible).length);
+        }
+
+        if (!list) return;
+
+        list.querySelectorAll('.month-visibility-option').forEach((option) => {
+            const index = Number(option.dataset.monthIndex);
+            const checkbox = option.querySelector('.month-visibility-checkbox');
+            const hidden = !this.monthVisibilidade[index];
+            option.classList.toggle('is-hidden', hidden);
+            if (checkbox) checkbox.checked = hidden;
+        });
     },
 
     renderizarResumo() {
@@ -88,8 +211,9 @@ export const RelatoriosModulo = {
         const yearSelect = document.getElementById('reportYear');
         const selectedYear = yearSelect ? Number(yearSelect.value) : new Date().getFullYear();
 
-        const monthNames = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+        const monthNames = this.monthNames;
         const monthColors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#10b981','#0284c7','#f97316','#14b8a6','#f43f5e','#0ea5e9'];
+        const theme = this.obterCoresGrafico();
 
         const totalPorMes = Array(12).fill(0);
         this.despesas.forEach(d => {
@@ -102,7 +226,7 @@ export const RelatoriosModulo = {
         });
 
         const values = totalPorMes.map((valor, index) => this.monthVisibilidade[index] ? valor : null);
-        const colors = monthNames.map((_, index) => (this.monthVisibilidade[index] ? monthColors[index] : 'rgba(203, 213, 225, 0.35)'));
+        const colors = monthNames.map((_, index) => (this.monthVisibilidade[index] ? monthColors[index] : theme.hiddenBar));
         const visibleValues = values.filter((valor) => valor !== null);
         const maxValue = Math.max(...visibleValues, 0);
         const suggestedMax = this.calcularTetoEscala(maxValue);
@@ -118,7 +242,7 @@ export const RelatoriosModulo = {
                     backgroundColor: colors,
                     borderColor: monthColors,
                     borderWidth: 0,
-                    borderRadius: 12,
+                    borderRadius: 0,
                     borderSkipped: false,
                     hoverBorderWidth: 0,
                     maxBarThickness: 54,
@@ -135,7 +259,7 @@ export const RelatoriosModulo = {
                 plugins: {
                     legend: { display: false },
                     tooltip: {
-                        backgroundColor: '#0f172a',
+                        backgroundColor: theme.tooltipBackground,
                         titleColor: '#ffffff',
                         bodyColor: '#e2e8f0',
                         padding: 12,
@@ -151,14 +275,14 @@ export const RelatoriosModulo = {
                         beginAtZero: true,
                         suggestedMax,
                         grid: {
-                            color: 'rgba(8, 76, 160, 0.12)',
+                            color: `rgba(${theme.accentRgb}, 0.12)`,
                             drawBorder: false
                         },
                         border: { display: false },
                         ticks: {
                             stepSize,
                             padding: 10,
-                            color: '#0b5fc2',
+                            color: theme.accent,
                             font: { weight: '800', size: 12 },
                             callback: (value) => this.formatarEixoValor(value)
                         }
@@ -167,7 +291,7 @@ export const RelatoriosModulo = {
                         grid: { display: false },
                         border: { display: false },
                         ticks: {
-                            color: '#1f2937',
+                            color: (tickContext) => this.monthVisibilidade[tickContext.index] ? theme.textPrimary : theme.xTickInactive,
                             font: { weight: '700', size: 12 },
                             padding: 8
                         }
@@ -176,7 +300,9 @@ export const RelatoriosModulo = {
             }
         });
 
-        this.gerarControlesMeses();
+        window.myChart.$monthlyTotals = totalPorMes;
+        window.myChart.$monthColors = monthColors;
+        this.atualizarControleOcultarMeses();
     },
 
     gerarControlesMeses() {

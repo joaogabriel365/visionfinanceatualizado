@@ -42,6 +42,211 @@
   box-shadow: 0 0 0 3px var(--accent-soft);
 }
 
+.expense-modal-card {
+  background: var(--modal-bg) !important;
+  border: 1px solid var(--dashboard-box-border) !important;
+  box-shadow: var(--dashboard-box-shadow) !important;
+}
+
+#modalDespesa label {
+  color: var(--text-secondary) !important;
+  font-weight: 700;
+}
+
+#modalDespesa .dark-input,
+#modalDespesa .dark-select,
+#modalDespesa textarea {
+  width: 100%;
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--dashboard-box-surface) 100%) !important;
+  border: 1px solid var(--dashboard-box-border) !important;
+  border-radius: 14px !important;
+  color: var(--text-primary) !important;
+  padding: 0.9rem 1rem !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 14px rgba(124, 98, 60, 0.06);
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
+}
+
+#modalDespesa .dark-input::placeholder,
+#modalDespesa textarea::placeholder {
+  color: var(--text-muted);
+}
+
+#modalDespesa .dark-input:focus,
+#modalDespesa .dark-select:focus,
+#modalDespesa textarea:focus {
+  outline: none;
+  border-color: rgba(var(--accent-rgb), 0.45) !important;
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12), 0 8px 18px rgba(124, 98, 60, 0.08);
+}
+
+#modalDespesa #categoria,
+#modalDespesa #metodo,
+#modalDespesa #observacao {
+  font-weight: 600;
+}
+
+.expense-card-selector {
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.42) 0%, var(--dashboard-box-surface) 100%) !important;
+  border: 1px solid var(--dashboard-box-border) !important;
+  border-radius: 16px !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.expense-description-field {
+  min-height: 104px;
+  line-height: 1.55;
+}
+
+.expense-table-card {
+  padding: 0 !important;
+}
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.expense-table thead th,
+.expense-table tbody td {
+  vertical-align: middle;
+}
+
+.expense-head {
+  font-size: 0.95rem;
+  font-weight: 800 !important;
+}
+
+.expense-head-title,
+.expense-cell-title {
+  width: 18%;
+  text-align: left;
+}
+
+.expense-head-category,
+.expense-cell-category {
+  width: 16%;
+  text-align: center;
+}
+
+.expense-head-payment,
+.expense-cell-payment {
+  width: 18%;
+  text-align: center;
+}
+
+.expense-head-value,
+.expense-cell-value {
+  width: 12%;
+  text-align: center;
+}
+
+.expense-head-date,
+.expense-cell-date {
+  width: 14%;
+  text-align: center;
+}
+
+.expense-head-description,
+.expense-cell-description {
+  width: 12%;
+  text-align: center;
+}
+
+.expense-head-actions,
+.expense-cell-actions {
+  width: 10%;
+  text-align: center;
+}
+
+.expense-row {
+  border-bottom: 1px solid rgba(30, 41, 59, 0.14);
+}
+
+.expense-table tbody td {
+  padding: 18px 20px;
+  color: var(--text-primary);
+}
+
+.expense-cell-title {
+  font-weight: 500;
+}
+
+.expense-cell-category .category-tag {
+  margin-inline: auto;
+}
+
+.expense-payment-main {
+  display: block;
+}
+
+.expense-payment-extra {
+  display: flex;
+  gap: 5px;
+  align-items: center;
+  justify-content: center;
+  margin-top: 4px;
+}
+
+.expense-value-strong {
+  color: var(--text-primary);
+  font-weight: 800;
+}
+
+.expense-description-empty {
+  text-align: center;
+  width: 100%;
+  opacity: 0.5;
+}
+
+.expense-actions {
+  display: flex;
+  justify-content: center;
+  gap: 15px;
+}
+
+.expense-actions .btn-action {
+  background: transparent !important;
+  border: none !important;
+  box-shadow: none !important;
+}
+
+.expense-actions .btn-action:hover {
+  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.04) !important;
+}
+
+.expense-actions .btn-edit img {
+  filter: brightness(0) saturate(100%) !important;
+}
+
+.expense-actions .btn-delete img {
+  filter: brightness(0) saturate(100%) invert(28%) sepia(95%) saturate(4035%) hue-rotate(345deg) brightness(100%) contrast(99%) !important;
+}
+
+.expense-date-group-row td {
+  padding: 0 20px 8px;
+}
+
+.expense-date-group-badge {
+  display: block;
+  width: 100%;
+  padding: 14px 20px;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.9rem;
+  border-radius: 0;
+}
+
+body.light-theme .expense-table thead {
+  background: rgba(255, 251, 245, 0.58);
+}
+
+body.light-theme .expense-table tbody tr.expense-row:hover {
+  background: rgba(255, 250, 244, 0.45);
+}
+
 body.light-theme .filters-bar .filter-select,
 body.light-theme #modalDespesa .modal-content-card,
 body.light-theme #modalConfirmacao > div,

@@ -1,4 +1,4 @@
-import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, getThemeVar } from './common.js';
+import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, getCategoryBadgeStyle, getThemeVar } from './common.js';
 
 export const DespesasModulo = {
     init() {
@@ -19,16 +19,7 @@ export const DespesasModulo = {
     },
 
     obterEstiloCategoria(categoria) {
-        const cores = {
-            'Alimentação': { bg: 'rgba(245, 158, 11, 0.15)', text: '#fbbf24' },
-            'Transporte': { bg: 'rgba(59, 130, 246, 0.15)', text: '#60a5fa' },
-            'Lazer': { bg: 'rgba(236, 72, 153, 0.15)', text: '#f472b6' },
-            'Saúde': { bg: 'rgba(16, 185, 129, 0.15)', text: '#34d399' },
-            'Moradia': { bg: 'rgba(139, 92, 246, 0.15)', text: '#a78bfa' },
-            'Moda': { bg: 'rgba(168, 85, 247, 0.15)', text: '#c084fc' }, // Roxo/Lilás
-            'Outros': { bg: 'rgba(100, 116, 139, 0.15)', text: '#94a3b8' }  // Slate/Cinza
-        };
-        return cores[categoria] || { bg: 'rgba(148, 163, 184, 0.1)', text: '#94a3b8' };
+        return getCategoryBadgeStyle(categoria);
     },
 
     verificarMetodoPagamento() {
@@ -284,9 +275,11 @@ export const DespesasModulo = {
 
         datasOrdenadas.forEach(dataKey => {
             htmlFinal += `
-                <tr style="background: ${sectionRowBackground};">
-                    <td colspan="7" style="padding: 12px 20px; color: ${sectionRowText}; font-weight: 700; font-size: 13px; border-bottom: 1px solid ${sectionRowBorder};">
-                        ${this.formatarDataExibicao(dataKey)}
+                <tr class="expense-date-group-row">
+                    <td colspan="7">
+                        <span class="expense-date-group-badge" style="background: ${sectionRowBackground}; color: ${sectionRowText}; border-bottom: 1px solid ${sectionRowBorder};">
+                            ${this.formatarDataExibicao(dataKey)}
+                        </span>
                     </td>
                 </tr>`;
 
@@ -296,7 +289,7 @@ export const DespesasModulo = {
                 
                 let infoExtra = '';
                 if (item.parcelas || item.cartao) {
-                    infoExtra += `<div style="display: flex; gap: 5px; align-items: center; margin-top: 4px;">`;
+                    infoExtra += `<div class="expense-payment-extra">`;
                     if (item.parcelas) {
                         infoExtra += `<span style="color: ${getThemeVar('--accent')}; font-size: 11px; font-weight: 700;">${item.parcelas}</span>`;
                     }
@@ -306,28 +299,28 @@ export const DespesasModulo = {
                     infoExtra += `</div>`;
                 }
 
-                const textoObs = item.observacao ? item.observacao : `<div style="text-align: center; width: 100%; opacity: 0.5;">-</div>`;
+                const textoObs = item.observacao ? item.observacao : `<div class="expense-description-empty">-</div>`;
 
                 // Alteração Solicitada: Mostrar valor cheio na tabela (usando o valorTotalOriginal)
                 const valorExibicao = item.valorTotalOriginal || item.valor;
 
                 htmlFinal += `
-                    <tr style="border-bottom: 1px solid rgba(30, 41, 59, 0.3);">
-                        <td style="padding: 15px 20px; color: #1f2937;">${item.titulo}</td>
-                        <td style="padding: 15px 20px; text-align: center;">
-                            <span style="background: ${estilo.bg}; color: ${estilo.text}; padding: 6px 0; border-radius: 8px; font-size: 10px; font-weight: 800; text-transform: uppercase; border: 1px solid ${estilo.text}33; display: inline-block; width: 110px; text-align: center;">
+                    <tr class="expense-row">
+                        <td class="expense-cell-title">${item.titulo}</td>
+                        <td class="expense-cell-category">
+                            <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px; margin: 0 auto;">
                                 ${item.categoria}
                             </span>
                         </td>
-                        <td style="padding: 15px 20px; color: #1f2937;">
-                            ${item.pagamento}
+                        <td class="expense-cell-payment">
+                            <span class="expense-payment-main">${item.pagamento}</span>
                             ${infoExtra}
                         </td>
-                        <td style="padding: 15px 20px;"><strong style="color: #1f2937;">${formatarMoeda(valorExibicao)}</strong></td>
-                        <td style="padding: 15px 20px; color: #1f2937;">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
-                        <td style="padding: 15px 20px; color: #94a3b8; font-size: 0.9em; vertical-align: middle;">${textoObs}</td>
-                        <td style="padding: 15px 20px; text-align: center;">
-                            <div style="display: flex; justify-content: center; gap: 15px;">
+                        <td class="expense-cell-value"><strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong></td>
+                        <td class="expense-cell-date">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
+                        <td class="expense-cell-description" style="color: #94a3b8; font-size: 0.9em;">${textoObs}</td>
+                        <td class="expense-cell-actions">
+                            <div class="expense-actions">
                                 <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})">
                                     <img src="img/lapis.png" alt="Editar">
                                 </button>

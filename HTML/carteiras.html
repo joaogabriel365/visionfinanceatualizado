@@ -3,7 +3,7 @@
         <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700; margin: 0;">Carteiras e Métodos de Pagamento</h2>
         <p style="color: var(--text-secondary); font-size: 14px; margin-top: 5px;">Gerencie seus cartões, contas e vales em um só lugar.</p>
     </div>
-    <button class="btn btn-primary" id="btnNewWallet" onclick="document.getElementById('walletModal').style.display = 'flex'">
+    <button class="btn btn-primary" id="btnNewWallet" onclick="window.CarteirasModulo.abrirModalNova()">
         <i class="fas fa-plus"></i> Nova Carteira
     </button>
 </div>
@@ -52,7 +52,7 @@
 
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button type="submit" class="btn btn-primary">Salvar Carteira</button>
-                <button type="button" onclick="document.getElementById('walletModal').style.display = 'none'; document.getElementById('walletForm').reset(); document.getElementById('editWalletIndex').value = '-1'; document.getElementById('walletModalTitle').innerText = 'Nova Carteira';" class="btn btn-secondary">Cancelar</button>
+                <button type="button" onclick="window.CarteirasModulo.fecharModal()" class="btn btn-secondary">Cancelar</button>
             </div>
         </form>
     </div>
