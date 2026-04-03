@@ -1002,7 +1002,7 @@ body.light-theme .navbar {
 
 .feature-card {
     background: var(--card-bg);
-    padding: 44px 34px;
+    padding: 44px 34px 86px;
     border-radius: 20px;
     border: 1px solid var(--border-light);
     box-shadow: 0 4px 12px var(--shadow);
@@ -1043,8 +1043,8 @@ body.light-theme .navbar {
 
 .feature-card::after {
     position: absolute;
-    right: 20px;
-    bottom: 18px;
+    right: 18px;
+    bottom: 14px;
     font-size: 3.8rem;
     font-weight: 800;
     line-height: 1;
@@ -1294,6 +1294,7 @@ body.dark-theme .showcase-image-light {
     .footer-container { flex-direction: column; text-align: center; align-items: center; }
     .footer-links-group { gap: 40px; margin-top: 30px; }
     .hero-image-card { max-width: 100%; }
+    .feature-card { padding: 40px 34px 86px; }
 }
 
 /* --- ANIMAÇÕES DE ENTRADA DO MODAL --- */
