@@ -208,10 +208,17 @@ body.dark-theme .budget-limit-add-btn:hover {
   box-shadow: 0 8px 16px rgba(var(--accent-rgb), 0.22);
 }
 
-body.light-theme #valor-limite-display,
-body.light-theme #progresso-porcentagem-text,
-body.light-theme #disponivel-text {
-  color: #0f172a !important;
+#valor-limite-display,
+#progresso-porcentagem-text,
+#disponivel-text,
+#gasto-total-text,
+.planning-goal-target,
+.planning-goal-progress-value {
+  color: #ffffff !important;
+}
+
+#gasto-total-text span {
+  color: #ffffff !important;
 }
 
 body.light-theme .planning-card-prof .btn-action {
@@ -228,11 +235,10 @@ body.light-theme .planning-card-prof .btn-action:hover {
 }
 
 body.light-theme .planning-card-prof .btn-action img {
-  width: 28px !important;
-  height: 28px !important;
+  width: auto !important;
+  height: auto !important;
   object-fit: contain;
-  image-rendering: -webkit-optimize-contrast;
-  image-rendering: crisp-edges;
+  image-rendering: auto;
 }
 
 body.light-theme .planning-card-prof .btn-action.btn-delete {
@@ -246,5 +252,361 @@ body.light-theme .planning-card-prof .btn-action.btn-delete:hover {
 body.light-theme .planning-card-prof .btn-action.btn-edit,
 body.light-theme .planning-card-prof .btn-action.btn-add {
   background: rgba(15, 23, 42, 0.05) !important;
+}
+
+.planning-budget-card,
+.planning-goals-card {
+  overflow: hidden;
+}
+
+.planning-summary-copy,
+.planning-limit-panel {
+  min-width: 0;
+}
+
+.planning-limit-display {
+  flex-wrap: wrap;
+}
+
+.planning-budget-form {
+  width: 100%;
+  align-items: stretch;
+}
+
+.planning-budget-input {
+  min-width: 0;
+}
+
+.planning-budget-save,
+.planning-goals-cta {
+  white-space: nowrap;
+}
+
+.planning-progress-top,
+.planning-progress-bottom {
+  gap: 0.75rem;
+}
+
+.planning-table-wrap {
+  width: 100%;
+  overflow-x: hidden;
+}
+
+.planning-goals-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.planning-goal-row td {
+  vertical-align: middle;
+}
+
+.planning-goal-progress {
+  width: 100%;
+}
+
+.planning-goal-actions {
+  flex-wrap: wrap;
+}
+
+.planning-card-prof .btn-action,
+.planning-goal-actions .btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.planning-action-icon {
+  display: block;
+  width: auto;
+  height: 22px;
+  max-width: 22px;
+  max-height: 22px;
+  object-fit: contain;
+  aspect-ratio: 1 / 1;
+  image-rendering: auto;
+}
+
+.planning-action-icon-add {
+  height: 20px;
+  max-width: 20px;
+  max-height: 20px;
+  filter: brightness(0) invert(1);
+}
+
+.planning-action-icon-edit {
+  height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  filter: brightness(0) saturate(100%) invert(26%) sepia(86%) saturate(1932%) hue-rotate(204deg) brightness(88%) contrast(95%);
+}
+
+.planning-action-icon-delete {
+  height: 18px;
+  max-width: 18px;
+  max-height: 18px;
+  filter: brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%);
+}
+
+.budget-limit-add-icon {
+  width: auto !important;
+  height: 18px !important;
+  max-width: 18px;
+  max-height: 18px;
+  object-fit: contain;
+  aspect-ratio: 1 / 1;
+  image-rendering: auto;
+}
+
+@media (max-width: 900px) {
+  .planning-budget-card,
+  .planning-goals-card {
+    padding: 1.15rem !important;
+    border-radius: 18px !important;
+  }
+
+  .planning-summary-head,
+  .planning-goals-head {
+    display: flex !important;
+    flex-direction: column;
+    gap: 1rem;
+    align-items: stretch !important;
+  }
+
+  .planning-limit-panel {
+    text-align: left !important;
+  }
+
+  .planning-limit-display {
+    justify-content: flex-start !important;
+  }
+
+  .planning-budget-form {
+    max-width: none !important;
+  }
+
+  .planning-goals-cta {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .planning-table-wrap,
+  .planning-goals-table {
+    width: 100%;
+    max-width: 100%;
+    overflow: hidden;
+  }
+
+  .planning-goals-table,
+  .planning-goals-table tbody,
+  .planning-goals-table tr,
+  .planning-goals-table td {
+    box-sizing: border-box;
+  }
+
+  .planning-card-prof h3,
+  .plan-card h4 {
+    font-size: 1.08rem;
+  }
+
+  .planning-budget-form {
+    display: flex !important;
+    flex-direction: column;
+  }
+
+  .planning-budget-save {
+    width: 100%;
+  }
+
+  .planning-progress-top,
+  .planning-progress-bottom {
+    flex-direction: column;
+    align-items: flex-start !important;
+    gap: 0.5rem;
+  }
+
+  .planning-goals-table {
+    table-layout: auto;
+  }
+
+  .planning-goals-table thead {
+    display: none;
+  }
+
+  .planning-goals-table tbody {
+    display: grid;
+    gap: 0.9rem;
+    width: 100%;
+  }
+
+  .planning-goal-empty-row {
+    display: table-row !important;
+  }
+
+  .planning-goal-row {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+    padding: 1rem;
+    width: 100%;
+    min-width: 0;
+    overflow: hidden;
+    border: 1px solid var(--border-color) !important;
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-soft));
+    box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+  }
+
+  .planning-goal-row td {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 0.75rem;
+    align-items: center;
+    min-width: 0;
+    padding: 0 !important;
+    border: none;
+    text-align: left !important;
+  }
+
+  .planning-goal-row td::before {
+    content: attr(data-label);
+    color: var(--text-secondary);
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  .planning-goal-name {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  .planning-goal-target {
+    color: var(--text-primary);
+  }
+
+  .planning-goal-progress-cell,
+  .planning-goal-actions-cell {
+    grid-template-columns: 1fr;
+    gap: 0.55rem;
+    min-width: 0;
+    overflow: hidden;
+  }
+
+  .planning-goal-progress {
+    display: grid !important;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    min-width: 0;
+    gap: 0.75rem !important;
+    width: 100%;
+  }
+
+  .planning-goal-progress-track {
+    min-width: 0;
+    width: 100%;
+    max-width: 100%;
+  }
+
+  .planning-goal-progress-value {
+    min-width: 0 !important;
+    white-space: nowrap;
+  }
+
+  .planning-goal-actions {
+    justify-content: flex-start !important;
+    gap: 0.7rem !important;
+    width: 100%;
+  }
+
+  .planning-goal-actions .btn-action {
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+  }
+
+  .planning-action-icon {
+    height: 20px;
+    max-width: 20px;
+    max-height: 20px;
+  }
+
+  #modalAdicionarLimite > div,
+  #modalNovaMeta > div,
+  #modalAporteMeta > div,
+  #modalConfirmacaoSistema > div {
+    width: min(100%, 96vw) !important;
+    padding: 22px !important;
+  }
+
+  #modalAdicionarLimite > div > div:last-child,
+  #modalNovaMeta > div > div:last-child,
+  #modalAporteMeta > div > div:last-child,
+  #modalConfirmacaoSistema > div > div:last-child {
+    flex-direction: column;
+  }
+}
+
+@media (max-width: 560px) {
+  .planning-table-wrap {
+    overflow: hidden;
+  }
+
+  .planning-budget-card,
+  .planning-goals-card {
+    padding: 1rem !important;
+  }
+
+  .planning-summary-copy p,
+  .planning-goals-head p {
+    font-size: 0.82rem !important;
+  }
+
+  #valor-limite-display {
+    font-size: 1.35rem !important;
+  }
+
+  .planning-goal-row {
+    padding: 0.9rem;
+    gap: 0.65rem;
+  }
+
+  .planning-goal-row td {
+    grid-template-columns: 84px minmax(0, 1fr);
+    gap: 0.6rem;
+    width: 100%;
+  }
+
+  .planning-goal-row td::before {
+    font-size: 0.68rem;
+  }
+
+  .planning-goal-progress {
+    grid-template-columns: 1fr;
+    width: 100%;
+  }
+
+  .planning-goal-progress-value {
+    justify-self: flex-start;
+  }
+
+  .planning-goal-actions {
+    gap: 0.55rem !important;
+  }
+
+  .planning-goal-actions .btn-action {
+    width: 42px;
+    height: 42px;
+  }
+
+  .planning-action-icon {
+    height: 18px;
+    max-width: 18px;
+    max-height: 18px;
+  }
 }
 

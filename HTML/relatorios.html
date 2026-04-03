@@ -1,6 +1,7 @@
 ﻿<div class="filter-container">
     <div class="filter-actions">
         <div class="filter-group">
+            <span class="filter-group-icon"><i class="fas fa-chart-column"></i></span>
             <label>Ano:</label>
             <select id="reportYear" class="custom-select">
                 <option value="2024">2024</option>
@@ -16,7 +17,14 @@
 
 <div class="reports-main-layout">
     <div class="chart-card-large">
-        <h3 class="report-main-title">Comparativo Mensal por Categoria</h3>
+        <div class="reports-chart-head">
+            <div class="reports-title-block">
+                <p class="report-eyebrow">Análise visual</p>
+                <h3 class="report-main-title">Comparativo Mensal por Categoria</h3>
+                <p class="report-subtitle">Veja a evolução do gasto mês a mês com leitura clara mesmo em telas pequenas.</p>
+            </div>
+            <div class="report-header-chip">12 meses</div>
+        </div>
         <div class="reports-chart-tools">
             <div class="month-visibility-control" id="monthVisibilityControl">
                 <button type="button" class="month-visibility-trigger" id="monthVisibilityTrigger" aria-expanded="false" aria-controls="monthVisibilityPopover">
@@ -39,6 +47,7 @@
             <div>
                 <p class="report-eyebrow">Leitura rápida</p>
                 <h3>Resumo do Período</h3>
+                <p class="report-subtitle">Indicadores essenciais para leitura rápida do comportamento financeiro.</p>
             </div>
         </div>
         <div id="resumoPeriodoContainer" class="resumo-list"></div>

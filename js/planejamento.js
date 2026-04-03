@@ -1,5 +1,9 @@
 import { formatarMoeda, metas, salvarNoStorage, getThemeVar } from './common.js';
 
+const planningAddIconUrl = new URL('../img/+.png', import.meta.url).href;
+const planningEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
+const planningDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+
 export const PlanejamentoModulo = {
     init() {
         console.log("Iniciando Módulo de Planejamento...");
@@ -271,53 +275,46 @@ export const PlanejamentoModulo = {
         if (!tbody) return;
 
         if (metas.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding:50px; color:#94a3b8;">Nenhuma meta financeira cadastrada.</td></tr>`;
+            tbody.innerHTML = `<tr class="planning-goal-empty-row"><td colspan="5" style="text-align:center; padding:50px; color:#94a3b8;">Nenhuma meta financeira cadastrada.</td></tr>`;
             return;
         }
 
         const isLight = document.body.classList.contains('light-theme');
         const progressBg = isLight ? '#e8e8e8' : '#1a253a';
         const rowBorder = isLight ? '#cbd5e1' : '#1e293b';
-        const rowText = isLight ? '#1f2937' : '#e2e8f0';
-        const percentageColor = isLight ? '#0f172a' : '#e2e8f0';
+        const rowText = '#ffffff';
+        const percentageColor = '#ffffff';
         const actionButtonStyle = isLight
             ? 'border: none;'
             : 'background: var(--bg-surface);';
-        const addFilter = isLight
-            ? 'brightness(0) saturate(100%)'
-            : 'brightness(0) invert(1)';
-        const editFilter = isLight
-            ? 'brightness(0) saturate(100%)'
-            : 'brightness(0) saturate(100%) invert(26%) sepia(86%) saturate(1932%) hue-rotate(204deg) brightness(88%) contrast(95%)';
-        const deleteFilter = 'brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%)';
 
         tbody.innerHTML = metas.map((meta, index) => {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
             return `
-                <tr style="border-bottom: 1px solid ${rowBorder}; color: ${rowText};">
-                    <td style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
-                    <td style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
-                    <td style="padding: 20px 15px;">${meta.prazo}</td>
-                    <td style="padding: 20px 15px;">
-                        <div style="display: flex; align-items: center; gap: 10px;">
-                            <div style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
-                                <div style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar('--accent')}; box-shadow: 0 0 10px ${getThemeVar('--accent-soft')};"></div>
+                <tr class="planning-goal-row" style="border-bottom: 1px solid ${rowBorder}; color: ${rowText};">
+                    <td class="planning-goal-name" data-label="Meta" style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
+                    <td class="planning-goal-target" data-label="Valor Alvo" style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
+                    <td class="planning-goal-deadline" data-label="Prazo" style="padding: 20px 15px;">${meta.prazo}</td>
+                    <td class="planning-goal-progress-cell" data-label="Progresso" style="padding: 20px 15px;">
+                        <div class="planning-goal-progress" style="display: flex; align-items: center; gap: 10px;">
+                            <div class="planning-goal-progress-track" style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
+                                <div class="planning-goal-progress-fill" style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar('--accent')}; box-shadow: 0 0 10px ${getThemeVar('--accent-soft')};"></div>
                             </div>
-                            <span style="font-size: 0.8rem; min-width: 35px; color: ${percentageColor}; font-weight: 700;">${porcentagem}%</span>
+                            <span class="planning-goal-progress-value" style="font-size: 0.8rem; min-width: 35px; color: ${percentageColor}; font-weight: 700;">${porcentagem}%</span>
                         </div>
                     </td>
-                    <td style="padding: 20px 15px; text-align: center;">
-                        <div style="display: flex; justify-content: center; gap: 15px;">
+                    <td class="planning-goal-actions-cell" data-label="Ações" style="padding: 20px 15px; text-align: center;">
+                        <div class="planning-goal-actions" style="display: flex; justify-content: center; gap: 15px;">
                                <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})" style="${actionButtonStyle}">
-                                   <img src="./img/+.png" style="width:28px; height:28px; filter: ${addFilter};" title="Adicionar valor">
+                                   <img src="${planningAddIconUrl}" class="planning-action-icon planning-action-icon-add" alt="Adicionar valor" title="Adicionar valor">
                             </button>
                                <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})" style="${actionButtonStyle}">
-                                   <img src="./img/lapis.png" alt="Editar meta" title="Editar meta" style="width:28px; height:28px; filter: ${editFilter};">
+                                   <img src="${planningEditIconUrl}" class="planning-action-icon planning-action-icon-edit" alt="Editar meta" title="Editar meta">
                             </button>
                                <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})" style="${actionButtonStyle}">
-                                   <img src="./img/lixeira.png" alt="Excluir meta" title="Excluir meta" style="width:28px; height:28px; filter: ${deleteFilter};">
+                                   <img src="${planningDeleteIconUrl}" class="planning-action-icon planning-action-icon-delete" alt="Excluir meta" title="Excluir meta">
                             </button>
                         </div>
                     </td>

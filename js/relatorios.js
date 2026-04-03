@@ -9,6 +9,31 @@ export const RelatoriosModulo = {
     monthNames: ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'],
     monthVisibilidade: Array(12).fill(true),
 
+    isMobileViewport() {
+        return window.innerWidth <= 640;
+    },
+
+    getMonthLabel(name) {
+        if (!this.isMobileViewport()) return name;
+        return name.slice(0, 3);
+    },
+
+    bindResponsiveChart() {
+        if (this._responsiveChartBound) return;
+
+        this._responsiveChartBound = true;
+        let resizeTimer = null;
+
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimer);
+            resizeTimer = window.setTimeout(() => {
+                if (!document.getElementById('comparisonChart')) return;
+                this.gerarGraficoComparativo();
+                this.atualizarControleOcultarMeses();
+            }, 140);
+        });
+    },
+
     obterCoresGrafico() {
         const styles = getComputedStyle(document.body);
         const isDark = document.body.classList.contains('dark-theme');
@@ -56,6 +81,7 @@ export const RelatoriosModulo = {
         this.gerarGraficoComparativo();
         this.renderizarRanking();
         this.configurarControleOcultarMeses();
+        this.bindResponsiveChart();
 
         const yearSelect = document.getElementById('reportYear');
 
@@ -214,6 +240,8 @@ export const RelatoriosModulo = {
         const monthNames = this.monthNames;
         const monthColors = ['#ef4444','#3b82f6','#22c55e','#f59e0b','#8b5cf6','#ec4899','#10b981','#0284c7','#f97316','#14b8a6','#f43f5e','#0ea5e9'];
         const theme = this.obterCoresGrafico();
+        const isMobile = this.isMobileViewport();
+        const chartLabels = monthNames.map((name) => this.getMonthLabel(name));
 
         const totalPorMes = Array(12).fill(0);
         this.despesas.forEach(d => {
@@ -235,7 +263,7 @@ export const RelatoriosModulo = {
         window.myChart = new Chart(ctx, {
             type: 'bar',
             data: {
-                labels: monthNames,
+                labels: chartLabels,
                 datasets: [{
                     label: 'Total de Despesas',
                     data: values,
@@ -245,16 +273,19 @@ export const RelatoriosModulo = {
                     borderRadius: 0,
                     borderSkipped: false,
                     hoverBorderWidth: 0,
-                    maxBarThickness: 54,
-                    categoryPercentage: 0.72,
-                    barPercentage: 0.82
+                    maxBarThickness: isMobile ? 28 : 54,
+                    categoryPercentage: isMobile ? 0.9 : 0.72,
+                    barPercentage: isMobile ? 0.72 : 0.82
                 }]
             },
             options: {
                 responsive: true,
                 maintainAspectRatio: false,
+                indexAxis: isMobile ? 'y' : 'x',
                 layout: {
-                    padding: { top: 12, right: 10, bottom: 0, left: 6 }
+                    padding: isMobile
+                        ? { top: 8, right: 6, bottom: 4, left: 2 }
+                        : { top: 12, right: 10, bottom: 0, left: 6 }
                 },
                 plugins: {
                     legend: { display: false },
@@ -266,12 +297,17 @@ export const RelatoriosModulo = {
                         cornerRadius: 12,
                         displayColors: false,
                         callbacks: {
-                            label: ctx => `${ctx.label}: ${formatarMoeda(ctx.parsed.y || 0)}`
+                            title: (items) => {
+                                const item = items?.[0];
+                                if (!item) return '';
+                                return monthNames[item.dataIndex] || item.label;
+                            },
+                            label: (ctx) => `${monthNames[ctx.dataIndex] || ctx.label}: ${formatarMoeda(isMobile ? (ctx.parsed.x || 0) : (ctx.parsed.y || 0))}`
                         }
                     }
                 },
                 scales: {
-                    y: {
+                    [isMobile ? 'x' : 'y']: {
                         beginAtZero: true,
                         suggestedMax,
                         grid: {
@@ -283,16 +319,16 @@ export const RelatoriosModulo = {
                             stepSize,
                             padding: 10,
                             color: theme.accent,
-                            font: { weight: '800', size: 12 },
+                            font: { weight: '800', size: isMobile ? 11 : 12 },
                             callback: (value) => this.formatarEixoValor(value)
                         }
                     },
-                    x: {
+                    [isMobile ? 'y' : 'x']: {
                         grid: { display: false },
                         border: { display: false },
                         ticks: {
                             color: (tickContext) => this.monthVisibilidade[tickContext.index] ? theme.textPrimary : theme.xTickInactive,
-                            font: { weight: '700', size: 12 },
+                            font: { weight: '700', size: isMobile ? 11 : 12 },
                             padding: 8
                         }
                     }

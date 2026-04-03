@@ -146,3 +146,178 @@ body.light-theme .dash-table tbody tr:hover {
 .expense-col-category .category-tag {
   margin-inline: auto;
 }
+
+@media (max-width: 1024px) {
+  .chart-container {
+    height: 290px;
+  }
+}
+
+@media (max-width: 768px) {
+  .dashboard-top-cards {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .chart-card,
+  .table-card {
+    padding: 1rem;
+  }
+
+  .table-header-flex {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.7rem;
+  }
+
+  .dash-table {
+    min-width: 680px;
+  }
+}
+
+@media (max-width: 560px) {
+  .dashboard-top-cards {
+    grid-template-columns: 1fr !important;
+  }
+
+  .chart-container {
+    height: 250px;
+  }
+
+  .recent-expenses-card {
+    padding: 1rem;
+  }
+
+  .recent-expenses-table {
+    min-width: 100%;
+    table-layout: auto;
+  }
+
+  .recent-expenses-table thead {
+    display: none;
+  }
+
+  .recent-expenses-table tbody {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .recent-expenses-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    border-radius: 16px;
+    background: #071a2d;
+    padding: 1rem;
+    box-shadow: none;
+  }
+
+  .recent-expenses-table tbody td {
+    border: 0;
+    padding: 0.18rem 0;
+    text-align: left;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.26rem;
+    font-size: 0.9rem;
+  }
+
+  .recent-expenses-table tbody td::before {
+    color: var(--text-secondary);
+    font-size: 0.7rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  .recent-expenses-table tbody td:nth-child(1)::before {
+    content: 'Titulo';
+  }
+
+  .recent-expenses-table tbody td:nth-child(2)::before {
+    content: 'Categoria';
+  }
+
+  .recent-expenses-table tbody td:nth-child(3)::before {
+    content: 'Pagamento';
+  }
+
+  .recent-expenses-table tbody td:nth-child(4)::before {
+    content: 'Valor';
+  }
+
+  .recent-expenses-table tbody td:nth-child(5)::before {
+    content: 'Data';
+  }
+
+  .recent-expenses-table .expense-col-category {
+    justify-items: start;
+  }
+
+  .recent-expenses-table .expense-col-category .category-tag {
+    margin-inline: 0;
+    width: fit-content;
+  }
+
+  .recent-expenses-table .expense-col-title,
+  .recent-expenses-table .expense-col-payment,
+  .recent-expenses-table .expense-col-value,
+  .recent-expenses-table .expense-col-date,
+  .recent-expenses-table .expense-col-category {
+    text-align: left;
+  }
+
+  .recent-expenses-table tbody td:not(:last-child) {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+    padding-bottom: 0.6rem;
+  }
+
+  .recent-expenses-table .expense-col-title {
+    color: var(--text-primary);
+    font-weight: 500;
+    font-size: 0.96rem;
+  }
+
+  .recent-expenses-table .expense-col-payment,
+  .recent-expenses-table .expense-col-date {
+    color: var(--text-primary);
+  }
+
+  .recent-expenses-table .expense-col-value strong {
+    font-size: 0.95rem;
+  }
+
+  .recent-expenses-card .table-header-flex {
+    align-items: flex-start;
+  }
+
+  .recent-expenses-card .date-badge {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    padding: 0.42rem 0.92rem;
+    background: rgba(201, 170, 106, 0.16);
+    color: #facc15;
+    border-color: rgba(250, 204, 21, 0.18);
+  }
+
+  body.light-theme .recent-expenses-table tbody tr {
+    background: color-mix(in srgb, var(--card-bg) 94%, var(--accent-soft));
+    border-color: var(--border-color);
+  }
+
+  body.light-theme .recent-expenses-table tbody td:not(:last-child) {
+    border-bottom-color: rgba(37, 99, 235, 0.14);
+  }
+
+  body.light-theme .recent-expenses-card .date-badge {
+    background: rgba(202, 203, 206, 0.12);
+    color: #2563eb;
+    border-color: rgba(37, 99, 235, 0.18);
+  }
+
+  .recent-expenses-table .expense-col-value {
+    color: var(--text-primary);
+  }
+}

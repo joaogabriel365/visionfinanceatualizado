@@ -1,12 +1,12 @@
-﻿<div class="planning-card-prof" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
-    <div style="display: flex; justify-content: space-between; align-items: start;">
-        <div>
+﻿<div class="planning-card-prof planning-budget-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
+    <div class="planning-summary-head" style="display: flex; justify-content: space-between; align-items: start;">
+        <div class="planning-summary-copy">
             <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Orçamento Mensal</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 20px 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
         </div>
-        <div style="text-align: right;">
+        <div class="planning-limit-panel" style="text-align: right;">
             <p style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">LIMITE ESTABELECIDO:</p>
-            <div style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 5px;">
+            <div class="planning-limit-display" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 5px;">
                 <button class="budget-limit-add-btn" onclick="PlanejamentoModulo.abrirModalAdicionarValor()" 
                         style="background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;" 
                         title="Somar ao limite atual">
@@ -17,43 +17,45 @@
         </div>
     </div>
 
-    <div style="display: flex; gap: 10px; margin-bottom: 30px; max-width: 350px;">
+    <div class="planning-budget-form" style="display: flex; gap: 10px; margin-bottom: 30px; max-width: 350px;">
         <input type="text" id="orcamentoMensalInput" placeholder="R$ 0,00" 
+               class="planning-budget-input"
                style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 12px; color: var(--text-primary); outline: none;">
-        <button onclick="PlanejamentoModulo.salvarOrcamento()"
+        <button onclick="PlanejamentoModulo.salvarOrcamento()" class="planning-budget-save"
             style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
             SALVAR
         </button>
     </div>
 
-    <div style="margin-top: 20px;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+    <div class="planning-progress-summary" style="margin-top: 20px;">
+        <div class="planning-progress-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Uso do Orçamento <span style="color:var(--text-secondary)">(Alocado em Metas)</span></span>
             <span id="progresso-porcentagem-text" style="color: var(--text-primary); font-size: 0.85rem; font-weight: bold;">0%</span>
         </div>
         <div style="height: 10px; background: var(--border-color); border-radius: 5px; overflow: hidden;">
             <div id="progressBudgetFill" style="width: 0%; height: 100%; background: var(--accent); transition: width 0.3s;"></div>
         </div>
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
+        <div class="planning-progress-bottom" style="display: flex; justify-content: space-between; align-items: center; margin-top: 8px;">
             <span id="gasto-total-text" style="color: var(--text-primary); font-size: 0.8rem;">R$ 0,00 gastos/alocados</span>
             <span id="disponivel-text" style="color: var(--text-primary); font-size: 0.8rem; font-weight: 600;">Disponível: R$ 0,00</span>
         </div>
     </div>
 </div>
 
-<div class="planning-card-prof" style="margin-top: 2rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
-    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+<div class="planning-card-prof planning-goals-card" style="margin-top: 2rem; background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
+    <div class="planning-goals-head" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
         <div>
             <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
             <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de médio e longo prazo.</p>
         </div>
-        <button onclick="PlanejamentoModulo.abrirModalNovaMeta()"
+        <button onclick="PlanejamentoModulo.abrirModalNovaMeta()" class="planning-goals-cta"
                 style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">
             + NOVA META
         </button>
     </div>
 
-    <table style="width: 100%; border-collapse: collapse;">
+    <div class="planning-table-wrap">
+    <table class="planning-goals-table" style="width: 100%; border-collapse: collapse;">
         <thead>
             <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
                 <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Meta</th>
@@ -65,6 +67,7 @@
         </thead>
         <tbody id="goalsTableBody"></tbody>
     </table>
+    </div>
 </div>
 
 <div id="modalAdicionarLimite" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px);">

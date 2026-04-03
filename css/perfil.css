@@ -319,3 +319,42 @@
   font-weight: 700;
 }
 
+@media (max-width: 900px) {
+  .profile-header,
+  .perfil-card .profile-header {
+    align-items: flex-start;
+  }
+}
+
+@media (max-width: 768px) {
+  .perfil-card .stats-grid,
+  .form-row-2col {
+    grid-template-columns: 1fr;
+  }
+
+  .profile-header,
+  .perfil-card .profile-header {
+    flex-direction: column;
+  }
+
+  .modal-card {
+    width: min(100%, 96vw);
+  }
+
+  .modal-body,
+  .modal-footer,
+  .modal-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .btn-outline-sm,
+  .btn-primary-full,
+  .btn-accent-blue,
+  .btn-primary-perfil,
+  .btn-link-sm {
+    width: 100%;
+    justify-content: center;
+  }
+}
+

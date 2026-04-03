@@ -8,7 +8,7 @@
 .despesa-card,
 .despesa-list {
   background: var(--card-bg);
-  border: var(--box-border-width) solid var(--border-color);
+  border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1rem;
 }
@@ -18,34 +18,366 @@
   color: var(--accent);
 }
 
+.expense-section-title {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.section-support-text {
+  color: var(--text-secondary);
+  font-size: 0.96rem;
+  line-height: 1.6;
+  max-width: 640px;
+  margin: 0;
+}
+
+.expense-primary-action {
+  min-width: 188px;
+  min-height: 52px;
+  border-radius: 16px;
+}
+
+.expense-primary-action i {
+  font-size: 0.9rem;
+  color: currentColor;
+}
+
 .filters-bar {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.9rem;
+  margin-bottom: 1.5rem;
+}
+
+.filter-field {
+  position: relative;
   display: flex;
-  gap: 15px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
+  align-items: center;
+  min-width: 0;
+}
+
+.filter-field::after {
+  content: "";
+  position: absolute;
+  right: 14px;
+  width: 9px;
+  height: 9px;
+  border-right: 2px solid var(--text-secondary);
+  border-bottom: 2px solid var(--text-secondary);
+  transform: rotate(45deg) translateY(-2px);
+  pointer-events: none;
+  opacity: 0.7;
+}
+
+.filter-field-icon {
+  position: absolute;
+  left: 14px;
+  z-index: 1;
+  width: 18px;
+  height: 18px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  font-size: 0.9rem;
+  pointer-events: none;
+}
+
+.filters-bar .filter-field:first-child .filter-field-icon {
+  font-size: 0;
+}
+
+.filters-bar .filter-field:first-child .filter-field-icon i {
+  display: none;
+}
+
+.filters-bar .filter-field:first-child .filter-field-icon::before {
+  content: "\1F4C5";
+  font-size: 0.95rem;
+  line-height: 1;
+}
+
+.filters-bar .filter-field:not(:first-child) .filter-field-icon {
+  display: none;
 }
 
 .filter-select {
-  min-width: 140px;
-  padding: 0.7rem 0.9rem;
-  border-radius: 10px;
-  border: var(--box-border-width) solid var(--border-color);
-  background: var(--bg-surface);
+  width: 100%;
+  min-width: 0;
+  padding: 0.92rem 2.6rem 0.92rem 2.65rem;
+  border-radius: 16px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(180deg, var(--card-bg) 0%, var(--bg-surface) 100%);
   color: var(--text-primary);
-  font-weight: 600;
-  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
+  font-weight: 700;
+  box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
+  appearance: none;
+}
+
+.filters-bar .filter-field:not(:first-child) .filter-select {
+  padding-left: 1rem;
 }
 
 .filter-select:focus {
   outline: 0;
   border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.12);
+}
+
+.expense-table-card {
+  padding: 0 !important;
+  overflow: hidden;
+  border-radius: 24px !important;
+  border: 1px solid var(--border-color) !important;
+  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%), var(--card-bg) !important;
+  box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
+}
+
+.expense-table {
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
+}
+
+.expense-table thead th,
+.expense-table tbody td {
+  vertical-align: middle;
+}
+
+.expense-table thead {
+  background: color-mix(in srgb, var(--card-bg) 82%, var(--accent-soft));
+}
+
+.expense-head {
+  font-size: 0.76rem;
+  font-weight: 800 !important;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text-secondary) !important;
+}
+
+.expense-head-title,
+.expense-cell-title {
+  width: 18%;
+  text-align: left;
+}
+
+.expense-head-category,
+.expense-cell-category {
+  width: 16%;
+  text-align: center;
+}
+
+.expense-head-payment,
+.expense-cell-payment {
+  width: 16%;
+  text-align: left;
+}
+
+.expense-head-value,
+.expense-cell-value {
+  width: 12%;
+  text-align: right;
+}
+
+.expense-head-date,
+.expense-cell-date {
+  width: 12%;
+  text-align: center;
+}
+
+.expense-head-description,
+.expense-cell-description {
+  width: 16%;
+  text-align: left;
+}
+
+.expense-head-actions,
+.expense-cell-actions {
+  width: 10%;
+  text-align: center;
+}
+
+.expense-row {
+  border-bottom: 1px solid rgba(148, 163, 184, 0.12);
+  transition: background var(--transition-fast), transform var(--transition-fast);
+}
+
+.expense-row:hover {
+  background: rgba(var(--accent-rgb), 0.04);
+}
+
+.expense-table tbody td {
+  padding: 1rem 1.1rem;
+  color: var(--text-primary);
+}
+
+.expense-cell-title {
+  font-weight: 500;
+}
+
+.expense-title-block {
+  display: grid;
+  gap: 0.22rem;
+  justify-items: start;
+  text-align: left;
+}
+
+.expense-title-main {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.3;
+}
+
+.expense-field-stack {
+  display: contents;
+}
+
+.expense-field-label {
+  display: none;
+}
+
+.expense-cell-category .category-tag {
+  margin-inline: auto;
+  min-width: 112px;
+}
+
+.expense-payment-main {
+  display: block;
+  line-height: 1.45;
+  font-weight: 700;
+}
+
+.expense-payment-extra {
+  display: flex;
+  gap: 0.35rem;
+  align-items: center;
+  justify-content: flex-start;
+  margin-top: 0.35rem;
+  flex-wrap: wrap;
+}
+
+.expense-payment-chip {
+  display: inline-flex;
+  align-items: center;
+  min-height: 24px;
+  padding: 0.18rem 0.55rem;
+  border-radius: 999px;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.03em;
+}
+
+.expense-payment-chip-installments {
+  color: var(--accent);
+  background: rgba(var(--accent-rgb), 0.12);
+  border: 1px solid rgba(var(--accent-rgb), 0.16);
+}
+
+.expense-payment-chip-card {
+  color: var(--text-secondary);
+  background: rgba(148, 163, 184, 0.08);
+  border: 1px solid rgba(148, 163, 184, 0.16);
+}
+
+.expense-value-strong {
+  color: var(--text-primary);
+  font-weight: 800;
+  font-size: 1.02rem;
+}
+
+.expense-description-empty {
+  width: 100%;
+  opacity: 0.62;
+}
+
+.expense-description-text,
+.expense-description-empty {
+  color: var(--text-secondary);
+  line-height: 1.55;
+  text-align: left;
+}
+
+.expense-actions {
+  display: flex;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.expense-actions .btn-action {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 42px;
+  height: 42px;
+  border-radius: 14px;
+  border: 1px solid rgba(148, 163, 184, 0.16) !important;
+  background: rgba(15, 23, 42, 0.04) !important;
+  box-shadow: none !important;
+  transition: transform 0.18s ease, background 0.18s ease, box-shadow 0.18s ease;
+}
+
+.expense-actions .btn-action:hover {
+  transform: translateY(-1px);
+  background: rgba(15, 23, 42, 0.08) !important;
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.08) !important;
+}
+
+.expense-action-image {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+}
+
+.expense-actions .btn-edit .expense-action-image {
+  filter: brightness(0) saturate(100%) invert(68%) sepia(62%) saturate(589%) hue-rotate(4deg) brightness(95%) contrast(90%);
+}
+
+.expense-actions .btn-delete {
+  background: rgba(239, 68, 68, 0.06) !important;
+}
+
+.expense-actions .btn-delete .expense-action-image {
+  filter: brightness(0) saturate(100%) invert(38%) sepia(81%) saturate(1908%) hue-rotate(336deg) brightness(97%) contrast(99%);
+}
+
+.expense-empty-state {
+  text-align: center;
+  padding: 2.4rem 1.25rem !important;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.expense-date-group-row td {
+  padding: 0.8rem 1.1rem 0.3rem;
+}
+
+.expense-date-group-badge {
+  display: inline-flex;
+  width: auto;
+  padding: 0.45rem 0.95rem;
+  background: var(--accent);
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.76rem;
+  border-radius: 999px;
+  letter-spacing: 0.02em;
 }
 
 .expense-modal-card {
   background: var(--modal-bg) !important;
   border: 1px solid var(--dashboard-box-border) !important;
   box-shadow: var(--dashboard-box-shadow) !important;
+  max-height: min(88vh, 820px);
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+
+#modalDespesa,
+#modalConfirmacao {
+  padding: 1rem;
+  overflow-y: auto;
 }
 
 #modalDespesa label {
@@ -97,154 +429,14 @@
   line-height: 1.55;
 }
 
-.expense-table-card {
-  padding: 0 !important;
-}
-
-.expense-table {
-  width: 100%;
-  border-collapse: collapse;
-  table-layout: fixed;
-}
-
-.expense-table thead th,
-.expense-table tbody td {
-  vertical-align: middle;
-}
-
-.expense-head {
-  font-size: 0.95rem;
-  font-weight: 800 !important;
-}
-
-.expense-head-title,
-.expense-cell-title {
-  width: 18%;
-  text-align: left;
-}
-
-.expense-head-category,
-.expense-cell-category {
-  width: 16%;
-  text-align: center;
-}
-
-.expense-head-payment,
-.expense-cell-payment {
-  width: 18%;
-  text-align: center;
-}
-
-.expense-head-value,
-.expense-cell-value {
-  width: 12%;
-  text-align: center;
-}
-
-.expense-head-date,
-.expense-cell-date {
-  width: 14%;
-  text-align: center;
-}
-
-.expense-head-description,
-.expense-cell-description {
-  width: 12%;
-  text-align: center;
-}
-
-.expense-head-actions,
-.expense-cell-actions {
-  width: 10%;
-  text-align: center;
-}
-
-.expense-row {
-  border-bottom: 1px solid rgba(30, 41, 59, 0.14);
-}
-
-.expense-table tbody td {
-  padding: 18px 20px;
-  color: var(--text-primary);
-}
-
-.expense-cell-title {
-  font-weight: 500;
-}
-
-.expense-cell-category .category-tag {
-  margin-inline: auto;
-}
-
-.expense-payment-main {
-  display: block;
-}
-
-.expense-payment-extra {
-  display: flex;
-  gap: 5px;
-  align-items: center;
-  justify-content: center;
-  margin-top: 4px;
-}
-
-.expense-value-strong {
-  color: var(--text-primary);
-  font-weight: 800;
-}
-
-.expense-description-empty {
-  text-align: center;
-  width: 100%;
-  opacity: 0.5;
-}
-
-.expense-actions {
-  display: flex;
-  justify-content: center;
-  gap: 15px;
-}
-
-.expense-actions .btn-action {
-  background: transparent !important;
-  border: none !important;
-  box-shadow: none !important;
-}
-
-.expense-actions .btn-action:hover {
-  transform: translateY(-1px);
-  background: rgba(15, 23, 42, 0.04) !important;
-}
-
-.expense-actions .btn-edit img {
-  filter: brightness(0) saturate(100%) !important;
-}
-
-.expense-actions .btn-delete img {
-  filter: brightness(0) saturate(100%) invert(28%) sepia(95%) saturate(4035%) hue-rotate(345deg) brightness(100%) contrast(99%) !important;
-}
-
-.expense-date-group-row td {
-  padding: 0 20px 8px;
-}
-
-.expense-date-group-badge {
-  display: block;
-  width: 100%;
-  padding: 14px 20px;
-  background: var(--accent);
-  color: #ffffff;
-  font-weight: 800;
-  font-size: 0.9rem;
-  border-radius: 0;
-}
-
 body.light-theme .expense-table thead {
-  background: rgba(255, 251, 245, 0.58);
+  background: rgba(255, 251, 245, 0.74);
 }
 
-body.light-theme .expense-table tbody tr.expense-row:hover {
-  background: rgba(255, 250, 244, 0.45);
+body.light-theme .expense-date-group-badge {
+  background: rgba(37, 99, 235, 0.12) !important;
+  color: #2563eb !important;
+  border: 1px solid rgba(37, 99, 235, 0.18) !important;
 }
 
 body.light-theme .filters-bar .filter-select,
@@ -253,4 +445,335 @@ body.light-theme #modalConfirmacao > div,
 body.light-theme #containerCartao {
   border-width: 2px !important;
   border-color: var(--border-strong) !important;
+}
+
+@media (max-width: 1180px) {
+  .filters-bar {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 900px) {
+  .section-header-row {
+    padding: 0 !important;
+    gap: 1rem;
+    flex-direction: column;
+    align-items: flex-start !important;
+  }
+
+  .expense-section-title {
+    max-width: 520px;
+  }
+
+  .expense-primary-action {
+    min-width: 0;
+    width: 100%;
+    max-width: 240px;
+  }
+
+  .filters-bar {
+    grid-template-columns: 1fr;
+  }
+
+  .expense-table-card {
+    padding: 1.15rem !important;
+    border-radius: 20px !important;
+    background: var(--card-bg) !important;
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  }
+
+  .expense-table {
+    min-width: 0;
+    width: 100%;
+    table-layout: auto;
+  }
+
+  .expense-table thead {
+    display: none;
+  }
+
+  .expense-table tbody {
+    display: grid;
+    gap: 0.8rem;
+    padding: 0;
+  }
+
+  .expense-table tbody tr {
+    display: block;
+  }
+
+  .expense-date-group-row td {
+    display: block;
+    padding: 0 0 0.1rem !important;
+  }
+
+  .expense-date-group-badge {
+    display: flex;
+    width: 100%;
+    justify-content: flex-start;
+    margin-bottom: 0.3rem;
+    background: rgba(201, 170, 106, 0.16) !important;
+    color: #facc15 !important;
+    border: 1px solid rgba(250, 204, 21, 0.18);
+  }
+
+  .expense-row {
+    display: grid;
+    gap: 0.45rem;
+    padding: 1.15rem 1.1rem 1rem;
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    border-radius: 16px;
+    background: #071a2d;
+    box-shadow: none;
+  }
+
+  body.light-theme .expense-row {
+    background: color-mix(in srgb, var(--card-bg) 94%, var(--accent-soft));
+    border-color: var(--border-color);
+    box-shadow: none;
+  }
+
+  body.light-theme .expense-row > td:not(.expense-cell-actions):not(.expense-cell-description):not(:last-child) {
+    border-bottom-color: rgba(37, 99, 235, 0.26);
+  }
+
+  .expense-table tbody td {
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.45rem;
+    padding: 0.18rem 0 !important;
+    border: none;
+    margin: 0 !important;
+    text-align: left !important;
+  }
+
+  .expense-row > td:not(.expense-cell-actions):not(.expense-cell-description):not(:last-child) {
+    border-bottom: 1px solid rgba(148, 163, 184, 0.24);
+    padding-bottom: 0.78rem !important;
+    margin-bottom: 0.18rem !important;
+  }
+
+  .expense-table tbody td::before {
+    content: attr(data-label);
+    color: #f8fafc;
+    font-size: 0.72rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    padding-top: 0.1rem;
+  }
+
+  body.light-theme .expense-table tbody td::before {
+    color: var(--text-secondary);
+  }
+
+  .expense-field-stack {
+    display: contents;
+  }
+
+  .expense-cell-title,
+  .expense-cell-category,
+  .expense-cell-payment,
+  .expense-cell-value,
+  .expense-cell-date,
+  .expense-cell-description,
+  .expense-cell-actions {
+    width: 100%;
+    text-align: left !important;
+  }
+
+  .expense-title-block {
+    justify-items: start;
+    gap: 0;
+  }
+
+  .expense-title-main {
+    font-size: 0.95rem;
+    font-weight: 500;
+  }
+
+  .expense-cell-category .category-tag {
+    margin-inline: 0;
+    min-width: 0;
+    width: fit-content;
+    justify-self: start;
+  }
+
+  .expense-payment-main {
+    font-size: 0.92rem;
+    font-weight: 500;
+  }
+
+  .expense-value-strong {
+    font-size: 0.94rem;
+  }
+
+  .expense-date-text,
+  .expense-description-text,
+  .expense-description-empty {
+    font-size: 0.9rem;
+  }
+
+  .expense-cell-description-empty-row {
+    display: none !important;
+  }
+
+  .expense-cell-description {
+    display: none !important;
+  }
+
+  .expense-cell-actions {
+    margin-top: 0.15rem !important;
+    padding-top: 0.9rem !important;
+    border-top: 1px solid rgba(148, 163, 184, 0.24);
+  }
+
+  body.light-theme .expense-cell-actions {
+    border-top-color: rgba(37, 99, 235, 0.26);
+  }
+
+  .expense-actions {
+    justify-content: flex-start;
+    gap: 0.45rem;
+  }
+
+  .expense-actions .btn-action {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    box-shadow: none !important;
+  }
+
+  .expense-action-image {
+    width: 16px;
+    height: 16px;
+  }
+
+  #modalDespesa .form-row {
+    flex-direction: column !important;
+  }
+
+  #containerCartao > div,
+  #avisoCartaoInexistente > div,
+  #modalConfirmacao > div > div:last-child {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  #containerParcelamento {
+    border-left: none !important;
+    padding-left: 0 !important;
+    padding-top: 12px;
+    border-top: 1px solid var(--border-color);
+  }
+}
+
+@media (max-width: 640px) {
+  .section-header-row {
+    align-items: stretch !important;
+  }
+
+  .expense-section-title {
+    justify-items: center;
+    text-align: center;
+    max-width: none;
+  }
+
+  .expense-primary-action {
+    max-width: none;
+    min-height: 52px;
+  }
+
+  .expense-table tbody {
+    padding: 0;
+  }
+
+  .expense-row {
+    padding: 1.05rem 1rem 0.95rem;
+    border-radius: 16px;
+  }
+
+  .expense-table tbody td {
+    grid-template-columns: 1fr;
+    gap: 0.26rem;
+    padding: 0.2rem 0 !important;
+  }
+
+  .expense-title-main {
+    font-size: 0.92rem;
+  }
+
+  .expense-value-strong {
+    font-size: 0.92rem;
+  }
+
+  .expense-modal-card,
+  #modalConfirmacao > div {
+    width: min(100%, 94vw) !important;
+    padding: 1.35rem !important;
+  }
+
+  .expense-modal-card {
+    max-height: calc(100dvh - 1.5rem);
+    margin: auto 0;
+  }
+}
+
+@media (max-width: 420px) {
+  .expense-table-card {
+    padding: 1rem !important;
+  }
+
+  .filters-bar {
+    gap: 0.75rem;
+  }
+
+  .filter-select {
+    padding: 0.88rem 2.5rem 0.88rem 2.5rem;
+    border-radius: 14px;
+  }
+
+  .expense-table tbody {
+    padding: 0.65rem;
+  }
+
+  .expense-row {
+    padding: 0.98rem 0.9rem;
+  }
+
+  .expense-table tbody td {
+    grid-template-columns: 1fr;
+    gap: 0.52rem;
+    padding: 0.18rem 0 !important;
+  }
+
+  .expense-table tbody td::before {
+    font-size: 0.66rem;
+  }
+
+  .expense-actions .btn-action {
+    width: 38px;
+    height: 38px;
+  }
+
+  .expense-date-group-badge {
+    font-size: 0.68rem;
+  }
+
+  #modalDespesa,
+  #modalConfirmacao {
+    padding: 0.75rem;
+    align-items: flex-start !important;
+  }
+
+  .expense-modal-card,
+  #modalConfirmacao > div {
+    width: 100% !important;
+  }
+
+  .expense-modal-card {
+    max-height: calc(100dvh - 1rem);
+    padding: 1.1rem !important;
+  }
 }

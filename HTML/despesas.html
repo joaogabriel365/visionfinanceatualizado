@@ -1,54 +1,70 @@
 <div class="section-header-row" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px;">
-    <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>
-    <button class="btn btn-primary" onclick="DespesasModulo.abrirModal()">
-        + Nova Despesa
+    <div class="section-title-block expense-section-title">
+        <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>
+        <p class="section-support-text">Organize seus lançamentos, revise categorias e acompanhe cada pagamento com clareza.</p>
+    </div>
+    <button class="btn btn-primary expense-primary-action" onclick="DespesasModulo.abrirModal()">
+        <i class="fas fa-plus"></i>
+        <span>Nova Despesa</span>
     </button>
 </div>
 
 <div class="filters-bar">
-    <select id="filterMonth" class="filter-select">
-        <option value="todos">📅 Mês</option>
-        <option value="01">Janeiro</option>
-        <option value="02">Fevereiro</option>
-        <option value="03">Março</option>
-        <option value="04">Abril</option>
-        <option value="05">Maio</option>
-        <option value="06">Junho</option>
-        <option value="07">Julho</option>
-        <option value="08">Agosto</option>
-        <option value="09">Setembro</option>
-        <option value="10">Outubro</option>
-        <option value="11">Novembro</option>
-        <option value="12">Dezembro</option>
-    </select>
+    <div class="filter-field">
+        <span class="filter-field-icon"><i class="fas fa-calendar-alt"></i></span>
+        <select id="filterMonth" class="filter-select">
+            <option value="todos">Mês</option>
+            <option value="01">Janeiro</option>
+            <option value="02">Fevereiro</option>
+            <option value="03">Março</option>
+            <option value="04">Abril</option>
+            <option value="05">Maio</option>
+            <option value="06">Junho</option>
+            <option value="07">Julho</option>
+            <option value="08">Agosto</option>
+            <option value="09">Setembro</option>
+            <option value="10">Outubro</option>
+            <option value="11">Novembro</option>
+            <option value="12">Dezembro</option>
+        </select>
+    </div>
     
-    <select id="filterCategory" class="filter-select">
-    <option value="todos">Categoria</option>
-    <option value="Alimentação">Alimentação</option>
-    <option value="Transporte">Transporte</option>
-    <option value="Lazer">Lazer</option>
-    <option value="Saúde">Saúde</option>
-    <option value="Moradia">Moradia</option>
-    <option value="Moda">Moda</option> <option value="Outros">Outros</option> </select>
+    <div class="filter-field">
+        <span class="filter-field-icon"><i class="fas fa-tags"></i></span>
+        <select id="filterCategory" class="filter-select">
+        <option value="todos">Categoria</option>
+        <option value="Alimentação">Alimentação</option>
+        <option value="Transporte">Transporte</option>
+        <option value="Lazer">Lazer</option>
+        <option value="Saúde">Saúde</option>
+        <option value="Moradia">Moradia</option>
+        <option value="Moda">Moda</option> <option value="Outros">Outros</option> </select>
+    </div>
 
-    <select id="filterPayment" class="filter-select">
-        <option value="todos">Pagamento</option>
-        <option value="Cartão de Crédito">Crédito</option>
-        <option value="Cartão de Débito">Débito</option>
-        <option value="Pix">Pix</option>
-        <option value="Dinheiro">Dinheiro</option>
-        <option value="VR">VR</option>
-        <option value="VA">VA</option>
-    </select>
+    <div class="filter-field">
+        <span class="filter-field-icon"><i class="fas fa-wallet"></i></span>
+        <select id="filterPayment" class="filter-select">
+            <option value="todos">Pagamento</option>
+            <option value="Cartão de Crédito">Crédito</option>
+            <option value="Cartão de Débito">Débito</option>
+            <option value="Pix">Pix</option>
+            <option value="Dinheiro">Dinheiro</option>
+            <option value="VR">VR</option>
+            <option value="VA">VA</option>
+        </select>
+    </div>
 
-    <select id="filterPeriod" class="filter-select">
-        <option value="todos">Período (Dias)</option>
-        <option value="5">Últimos 5 dias</option>
-        <option value="10">Últimos 10 dias</option>
-        <option value="15">Últimos 15 dias</option>
-        <option value="20">Últimos 20 dias</option>
-        <option value="30">Últimos 30 dias</option>
-    </select>
+    <div class="filter-field">
+        <span class="filter-field-icon"><i class="fas fa-clock"></i></span>
+        <select id="filterPeriod" class="filter-select">
+            <option value="todos">Período (Dias)</option>
+            <option value="5">Últimos 5 dias</option>
+            <option value="10">Últimos 10 dias</option>
+            <option value="15">Últimos 15 dias</option>
+            <option value="20">Últimos 20 dias</option>
+            <option value="30">Últimos 30 dias</option>
+        </select>
+    </div>
 </div>
 
 <div class="table-card expense-table-card" style="background: var(--card-bg); border-radius: 16px; padding: 10px; border: 1px solid var(--border-color); overflow: hidden;">

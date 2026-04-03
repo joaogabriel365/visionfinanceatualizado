@@ -30,6 +30,69 @@ const modulos = {
 
 let secaoAtiva = 'painel';
 
+function fecharSidebarMobile() {
+    document.body.classList.remove('dashboard-sidebar-open');
+
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    if (sidebarToggle) {
+        sidebarToggle.setAttribute('aria-expanded', 'false');
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.hidden = true;
+    }
+}
+
+function abrirSidebarMobile() {
+    document.body.classList.add('dashboard-sidebar-open');
+
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    if (sidebarToggle) {
+        sidebarToggle.setAttribute('aria-expanded', 'true');
+    }
+
+    if (sidebarBackdrop) {
+        sidebarBackdrop.hidden = false;
+    }
+}
+
+function alternarSidebarMobile() {
+    if (document.body.classList.contains('dashboard-sidebar-open')) {
+        fecharSidebarMobile();
+        return;
+    }
+
+    abrirSidebarMobile();
+}
+
+function configurarSidebarMobile() {
+    const sidebarToggle = document.getElementById('sidebarToggle');
+    const sidebarBackdrop = document.getElementById('sidebarBackdrop');
+
+    if (sidebarToggle && !sidebarToggle.dataset.bound) {
+        sidebarToggle.dataset.bound = 'true';
+        sidebarToggle.addEventListener('click', alternarSidebarMobile);
+    }
+
+    if (sidebarBackdrop && !sidebarBackdrop.dataset.bound) {
+        sidebarBackdrop.dataset.bound = 'true';
+        sidebarBackdrop.addEventListener('click', fecharSidebarMobile);
+    }
+
+    if (!window.__visionFinanceSidebarResizeBound) {
+        window.__visionFinanceSidebarResizeBound = true;
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 960) {
+                fecharSidebarMobile();
+            }
+        });
+    }
+}
+
 // 4. MOTOR DE NAVEGAÇÃO SPA
 async function navegar(sectionId) {
     try {
@@ -66,6 +129,10 @@ async function navegar(sectionId) {
                 }
             }, 50);
         });
+
+        if (window.innerWidth <= 960) {
+            fecharSidebarMobile();
+        }
 
     } catch (err) {
         console.error("Erro na navegação:", err);
@@ -145,6 +212,7 @@ document.addEventListener('click', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     aplicarTemaGlobal();
     gerenciarBotaoOlho();
+    configurarSidebarMobile();
     navegar('painel');
 });
 

@@ -10,12 +10,13 @@
     <link rel="stylesheet" href="./css/dashboard.css">
 </head>
 <body class="dashboard-body">
+    <div class="sidebar-backdrop" id="sidebarBackdrop" hidden></div>
     <aside class="sidebar">
         <div class="sidebar-header">
             <img src="./img/logo.png" alt="Logo" class="sidebar-logo">
             <span class="logo-text">Vision Finance</span>
         </div>
-        <nav class="sidebar-nav">
+        <nav class="sidebar-nav" id="sidebarNavigation">
             <a href="#" class="nav-item active" data-section="painel">Painel</a>
             <a href="#" class="nav-item" data-section="despesas">Despesas</a>
             <a href="#" class="nav-item" data-section="carteiras">Carteiras</a>
@@ -31,7 +32,14 @@
 
     <main class="main-content">
         <header class="dash-header">
-            <h1 id="sectionTitle">Painel</h1>
+            <div class="dash-header-main">
+                <button class="sidebar-toggle" id="sidebarToggle" type="button" aria-label="Abrir menu" aria-expanded="false" aria-controls="sidebarNavigation">
+                    <span></span>
+                    <span></span>
+                    <span></span>
+                </button>
+                <h1 id="sectionTitle">Painel</h1>
+            </div>
             <div class="user-info">
                 <button class="notification-btn">🔔</button>
                 <div class="user-profile"><div class="avatar-circle">JS</div></div>

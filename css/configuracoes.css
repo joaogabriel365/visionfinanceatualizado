@@ -179,4 +179,15 @@
   .config-item {
     align-items: flex-start;
   }
+
+  .form-actions {
+    justify-content: stretch;
+  }
+
+  .form-actions .btn,
+  .form-actions .btn-primary,
+  .form-actions button[type="submit"] {
+    width: 100%;
+    min-width: 0;
+  }
 }

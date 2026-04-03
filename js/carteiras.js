@@ -1,5 +1,8 @@
 import { formatarMoeda, getThemeVar } from './common.js';
 
+const walletEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
+const walletDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+
 export const CarteirasModulo = {
     lista: JSON.parse(localStorage.getItem('carteiras')) || [],
     coresPredefinidas: [
@@ -223,19 +226,19 @@ export const CarteirasModulo = {
             return `
                 <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, ${darkColor} 100%); border: 1px solid ${borderColor};">
                     <div class="wallet-card-top">
-                        <div class="wallet-card-icon">${this.getIconePorTipo(wallet.tipo)}</div>
                         <div class="wallet-card-actions">
-                            <button class="btn-action btn-edit" onclick="window.CarteirasModulo.abrirModalEdicao(${index})">
-                                <img src="./img/lapis.png" alt="Editar">
+                            <button class="btn-action btn-edit" onclick="window.CarteirasModulo.abrirModalEdicao(${index})" aria-label="Editar carteira ${wallet.nome}" title="Editar carteira">
+                                <img src="${walletEditIconUrl}" alt="Editar">
                             </button>
-                            <button class="btn-action btn-delete" onclick="confirmarExclusaoCarteira(${index})">
-                                <img src="./img/lixeira.png" alt="Excluir">
+                            <button class="btn-action btn-delete" onclick="confirmarExclusaoCarteira(${index})" aria-label="Excluir carteira ${wallet.nome}" title="Excluir carteira">
+                                <img src="${walletDeleteIconUrl}" alt="Excluir">
                             </button>
                         </div>
                     </div>
 
                     <div class="wallet-card-content">
-                        <div>
+                        <div class="wallet-card-copy">
+                            <span class="wallet-name-label">Carteira</span>
                             <h4 class="wallet-name">${wallet.nome}</h4>
                             <span class="wallet-balance">${displayValue}</span>
                         </div>
@@ -252,22 +255,21 @@ export const CarteirasModulo = {
                                 <p class="wallet-spent">Gasto: ${formatarMoeda(gastoAtual)}</p>
                             </div>
                         ` : '<p class="wallet-unlimited">Uso sem limite</p>'}
+
+                        <div class="wallet-card-footer">
+                            <div class="wallet-meta-item">
+                                <span class="wallet-meta-label">Categoria</span>
+                                <strong class="wallet-meta-value">${wallet.tipo}</strong>
+                            </div>
+                            <div class="wallet-meta-item">
+                                <span class="wallet-meta-label">Status</span>
+                                <strong class="wallet-meta-value">${wallet.ilimitado ? 'Sem teto' : `${porcentagem}% usado`}</strong>
+                            </div>
+                        </div>
                     </div>
                 </div>
             `;
         }).join('');
-    },
-
-    getIconePorTipo(tipo) {
-        const icones = {
-            'Cartão de Crédito': '💳',
-            'Cartão de Débito': '💳',
-            'Conta Corrente': '💳',
-            'Vale Refeição': '💳',
-            'Vale Alimentação': '💳',
-            'Vale Transporte': '💳'
-        };
-        return icones[tipo] || '💳';
     },
 
     configurarFormulario() {

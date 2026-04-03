@@ -17,6 +17,8 @@ const btnCloseRegister = document.getElementById('closeBtn');
 const btnCloseLogin = document.getElementById('closeLoginBtn');
 const linkToLogin = document.getElementById('switchToLogin');
 const linkToRegister = document.getElementById('switchToRegister');
+const navToggle = document.getElementById('navToggle');
+const siteNavLinks = document.getElementById('siteNavLinks');
 
 // --- FUNÇÕES DE CONTROLE ---
 
@@ -34,12 +36,36 @@ function closeModal(modal) {
     }
 }
 
+function setMobileNavState(isOpen) {
+    if (!navToggle || !siteNavLinks) return;
+
+    document.body.classList.toggle('nav-open', isOpen);
+    navToggle.setAttribute('aria-expanded', String(isOpen));
+    siteNavLinks.classList.toggle('is-open', isOpen);
+}
+
+if (navToggle) {
+    navToggle.addEventListener('click', () => {
+        const isOpen = navToggle.getAttribute('aria-expanded') === 'true';
+        setMobileNavState(!isOpen);
+    });
+}
+
+window.addEventListener('resize', () => {
+    if (window.innerWidth > 768) {
+        setMobileNavState(false);
+    }
+});
+
 // --- EVENTOS DE CLIQUE ---
 
 // Abrir Cadastro (vários botões)
 [btnOpenRegisterNav, btnOpenRegisterHero, btnOpenRegisterShowcase, btnOpenRegisterFinal].forEach(btn => {
     if(btn) {
-        btn.addEventListener('click', () => openModal(registerModal));
+        btn.addEventListener('click', () => {
+            setMobileNavState(false);
+            openModal(registerModal);
+        });
     }
 });
 
@@ -48,6 +74,7 @@ function closeModal(modal) {
     if(btn) {
         btn.addEventListener('click', (e) => {
             e.preventDefault();
+            setMobileNavState(false);
             openModal(loginModal);
         });
     }
@@ -78,6 +105,10 @@ if(linkToRegister) {
 window.addEventListener('click', (e) => {
     if (e.target === registerModal) closeModal(registerModal);
     if (e.target === loginModal) closeModal(loginModal);
+
+    if (siteNavLinks && navToggle && !siteNavLinks.contains(e.target) && !navToggle.contains(e.target)) {
+        setMobileNavState(false);
+    }
 });
 
 // --- MÁSCARA DE CPF ---

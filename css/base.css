@@ -56,23 +56,23 @@ body {
   --modal-bg: #fbf7f1;
   --modal-overlay: rgba(15, 23, 42, 0.44);
   --input-bg: #f8f3ec;
-  --input-border: #d7c7b3;
+  --input-border: #c7d8ee;
   --text-primary: #0f172a;
   --text-color: #0f172a;
   --text-secondary: #475569;
   --text-muted: #64748b;
   --text-on-accent: #ffffff;
-  --border-color: #dccdb9;
-  --border-light: #eadfce;
-  --border-strong: #cab79e;
+  --border-color: #d4e0ef;
+  --border-light: #e9f0f8;
+  --border-strong: #9dbce0;
   --box-border-width: 1px;
-  --card-outline: rgba(166, 139, 98, 0.14);
+  --card-outline: rgba(37, 99, 235, 0.12);
   --shadow-color: rgba(124, 98, 60, 0.10);
   --dashboard-box-bg: #efe4d4;
   --dashboard-box-surface: #f6efe4;
-  --dashboard-box-border: #d7c5ae;
-  --dashboard-box-shadow: 0 14px 30px rgba(124, 98, 60, 0.12);
-  --dashboard-box-shadow-hover: 0 18px 36px rgba(124, 98, 60, 0.16);
+  --dashboard-box-border: #c9d9ee;
+  --dashboard-box-shadow: 0 14px 30px rgba(37, 99, 235, 0.10);
+  --dashboard-box-shadow-hover: 0 18px 36px rgba(37, 99, 235, 0.14);
   --dashboard-box-radius: 18px;
   --dashboard-box-padding: 1.3rem;
   --dashboard-box-padding-tight: 1rem;
@@ -80,13 +80,15 @@ body {
 }
 
 body.light-theme {
+  color-scheme: light;
   background:
-    radial-gradient(circle at top left, rgba(169, 131, 76, 0.06), transparent 24%),
-    radial-gradient(circle at top right, rgba(169, 131, 76, 0.03), transparent 20%),
+    radial-gradient(circle at top left, rgba(37, 99, 235, 0.06), transparent 24%),
+    radial-gradient(circle at top right, rgba(37, 99, 235, 0.03), transparent 20%),
     linear-gradient(180deg, #fcf9f4 0%, var(--bg-primary) 42%, #f1e9de 100%);
 }
 
 body.dark-theme {
+  color-scheme: dark;
   --bg-primary: #050a0f;
   --bg-surface: #0b1118;
   --bg-secondary: #0e1620;
@@ -318,6 +320,77 @@ body.light-theme .wallet-empty-card:hover {
   border-color: var(--accent);
   outline: 0;
   box-shadow: 0 0 0 3px var(--accent-soft);
+}
+
+body.dark-theme select,
+body.dark-theme option,
+body.dark-theme optgroup,
+body.dark-theme .select,
+body.dark-theme .custom-select,
+body.dark-theme .filter-select,
+body.dark-theme .dark-select,
+body.dark-theme .perfil-select-modern,
+body.dark-theme .profile-card select,
+body.dark-theme .config-card select,
+body.dark-theme .plan-card select,
+body.dark-theme .planning-card-prof select,
+body.dark-theme .wallet-modal-form .select,
+body.dark-theme input,
+body.dark-theme textarea {
+  background: var(--input-bg) !important;
+  color: var(--text-primary) !important;
+  border-color: var(--input-border) !important;
+}
+
+body.dark-theme select,
+body.dark-theme .select,
+body.dark-theme .custom-select,
+body.dark-theme .filter-select,
+body.dark-theme .dark-select,
+body.dark-theme .perfil-select-modern,
+body.dark-theme .profile-card select,
+body.dark-theme .config-card select,
+body.dark-theme .plan-card select,
+body.dark-theme .planning-card-prof select,
+body.dark-theme .wallet-modal-form .select {
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03), 0 8px 18px rgba(0, 0, 0, 0.16) !important;
+}
+
+body.dark-theme select option,
+body.dark-theme .select option,
+body.dark-theme .custom-select option,
+body.dark-theme .filter-select option,
+body.dark-theme .dark-select option,
+body.dark-theme .perfil-select-modern option,
+body.dark-theme .profile-card select option,
+body.dark-theme .config-card select option,
+body.dark-theme .plan-card select option,
+body.dark-theme .planning-card-prof select option,
+body.dark-theme .wallet-modal-form .select option,
+body.dark-theme select optgroup,
+body.dark-theme .select optgroup,
+body.dark-theme .custom-select optgroup,
+body.dark-theme .filter-select optgroup,
+body.dark-theme .dark-select optgroup {
+  background: var(--bg-surface) !important;
+  color: var(--text-primary) !important;
+}
+
+body.dark-theme select:focus,
+body.dark-theme .select:focus,
+body.dark-theme .custom-select:focus,
+body.dark-theme .filter-select:focus,
+body.dark-theme .dark-select:focus,
+body.dark-theme .perfil-select-modern:focus,
+body.dark-theme .profile-card select:focus,
+body.dark-theme .config-card select:focus,
+body.dark-theme .plan-card select:focus,
+body.dark-theme .planning-card-prof select:focus,
+body.dark-theme .wallet-modal-form .select:focus,
+body.dark-theme input:focus,
+body.dark-theme textarea:focus {
+  border-color: rgba(var(--accent-rgb), 0.7) !important;
+  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
 }
 
 .category-tag {
@@ -757,4 +830,316 @@ img, svg {
 .table-card h3 {
   margin-bottom: 1rem;
   font-size: 1.25rem;
+}
+
+.sidebar-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.46);
+  backdrop-filter: blur(4px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--transition-normal);
+  z-index: 998;
+}
+
+.dash-header-main {
+  display: flex;
+  align-items: center;
+  gap: 0.9rem;
+  min-width: 0;
+}
+
+.sidebar-toggle {
+  display: none;
+  width: 46px;
+  height: 46px;
+  padding: 0;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--card-bg) 100%);
+  color: var(--text-primary);
+  box-shadow: 0 10px 24px rgba(15, 23, 42, 0.08);
+}
+
+.sidebar-toggle span {
+  display: block;
+  width: 18px;
+  height: 2px;
+  border-radius: 999px;
+  background: currentColor;
+}
+
+.sidebar-toggle span + span {
+  margin-top: 4px;
+}
+
+.main-content > #dynamic-content {
+  width: min(100%, 1380px);
+  margin-inline: auto;
+}
+
+.section-header-row {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: flex-start !important;
+  gap: 1rem;
+  margin-bottom: 1.5rem !important;
+}
+
+.section-header-row h2,
+.section-header-row p {
+  max-width: 100%;
+}
+
+.section-title-block {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.table-card,
+.expense-table-card,
+.planning-table-wrap,
+.reports-chart-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.expense-table,
+.dash-table,
+.planning-table-wrap table {
+  min-width: 760px;
+}
+
+.modal-content-card,
+.modal-card,
+.modal-content {
+  max-height: min(92vh, 860px);
+}
+
+@media (max-width: 1180px) {
+  .main-content {
+    padding: 1.75rem;
+  }
+
+  .dash-header h1 {
+    font-size: 1.9rem;
+  }
+}
+
+@media (max-width: 960px) {
+  body.dashboard-sidebar-open {
+    overflow: hidden;
+  }
+
+  .sidebar-backdrop {
+    display: block;
+  }
+
+  body.dashboard-sidebar-open .sidebar-backdrop {
+    opacity: 1;
+    pointer-events: auto;
+  }
+
+  .sidebar {
+    position: fixed;
+    width: min(82vw, 320px);
+    height: 100vh;
+    z-index: 999;
+    transform: translateX(-110%);
+    transition: transform var(--transition-normal), box-shadow var(--transition-normal);
+    margin-bottom: 0;
+  }
+
+  body.dashboard-sidebar-open .sidebar {
+    transform: translateX(0);
+    box-shadow: 24px 0 48px rgba(15, 23, 42, 0.24);
+  }
+
+  .sidebar-toggle {
+    display: inline-flex;
+    flex-direction: column;
+  }
+
+  .main-content {
+    margin-left: 0;
+    min-height: 100vh;
+    padding: 1.25rem;
+  }
+
+  .dash-header {
+    gap: 1rem;
+    align-items: center;
+    margin-bottom: 1.25rem;
+  }
+
+  .dash-header h1 {
+    font-size: 1.65rem;
+    line-height: 1.15;
+  }
+
+  .user-info {
+    gap: 0.55rem;
+    margin-left: auto;
+  }
+
+  .dashboard-top-cards,
+  .stats-grid,
+  .charts-grid,
+  .reports-boxes-group,
+  .relatorios-section {
+    grid-template-columns: 1fr !important;
+  }
+
+  .section-header-row {
+    align-items: stretch !important;
+  }
+
+  .section-header-row > .btn,
+  .section-header-row > .btn-primary,
+  .section-header-row > button {
+    width: 100%;
+  }
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem;
+  }
+
+  .dash-header {
+    display: grid;
+    grid-template-columns: 46px minmax(0, 1fr) auto;
+    align-items: center;
+    column-gap: 0.75rem;
+  }
+
+  .dash-header-main {
+    display: contents;
+  }
+
+  .sidebar-toggle {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  .dash-header h1 {
+    grid-column: 2;
+    grid-row: 1;
+    margin: 0;
+    text-align: center;
+    font-size: 1.35rem;
+    justify-self: center;
+  }
+
+  .user-info {
+    grid-column: 3;
+    grid-row: 1;
+    width: auto;
+    justify-content: flex-end;
+    gap: 0.45rem;
+    margin-left: 0;
+  }
+
+  .stat-card,
+  .chart-card,
+  .table-card,
+  .planning-card-prof,
+  .plan-card,
+  .config-card,
+  .perfil-card,
+  .chart-card-large,
+  .reports-sidebar,
+  .ranking-card-premium {
+    padding: 1rem !important;
+    border-radius: 16px !important;
+  }
+
+  .filters-bar,
+  .filter-actions,
+  .config-item,
+  .report-card-header,
+  .ranking-header {
+    flex-direction: column;
+    align-items: stretch !important;
+  }
+
+  .filter-group,
+  .reports-chart-tools,
+  .month-visibility-control {
+    width: 100%;
+  }
+
+  .filter-select,
+  .custom-select,
+  .filter-container .custom-select,
+  .config-card select,
+  .config-card input:not([type="checkbox"]) {
+    width: 100%;
+    max-width: none;
+  }
+
+  .modal-content-card,
+  .modal-card,
+  .modal-content {
+    width: min(100%, 96vw) !important;
+    padding: 1.15rem !important;
+    border-radius: 18px !important;
+  }
+
+  #modalDespesa .form-row,
+  .modal-footer,
+  .modal-footer-actions {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .modal-footer > *,
+  .modal-footer-actions > * {
+    width: 100%;
+  }
+
+  .section-title-block {
+    justify-items: center;
+    text-align: center;
+  }
+}
+
+@media (max-width: 560px) {
+  .sidebar {
+    width: min(88vw, 320px);
+    padding: 1rem 0.85rem;
+  }
+
+  .nav-item {
+    padding: 0.82rem 0.9rem;
+    font-size: 0.94rem;
+  }
+
+  .dash-header h1 {
+    font-size: 1.12rem;
+  }
+
+  .notification-btn,
+  .avatar-circle,
+  .sidebar-toggle,
+  .btn-action {
+    width: 42px;
+    height: 42px;
+  }
+
+  .dash-header {
+    grid-template-columns: 42px minmax(0, 1fr) auto;
+    column-gap: 0.55rem;
+  }
+
+  .user-info {
+    gap: 0.35rem;
+  }
+
+  .expense-table,
+  .dash-table,
+  .planning-table-wrap table {
+    min-width: 680px;
+  }
 }

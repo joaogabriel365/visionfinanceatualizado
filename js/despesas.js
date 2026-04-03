@@ -1,5 +1,8 @@
 import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, getCategoryBadgeStyle, getThemeVar } from './common.js';
 
+const editIconUrl = new URL('../img/lapis.png', import.meta.url).href;
+const deleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+
 export const DespesasModulo = {
     init() {
         this.configurarFiltros();
@@ -258,7 +261,7 @@ export const DespesasModulo = {
         }
 
         if (despesas.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" style="text-align:center; padding:30px; color:#64748b;">Nenhuma despesa encontrada.</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="expense-empty-state">Nenhuma despesa encontrada.</td></tr>';
             return;
         }
 
@@ -272,6 +275,19 @@ export const DespesasModulo = {
 
         const datasOrdenadas = Object.keys(grupos).sort((a, b) => new Date(b) - new Date(a));
         let htmlFinal = '';
+
+        const getPaymentIcon = (metodo) => {
+            const icons = {
+                'Cartão de Crédito': 'fa-credit-card',
+                'Cartão de Débito': 'fa-credit-card',
+                'Pix': 'fa-bolt',
+                'Dinheiro': 'fa-money-bill-wave',
+                'VR': 'fa-utensils',
+                'VA': 'fa-basket-shopping'
+            };
+
+            return icons[metodo] || 'fa-wallet';
+        };
 
         datasOrdenadas.forEach(dataKey => {
             htmlFinal += `
@@ -291,41 +307,68 @@ export const DespesasModulo = {
                 if (item.parcelas || item.cartao) {
                     infoExtra += `<div class="expense-payment-extra">`;
                     if (item.parcelas) {
-                        infoExtra += `<span style="color: ${getThemeVar('--accent')}; font-size: 11px; font-weight: 700;">${item.parcelas}</span>`;
+                        infoExtra += `<span class="expense-payment-chip expense-payment-chip-installments">${item.parcelas}</span>`;
                     }
                     if (item.cartao) {
-                        infoExtra += `<span style="color: #1f2937; font-size: 10px; font-weight: 700;">${item.cartao}</span>`;
+                        infoExtra += `<span class="expense-payment-chip expense-payment-chip-card">${item.cartao}</span>`;
                     }
                     infoExtra += `</div>`;
                 }
 
-                const textoObs = item.observacao ? item.observacao : `<div class="expense-description-empty">-</div>`;
+                const textoObs = item.observacao
+                    ? `<div class="expense-description-text">${item.observacao}</div>`
+                    : `<div class="expense-description-empty">Sem descrição</div>`;
 
                 // Alteração Solicitada: Mostrar valor cheio na tabela (usando o valorTotalOriginal)
                 const valorExibicao = item.valorTotalOriginal || item.valor;
 
                 htmlFinal += `
                     <tr class="expense-row">
-                        <td class="expense-cell-title">${item.titulo}</td>
-                        <td class="expense-cell-category">
-                            <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px; margin: 0 auto;">
-                                ${item.categoria}
-                            </span>
+                        <td class="expense-cell-title" data-label="Titulo">
+                            <div class="expense-title-block">
+                                <strong class="expense-title-main">${item.titulo}</strong>
+                            </div>
                         </td>
-                        <td class="expense-cell-payment">
-                            <span class="expense-payment-main">${item.pagamento}</span>
-                            ${infoExtra}
+                        <td class="expense-cell-category" data-label="Categoria">
+                            <div class="expense-field-stack">
+                                <span class="expense-field-label"><i class="fas fa-tags"></i><span>Categoria</span></span>
+                                <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px;">
+                                    ${item.categoria}
+                                </span>
+                            </div>
                         </td>
-                        <td class="expense-cell-value"><strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong></td>
-                        <td class="expense-cell-date">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</td>
-                        <td class="expense-cell-description" style="color: #94a3b8; font-size: 0.9em;">${textoObs}</td>
-                        <td class="expense-cell-actions">
+                        <td class="expense-cell-payment" data-label="Pagamento">
+                            <div class="expense-field-stack">
+                                <span class="expense-field-label"><i class="fas ${getPaymentIcon(item.pagamento)}"></i><span>Pagamento</span></span>
+                                <span class="expense-payment-main">${item.pagamento}</span>
+                                ${infoExtra}
+                            </div>
+                        </td>
+                        <td class="expense-cell-value" data-label="Valor">
+                            <div class="expense-field-stack">
+                                <span class="expense-field-label"><i class="fas fa-money-bill-wave"></i><span>Valor</span></span>
+                                <strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong>
+                            </div>
+                        </td>
+                        <td class="expense-cell-date" data-label="Data">
+                            <div class="expense-field-stack">
+                                <span class="expense-field-label"><i class="fas fa-calendar-days"></i><span>Data</span></span>
+                                <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</span>
+                            </div>
+                        </td>
+                        <td class="expense-cell-description${item.observacao ? '' : ' expense-cell-description-empty-row'}" data-label="Descricao" style="color: #94a3b8; font-size: 0.9em;">
+                            <div class="expense-field-stack">
+                                <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descrição</span></span>
+                                ${textoObs}
+                            </div>
+                        </td>
+                        <td class="expense-cell-actions" data-label="Acoes">
                             <div class="expense-actions">
-                                <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})">
-                                    <img src="img/lapis.png" alt="Editar">
+                                <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})" title="Editar despesa" aria-label="Editar despesa ${item.titulo}">
+                                    <img src="${editIconUrl}" alt="Editar" class="expense-action-image">
                                 </button>
-                                <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})">
-                                    <img src="img/lixeira.png" alt="Excluir">
+                                <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})" title="Excluir despesa" aria-label="Excluir despesa ${item.titulo}">
+                                    <img src="${deleteIconUrl}" alt="Excluir" class="expense-action-image">
                                 </button>
                             </div>
                         </td>
