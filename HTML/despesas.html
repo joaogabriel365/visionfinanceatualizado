@@ -164,7 +164,7 @@
             </div>
             <div class="form-group" style="margin-bottom: 25px;">
                 <label style="color: var(--text-secondary); display: block; margin-bottom: 8px; font-size: 14px;">Descrição</label>
-                <textarea id="observacao" placeholder="Observações adicionais..." rows="3" class="dark-input expense-description-field" style="resize: none; color: var(--text-primary);"></textarea>
+                <textarea id="observacao" placeholder="Observações adicionais..." rows="3" maxlength="500" class="dark-input expense-description-field" style="resize: none; color: var(--text-primary);"></textarea>
             </div>
             <div style="display: flex; flex-direction: column; gap: 10px;">
                 <button type="submit" class="btn btn-primary">Salvar Despesa</button>
@@ -183,5 +183,18 @@
             <button id="btnConfirmarExclusao" class="btn btn-danger">Excluir</button>
             <button onclick="document.getElementById('modalConfirmacao').style.display='none'" class="btn btn-secondary">Voltar</button>
         </div>
+    </div>
+</div>
+
+<div id="expenseDescriptionModal" class="modal-overlay expense-description-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1150; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="expense-description-modal-card" role="dialog" aria-modal="true" aria-labelledby="expenseDescriptionTitle">
+        <div class="expense-description-modal-head">
+            <div>
+                <span class="expense-description-modal-eyebrow">Comentário</span>
+                <h3 id="expenseDescriptionTitle">Descrição da despesa</h3>
+            </div>
+            <button type="button" id="expenseDescriptionClose" class="expense-description-close" aria-label="Fechar descrição">×</button>
+        </div>
+        <div id="expenseDescriptionBody" class="expense-description-modal-body"></div>
     </div>
 </div>

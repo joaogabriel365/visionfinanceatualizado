@@ -5,7 +5,7 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   padding: 1.25rem;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.08);
+  box-shadow: var(--shadow-soft);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast);
 }
 
@@ -49,7 +49,7 @@
 .planning-card-prof button,
 .plan-card button {
   background: var(--accent);
-  color: #fff;
+  color: var(--text-on-accent);
   border: 1px solid transparent;
   border-radius: 10px;
   padding: 0.65rem 1rem;
@@ -85,14 +85,14 @@
   border: 1px solid var(--border-color);
   border-radius: 18px;
   padding: 1.2rem;
-  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.07);
+  box-shadow: var(--shadow-soft);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
 }
 
 .plan-card:hover {
   transform: translateY(-3px);
   border-color: var(--accent);
-  box-shadow: 0 14px 28px rgba(0, 0, 0, 0.12);
+  box-shadow: var(--shadow-medium);
 }
 
 .plan-card h4 {
@@ -117,9 +117,14 @@
   justify-content: space-between;
   align-items: center;
   padding: 0.65rem 0.8rem;
-  border: 1px solid rgba(191, 160, 95, 0.25);
+  border: 1px solid rgba(var(--accent-rgb), 0.20);
   border-radius: 12px;
-  background: rgba(255, 255, 255, 0.6);
+  background: color-mix(in srgb, var(--panel-bg) 88%, #ffffff 12%);
+}
+
+body.dark-theme .plan-card .plan-item {
+  border-color: rgba(61, 77, 93, 0.88);
+  background: rgba(17, 26, 36, 0.82);
 }
 
 .plan-card .plan-item span {
@@ -153,7 +158,7 @@
 }
 
 .table tbody tr:hover {
-  background: rgba(201,170,106,0.08);
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .budget-limit-add-icon {
@@ -178,18 +183,18 @@
 
 body.light-theme .budget-limit-add-btn img,
 body.light-theme .budget-limit-add-icon {
-  filter: brightness(0) invert(1);
+  filter: brightness(0) saturate(100%) invert(0);
 }
 
 body.light-theme .budget-limit-add-btn {
-  background: var(--accent) !important;
-  border: 1px dashed rgba(var(--accent-rgb), 0.9) !important;
-  box-shadow: 0 6px 12px rgba(var(--accent-rgb), 0.14);
+  background: var(--panel-bg) !important;
+  border: 1px dashed rgba(15, 23, 42, 0.22) !important;
+  box-shadow: 0 6px 12px rgba(15, 23, 42, 0.08);
 }
 
 body.light-theme .budget-limit-add-btn:hover {
-  background: var(--accent-hover) !important;
-  box-shadow: 0 8px 16px rgba(var(--accent-rgb), 0.2);
+  background: var(--bg-surface) !important;
+  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.12);
 }
 
 body.dark-theme .budget-limit-add-btn img,
@@ -214,11 +219,11 @@ body.dark-theme .budget-limit-add-btn:hover {
 #gasto-total-text,
 .planning-goal-target,
 .planning-goal-progress-value {
-  color: #ffffff !important;
+  color: var(--text-primary);
 }
 
 #gasto-total-text span {
-  color: #ffffff !important;
+  color: inherit;
 }
 
 body.light-theme .planning-card-prof .btn-action {
@@ -239,6 +244,11 @@ body.light-theme .planning-card-prof .btn-action img {
   height: auto !important;
   object-fit: contain;
   image-rendering: auto;
+}
+
+body.light-theme .planning-action-icon-add,
+body.light-theme .planning-action-icon-edit {
+  filter: brightness(0) saturate(100%) invert(0);
 }
 
 body.light-theme .planning-card-prof .btn-action.btn-delete {

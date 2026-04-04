@@ -280,10 +280,10 @@ export const PlanejamentoModulo = {
         }
 
         const isLight = document.body.classList.contains('light-theme');
-        const progressBg = isLight ? '#e8e8e8' : '#1a253a';
+        const progressBg = isLight ? (getThemeVar('--border-color') || '#dccdb9') : '#1a253a';
         const rowBorder = isLight ? '#cbd5e1' : '#1e293b';
-        const rowText = '#ffffff';
-        const percentageColor = '#ffffff';
+        const rowText = isLight ? (getThemeVar('--text-primary') || '#0f172a') : '#ffffff';
+        const percentageColor = isLight ? (getThemeVar('--text-primary') || '#0f172a') : '#ffffff';
         const actionButtonStyle = isLight
             ? 'border: none;'
             : 'background: var(--bg-surface);';
@@ -346,20 +346,23 @@ export const PlanejamentoModulo = {
         const percText = document.getElementById('progresso-porcentagem-text');
         if (percText) {
             percText.innerText = `${porcentagemDisplay}%`;
-            percText.style.color = document.body.classList.contains('light-theme') ? '#0f172a' : corStatus;
+            percText.style.color = document.body.classList.contains('light-theme')
+                ? (getThemeVar('--text-primary') || '#0f172a')
+                : corStatus;
         }
 
         const gastoText = document.getElementById('gasto-total-text');
         if (gastoText) {
+            const textPrimary = getThemeVar('--text-primary') || '#0f172a';
             // Alterado para exibir apenas o valor de gastos conforme solicitado
-            gastoText.innerHTML = `<span style="font-weight: 700; color: #1f2937;">${formatarMoeda(utilizado)}</span>`;
+            gastoText.innerHTML = `<span style="font-weight: 700; color: ${textPrimary};">${formatarMoeda(utilizado)}</span>`;
         }
 
         const dispText = document.getElementById('disponivel-text');
         if (dispText) {
             dispText.innerText = saldo < 0 ? `Excedido: - ${formatarMoeda(Math.abs(saldo))}` : `Disponível: ${formatarMoeda(saldo)}`;
             dispText.style.color = document.body.classList.contains('light-theme')
-                ? '#0f172a'
+                ? (getThemeVar('--text-primary') || '#0f172a')
                 : (saldo < 0 ? '#ef4444' : getThemeVar('--accent'));
         }
     }

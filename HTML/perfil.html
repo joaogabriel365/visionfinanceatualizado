@@ -111,6 +111,16 @@
                 <label>Confirmar Nova Senha</label>
                 <input type="password" id="confirmaSenha" placeholder="••••••••" required>
             </div>
+            <div class="password-rules-card" aria-label="Regras de senha">
+                <p class="password-rules-title">A senha deve conter:</p>
+                <ul class="password-rules-list">
+                    <li>No mínimo 8 caracteres</li>
+                    <li>No mínimo 1 letra maiúscula</li>
+                    <li>No mínimo 1 letra minúscula</li>
+                    <li>No mínimo 1 caractere especial</li>
+                </ul>
+            </div>
+            <div class="form-feedback" id="perfilPasswordFeedback" role="alert" aria-live="polite" hidden></div>
             <div class="modal-footer-actions">
                 <button type="button" class="btn-link-sm">Esqueceu a senha?</button>
                 <button type="submit" class="btn-accent-blue">Confirmar Alteração</button>

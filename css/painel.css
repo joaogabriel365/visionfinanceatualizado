@@ -90,8 +90,12 @@ body.light-theme .date-badge {
   table-layout: fixed;
 }
 
+.dash-table thead tr {
+  background: color-mix(in srgb, var(--card-bg) 86%, var(--accent-soft));
+}
+
 body.light-theme .dash-table thead tr {
-  background: rgba(255, 255, 255, 0.42);
+  background: linear-gradient(180deg, rgba(255, 249, 242, 0.92) 0%, rgba(244, 235, 223, 0.88) 100%);
 }
 
 body.light-theme .dash-table th {
@@ -104,11 +108,31 @@ body.light-theme .dash-table td {
 }
 
 body.light-theme .dash-table tbody tr:nth-child(even) {
-  background: rgba(255, 255, 255, 0.34);
+  background: rgba(255, 249, 242, 0.58);
 }
 
 body.light-theme .dash-table tbody tr:hover {
   background: rgba(var(--accent-rgb), 0.05);
+}
+
+body.dark-theme .dash-table thead tr {
+  background: linear-gradient(180deg, rgba(17, 26, 36, 0.92) 0%, rgba(12, 19, 27, 0.92) 100%);
+}
+
+body.dark-theme .dash-table th {
+  color: var(--text-primary);
+}
+
+body.dark-theme .dash-table td {
+  color: var(--text-secondary);
+}
+
+body.dark-theme .dash-table tbody tr:nth-child(even) {
+  background: rgba(17, 26, 36, 0.48);
+}
+
+body.dark-theme .dash-table tbody tr:hover {
+  background: rgba(var(--accent-rgb), 0.08);
 }
 
 .dash-table th,
@@ -309,13 +333,13 @@ body.light-theme .dash-table tbody tr:hover {
   }
 
   body.light-theme .recent-expenses-table tbody td:not(:last-child) {
-    border-bottom-color: rgba(37, 99, 235, 0.14);
+    border-bottom-color: rgba(200, 171, 130, 0.32);
   }
 
   body.light-theme .recent-expenses-card .date-badge {
-    background: rgba(202, 203, 206, 0.12);
-    color: #2563eb;
-    border-color: rgba(37, 99, 235, 0.18);
+    background: linear-gradient(180deg, rgba(231, 220, 203, 0.92) 0%, rgba(236, 224, 207, 0.88) 100%);
+    color: #8a6131;
+    border-color: rgba(200, 171, 130, 0.42);
   }
 
   .recent-expenses-table .expense-col-value {

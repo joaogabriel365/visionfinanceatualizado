@@ -51,12 +51,36 @@ export const getThemeSettings = () => {
     return JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
 };
 
+export const setThemeSettings = (settings) => {
+    localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
+    return settings;
+};
+
+export const setThemePreference = (isDark) => {
+    const settings = getThemeSettings();
+    settings.temaEscuro = isDark;
+    setThemeSettings(settings);
+    window.dispatchEvent(new Event('settingsUpdated'));
+    return isDark;
+};
+
+export const toggleThemePreference = () => {
+    const isDark = getThemeSettings().temaEscuro === true;
+    return setThemePreference(!isDark);
+};
+
 export const applyThemeClasses = (isDark, element = document.body) => {
     if (!element) return isDark;
 
     element.dataset.theme = isDark ? 'dark' : 'light';
     element.classList.toggle('dark-theme', isDark);
     element.classList.toggle('light-theme', !isDark);
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', isDark ? '#050a0f' : '#084ca0');
+    }
+
     return isDark;
 };
 
@@ -137,7 +161,11 @@ export function aplicarMascaraValor(input) {
  * Sistema de Confirmação Profissional
  * Substitui o confirm() nativo por um modal alinhado ao design do sistema.
  */
-export const confirmarAcao = (titulo = "Confirmar Exclusão", mensagem = "Esta ação não poderá ser desfeita. Deseja continuar?") => {
+export const confirmarAcao = (
+    titulo = "Confirmar Exclusão",
+    mensagem = "Esta ação não poderá ser desfeita. Deseja continuar?",
+    options = {}
+) => {
     return new Promise((resolve) => {
         const modal = document.getElementById('confirmModal');
         if (!modal) {
@@ -150,23 +178,40 @@ export const confirmarAcao = (titulo = "Confirmar Exclusão", mensagem = "Esta a
         const txtMensagem = modal.querySelector('p');
         const btnCancel = document.getElementById('btnConfirmCancel');
         const btnConfirm = document.getElementById('btnConfirmDelete');
+        const iconWrap = document.getElementById('confirmModalIconWrap');
+        const icon = document.getElementById('confirmModalIcon');
+        const confirmText = options.confirmText || 'Confirmar';
+        const cancelText = options.cancelText || 'Cancelar';
+        const iconSrc = options.iconSrc || './img/lixeira.png';
+        const iconAlt = options.iconAlt || 'Excluir';
+        const iconWrapStyle = options.iconWrapStyle || 'width: 72px; height: 72px; background: rgba(239, 68, 68, 0.14); border: 1px solid rgba(239, 68, 68, 0.32); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 22px; box-shadow: 0 12px 28px rgba(239, 68, 68, 0.18);';
+        const iconStyle = options.iconStyle || 'width: 28px; height: 28px; filter: brightness(0) saturate(100%) invert(27%) sepia(98%) saturate(3518%) hue-rotate(343deg) brightness(100%) contrast(101%);';
 
         // Atualiza textos se fornecidos
         if (txtTitulo) txtTitulo.innerText = titulo;
         if (txtMensagem) txtMensagem.innerText = mensagem;
+        if (btnCancel) btnCancel.innerText = cancelText;
+        if (btnConfirm) btnConfirm.innerText = confirmText;
+        if (iconWrap) iconWrap.style.cssText = iconWrapStyle;
+        if (icon) {
+            icon.src = iconSrc;
+            icon.alt = iconAlt;
+            icon.style.cssText = iconStyle;
+        }
 
         modal.style.display = 'flex';
 
         const fechar = (confirmado) => {
             modal.style.display = 'none';
             // Remove os listeners para evitar execuções duplicadas no futuro
-            btnCancel.onclick = null;
-            btnConfirm.onclick = null;
+            if (btnCancel) btnCancel.onclick = null;
+            if (btnConfirm) btnConfirm.onclick = null;
+            modal.onclick = null;
             resolve(confirmado);
         };
 
-        btnCancel.onclick = () => fechar(false);
-        btnConfirm.onclick = () => fechar(true);
+        if (btnCancel) btnCancel.onclick = () => fechar(false);
+        if (btnConfirm) btnConfirm.onclick = () => fechar(true);
         
         // Fechar ao clicar fora do card (opcional para UX)
         modal.onclick = (e) => {

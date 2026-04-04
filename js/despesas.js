@@ -2,12 +2,14 @@ import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, g
 
 const editIconUrl = new URL('../img/lapis.png', import.meta.url).href;
 const deleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+const commentIconUrl = new URL('../img/comentario.png', import.meta.url).href;
 
 export const DespesasModulo = {
     init() {
         this.configurarFiltros();
         this.configurarFormulario();
         this.aplicarMascaras();
+        this.configurarModalDescricao();
         this.renderizarTabelaCompleta();
         window.DespesasModulo = this;
     },
@@ -122,7 +124,6 @@ export const DespesasModulo = {
         const valorInput = document.getElementById('valor');
         const dataInput = document.getElementById('data');
         const observacaoInput = document.getElementById('observacao');
-
         if (valorInput) {
             valorInput.addEventListener('input', (e) => {
                 let value = e.target.value.replace(/\D/g, '');
@@ -145,10 +146,53 @@ export const DespesasModulo = {
         }
 
         if (observacaoInput) {
+            observacaoInput.maxLength = 500;
             observacaoInput.addEventListener('input', (e) => {
-                if (e.target.value.length > 40) e.target.value = e.target.value.slice(0, 40);
+                if (e.target.value.length > 500) {
+                    e.target.value = e.target.value.slice(0, 500);
+                }
             });
         }
+    },
+
+    configurarModalDescricao() {
+        const modal = document.getElementById('expenseDescriptionModal');
+        const closeButton = document.getElementById('expenseDescriptionClose');
+
+        if (!modal || modal.dataset.bound === 'true') return;
+
+        modal.dataset.bound = 'true';
+
+        closeButton?.addEventListener('click', () => this.fecharModalDescricao());
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.fecharModalDescricao();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                this.fecharModalDescricao();
+            }
+        });
+    },
+
+    abrirModalDescricao(titulo, descricao) {
+        const modal = document.getElementById('expenseDescriptionModal');
+        const title = document.getElementById('expenseDescriptionTitle');
+        const body = document.getElementById('expenseDescriptionBody');
+
+        if (!modal || !title || !body) return;
+
+        title.textContent = titulo ? `Descrição de ${titulo}` : 'Descrição da despesa';
+        body.textContent = descricao || 'Nenhuma descrição informada.';
+        modal.style.display = 'flex';
+    },
+
+    fecharModalDescricao() {
+        const modal = document.getElementById('expenseDescriptionModal');
+        if (modal) modal.style.display = 'none';
     },
 
     validarData(dataString) {
@@ -315,9 +359,13 @@ export const DespesasModulo = {
                     infoExtra += `</div>`;
                 }
 
+                const tituloSeguro = JSON.stringify(item.titulo || 'Despesa');
+                const observacaoSegura = JSON.stringify(item.observacao || '');
                 const textoObs = item.observacao
-                    ? `<div class="expense-description-text">${item.observacao}</div>`
-                    : `<div class="expense-description-empty">Sem descrição</div>`;
+                    ? `<button type="button" class="expense-description-trigger" onclick='window.DespesasModulo.abrirModalDescricao(${tituloSeguro}, ${observacaoSegura})' aria-label="Abrir descrição da despesa ${item.titulo}" title="Abrir descrição">
+                            <img src="${commentIconUrl}" alt="" class="expense-description-icon">
+                       </button>`
+                    : `<div class="expense-description-empty">-</div>`;
 
                 // Alteração Solicitada: Mostrar valor cheio na tabela (usando o valorTotalOriginal)
                 const valorExibicao = item.valorTotalOriginal || item.valor;
@@ -356,7 +404,7 @@ export const DespesasModulo = {
                                 <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</span>
                             </div>
                         </td>
-                        <td class="expense-cell-description${item.observacao ? '' : ' expense-cell-description-empty-row'}" data-label="Descricao" style="color: #94a3b8; font-size: 0.9em;">
+                        <td class="expense-cell-description${item.observacao ? '' : ' expense-cell-description-empty-row'}" data-label="Descricao">
                             <div class="expense-field-stack">
                                 <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descrição</span></span>
                                 ${textoObs}

@@ -19,6 +19,36 @@ export const PerfilModulo = {
         const formPerfil = document.getElementById('formPerfil');
         const btnSalvar = document.getElementById('btnSalvarPerfil');
         const inputs = formPerfil.querySelectorAll('input');
+        const formSenha = document.getElementById('formSenha');
+        const passwordFeedback = document.getElementById('perfilPasswordFeedback');
+
+        const getPasswordValidationMessages = (password) => {
+            const messages = [];
+
+            if (password.length < 8) messages.push('Use no mínimo 8 caracteres.');
+            if (!/[A-Z]/.test(password)) messages.push('Adicione pelo menos 1 letra maiúscula.');
+            if (!/[a-z]/.test(password)) messages.push('Adicione pelo menos 1 letra minúscula.');
+            if (!/[^A-Za-z0-9]/.test(password)) messages.push('Adicione pelo menos 1 caractere especial.');
+
+            return messages;
+        };
+
+        const limparFeedbackSenha = () => {
+            if (!passwordFeedback) return;
+            passwordFeedback.hidden = true;
+            passwordFeedback.classList.remove('is-error', 'is-success');
+            passwordFeedback.innerHTML = '';
+        };
+
+        const exibirFeedbackSenha = (tipo, titulo, mensagens = []) => {
+            if (!passwordFeedback) return;
+            passwordFeedback.hidden = false;
+            passwordFeedback.classList.remove('is-error', 'is-success');
+            passwordFeedback.classList.add(tipo === 'success' ? 'is-success' : 'is-error');
+            passwordFeedback.innerHTML = mensagens.length
+                ? `<p>${titulo}</p><ul>${mensagens.map((mensagem) => `<li>${mensagem}</li>`).join('')}</ul>`
+                : `<p>${titulo}</p>`;
+        };
 
         // Ativa botão salvar apenas se houver mudanças
         inputs.forEach(input => {
@@ -51,19 +81,39 @@ export const PerfilModulo = {
         };
 
         // Validação de Senha
-        document.getElementById('formSenha').onsubmit = (e) => {
-            e.preventDefault();
-            const nova = document.getElementById('novaSenha').value;
-            const confirma = document.getElementById('confirmaSenha').value;
+        if (formSenha) {
+            formSenha.onsubmit = (e) => {
+                e.preventDefault();
+                const nova = document.getElementById('novaSenha').value;
+                const confirma = document.getElementById('confirmaSenha').value;
+                const mensagens = getPasswordValidationMessages(nova);
 
-            if (nova !== confirma) {
-                alert("Erro: A nova senha e a confirmação não coincidem.");
-                return;
+                limparFeedbackSenha();
+
+                if (nova !== confirma) {
+                    mensagens.push('A confirmação da senha deve ser igual à nova senha digitada.');
+                }
+
+                if (mensagens.length) {
+                    exibirFeedbackSenha('error', 'A nova senha ainda não atende aos critérios exigidos:', mensagens);
+                    return;
+                }
+
+                exibirFeedbackSenha('success', 'Senha alterada com sucesso.');
+                setTimeout(() => {
+                    this.fecharModal('modalSenha');
+                    e.target.reset();
+                    limparFeedbackSenha();
+                }, 1200);
+            };
+        }
+
+        ['novaSenha', 'confirmaSenha'].forEach((id) => {
+            const field = document.getElementById(id);
+            if (field) {
+                field.addEventListener('input', limparFeedbackSenha);
             }
-            alert("Senha alterada com sucesso!");
-            this.fecharModal('modalSenha');
-            e.target.reset();
-        };
+        });
     },
 
     obterDadosConsolidados() {

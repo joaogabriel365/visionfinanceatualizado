@@ -129,7 +129,7 @@
   overflow: hidden;
   border-radius: 24px !important;
   border: 1px solid var(--border-color) !important;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.02) 0%, transparent 100%), var(--card-bg) !important;
+  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.04) 0%, transparent 100%), var(--card-bg) !important;
   box-shadow: 0 18px 36px rgba(15, 23, 42, 0.08);
 }
 
@@ -139,9 +139,15 @@
   table-layout: fixed;
 }
 
+.expense-table {
+  --expense-cell-padding-y: 1rem;
+  --expense-cell-padding-x: 1.25rem;
+}
+
 .expense-table thead th,
 .expense-table tbody td {
   vertical-align: middle;
+  padding: var(--expense-cell-padding-y) var(--expense-cell-padding-x) !important;
 }
 
 .expense-table thead {
@@ -154,6 +160,10 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--text-secondary) !important;
+}
+
+.expense-table-head-row .expense-head {
+  border-bottom: 1px solid var(--border-color);
 }
 
 .expense-head-title,
@@ -177,7 +187,7 @@
 .expense-head-value,
 .expense-cell-value {
   width: 12%;
-  text-align: right;
+  text-align: center;
 }
 
 .expense-head-date,
@@ -189,13 +199,20 @@
 .expense-head-description,
 .expense-cell-description {
   width: 16%;
-  text-align: left;
+  text-align: center;
 }
 
 .expense-head-actions,
 .expense-cell-actions {
   width: 10%;
   text-align: center;
+}
+
+.expense-table-head-row .expense-head-value,
+.expense-table-head-row .expense-head-description,
+.expense-table-head-row .expense-head-date,
+.expense-table-head-row .expense-head-actions {
+  text-align: center !important;
 }
 
 .expense-row {
@@ -208,7 +225,6 @@
 }
 
 .expense-table tbody td {
-  padding: 1rem 1.1rem;
   color: var(--text-primary);
 }
 
@@ -292,17 +308,97 @@
   opacity: 0.62;
 }
 
+.expense-description-trigger {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 38px;
+  height: 38px;
+  padding: 0;
+  border: 1px solid rgba(148, 163, 184, 0.18);
+  border-radius: 12px;
+  background: rgba(var(--accent-rgb), 0.08);
+  cursor: pointer;
+  transition: transform var(--transition-fast), background var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.expense-description-trigger:hover {
+  transform: translateY(-1px);
+  background: rgba(var(--accent-rgb), 0.14);
+  box-shadow: 0 10px 18px rgba(15, 23, 42, 0.1);
+}
+
+.expense-description-trigger:focus-visible {
+  outline: none;
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.18);
+}
+
+.expense-description-icon {
+  width: 18px;
+  height: 18px;
+  object-fit: contain;
+  display: block;
+  filter: brightness(0) saturate(100%) invert(100%);
+}
+
 .expense-description-text,
 .expense-description-empty {
   color: var(--text-secondary);
   line-height: 1.55;
-  text-align: left;
+  text-align: center;
+}
+
+.expense-cell-description .expense-field-stack,
+.expense-cell-payment .expense-field-stack,
+.expense-cell-value .expense-field-stack,
+.expense-cell-date .expense-field-stack {
+  width: 100%;
+}
+
+.expense-cell-date .expense-field-stack,
+.expense-cell-category .expense-field-stack,
+.expense-cell-value .expense-field-stack,
+.expense-cell-description .expense-field-stack {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.expense-cell-payment .expense-field-stack {
+  display: grid;
+  justify-items: start;
+}
+
+.expense-cell-title,
+.expense-cell-payment,
+.expense-cell-description {
+  padding-left: var(--expense-cell-padding-x) !important;
+}
+
+.expense-cell-actions,
+.expense-head-actions {
+  padding-left: var(--expense-cell-padding-x) !important;
+  padding-right: var(--expense-cell-padding-x) !important;
+}
+
+.expense-cell-value .expense-value-strong,
+.expense-cell-description .expense-description-text,
+.expense-cell-description .expense-description-empty,
+.expense-cell-description .expense-description-trigger,
+.expense-cell-date .expense-date-text {
+  text-align: center;
+}
+
+.expense-cell-description .expense-description-trigger {
+  margin-inline: auto;
 }
 
 .expense-actions {
-  display: flex;
+  display: inline-flex;
   justify-content: center;
+  align-items: center;
   gap: 0.5rem;
+  margin-inline: auto;
 }
 
 .expense-actions .btn-action {
@@ -334,6 +430,10 @@
   filter: brightness(0) saturate(100%) invert(68%) sepia(62%) saturate(589%) hue-rotate(4deg) brightness(95%) contrast(90%);
 }
 
+body.light-theme .expense-actions .btn-edit .expense-action-image {
+  filter: brightness(0) saturate(100%) invert(0%);
+}
+
 .expense-actions .btn-delete {
   background: rgba(239, 68, 68, 0.06) !important;
 }
@@ -350,19 +450,22 @@
 }
 
 .expense-date-group-row td {
-  padding: 0.8rem 1.1rem 0.3rem;
+  padding: 1rem 1.25rem 0.45rem !important;
 }
 
 .expense-date-group-badge {
-  display: inline-flex;
-  width: auto;
-  padding: 0.45rem 0.95rem;
+  display: flex;
+  width: 100%;
+  align-items: center;
+  justify-content: flex-start;
+  padding: 0.7rem 1rem;
   background: var(--accent);
   color: #ffffff;
   font-weight: 800;
   font-size: 0.76rem;
-  border-radius: 999px;
+  border-radius: 14px;
   letter-spacing: 0.02em;
+  box-sizing: border-box;
 }
 
 .expense-modal-card {
@@ -375,9 +478,78 @@
 }
 
 #modalDespesa,
-#modalConfirmacao {
+#modalConfirmacao,
+#expenseDescriptionModal {
   padding: 1rem;
   overflow-y: auto;
+}
+
+.expense-description-modal-card {
+  width: min(100%, 520px);
+  background: var(--modal-bg);
+  border: 1px solid var(--dashboard-box-border);
+  border-radius: 22px;
+  padding: 1.35rem 1.35rem 1.25rem;
+  box-shadow: var(--dashboard-box-shadow);
+}
+
+.expense-description-modal-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1rem;
+}
+
+.expense-description-modal-eyebrow {
+  display: inline-block;
+  margin-bottom: 0.3rem;
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.expense-description-modal-head h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.2rem;
+  font-weight: 800;
+}
+
+.expense-description-close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border: 1px solid var(--dashboard-box-border);
+  border-radius: 14px;
+  background: rgba(148, 163, 184, 0.08);
+  color: var(--text-primary);
+  cursor: pointer;
+  font-size: 1.5rem;
+  line-height: 1;
+  transition: transform var(--transition-fast), background var(--transition-fast);
+}
+
+.expense-description-close:hover {
+  transform: translateY(-1px);
+  background: rgba(148, 163, 184, 0.14);
+}
+
+.expense-description-modal-body {
+  max-height: min(60vh, 420px);
+  overflow-y: auto;
+  padding: 1rem 1.05rem;
+  border-radius: 18px;
+  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--dashboard-box-surface) 100%);
+  border: 1px solid var(--dashboard-box-border);
+  color: var(--text-secondary);
+  line-height: 1.7;
+  white-space: pre-wrap;
+  word-break: break-word;
 }
 
 #modalDespesa label {
@@ -394,7 +566,7 @@
   border-radius: 14px !important;
   color: var(--text-primary) !important;
   padding: 0.9rem 1rem !important;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.35), 0 6px 14px rgba(124, 98, 60, 0.06);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.28), var(--shadow-soft);
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast), background var(--transition-fast);
 }
 
@@ -433,18 +605,67 @@ body.light-theme .expense-table thead {
   background: rgba(255, 251, 245, 0.74);
 }
 
+body.light-theme {
+  --expense-light-border: #d8c0a0;
+  --expense-light-border-strong: #c8ab82;
+  --expense-light-surface: #f3e8d8;
+  --expense-light-surface-alt: #ece0cf;
+}
+
+body.light-theme .expense-table-card {
+  border-color: var(--expense-light-border) !important;
+  background: linear-gradient(180deg, rgba(255, 248, 241, 0.96) 0%, var(--card-bg) 100%) !important;
+  box-shadow: 0 18px 34px rgba(124, 98, 60, 0.12);
+}
+
 body.light-theme .expense-date-group-badge {
-  background: rgba(37, 99, 235, 0.12) !important;
-  color: #2563eb !important;
-  border: 1px solid rgba(37, 99, 235, 0.18) !important;
+  background: linear-gradient(180deg, #e7dccb 0%, var(--expense-light-surface-alt) 100%) !important;
+  color: #8a6131 !important;
+  border: 1px solid var(--expense-light-border-strong) !important;
 }
 
 body.light-theme .filters-bar .filter-select,
 body.light-theme #modalDespesa .modal-content-card,
 body.light-theme #modalConfirmacao > div,
+body.light-theme .expense-description-modal-card,
 body.light-theme #containerCartao {
-  border-width: 2px !important;
-  border-color: var(--border-strong) !important;
+  border-color: var(--expense-light-border-strong) !important;
+}
+
+body.light-theme .filters-bar .filter-select {
+  background: linear-gradient(180deg, #fbf5ec 0%, var(--expense-light-surface) 100%);
+  box-shadow: 0 10px 20px rgba(124, 98, 60, 0.08);
+}
+
+body.light-theme .expense-primary-action,
+body.light-theme .expense-primary-action span,
+body.light-theme .expense-primary-action i {
+  color: #ffffff !important;
+}
+
+body.dark-theme .expense-primary-action,
+body.dark-theme .expense-primary-action span,
+body.dark-theme .expense-primary-action i {
+  color: #000000 !important;
+}
+
+.expense-primary-action,
+.expense-primary-action span,
+.expense-primary-action i {
+  font-weight: 800 !important;
+}
+
+body.light-theme .expense-description-trigger {
+  background: rgba(201, 171, 130, 0.14);
+  border-color: rgba(200, 171, 130, 0.32);
+}
+
+body.light-theme .expense-description-trigger:hover {
+  background: rgba(201, 171, 130, 0.22);
+}
+
+body.light-theme .expense-description-icon {
+  filter: brightness(0) saturate(100%) invert(0%);
 }
 
 @media (max-width: 1180px) {
@@ -583,6 +804,15 @@ body.light-theme #containerCartao {
     text-align: left !important;
   }
 
+  .expense-cell-category .expense-field-stack,
+  .expense-cell-value .expense-field-stack,
+  .expense-cell-date .expense-field-stack,
+  .expense-cell-description .expense-field-stack {
+    display: flex;
+    align-items: flex-start;
+    justify-content: flex-start;
+  }
+
   .expense-title-block {
     justify-items: start;
     gap: 0;
@@ -597,6 +827,20 @@ body.light-theme #containerCartao {
     margin-inline: 0;
     min-width: 0;
     width: fit-content;
+    justify-self: start;
+  }
+
+  .expense-cell-value .expense-value-strong,
+  .expense-cell-date .expense-date-text,
+  .expense-cell-description .expense-description-text,
+  .expense-cell-description .expense-description-empty,
+  .expense-cell-description .expense-description-trigger {
+    text-align: left;
+  }
+
+  .expense-cell-value .expense-value-strong,
+  .expense-cell-date .expense-date-text,
+  .expense-cell-description .expense-description-empty {
     justify-self: start;
   }
 
@@ -620,7 +864,7 @@ body.light-theme #containerCartao {
   }
 
   .expense-cell-description {
-    display: none !important;
+    display: grid !important;
   }
 
   .expense-cell-actions {
@@ -661,6 +905,14 @@ body.light-theme #containerCartao {
     align-items: stretch !important;
   }
 
+  .expense-description-modal-card {
+    padding: 1.15rem;
+  }
+
+  .expense-description-modal-head {
+    align-items: center;
+  }
+
   #containerParcelamento {
     border-left: none !important;
     padding-left: 0 !important;
@@ -692,6 +944,41 @@ body.light-theme #containerCartao {
   .expense-row {
     padding: 1.05rem 1rem 0.95rem;
     border-radius: 16px;
+  }
+
+  .expense-cell-description .expense-description-trigger {
+    margin-inline: 0;
+    justify-self: start;
+    align-self: start;
+  }
+
+  .expense-cell-actions {
+    justify-items: start;
+  }
+
+  .expense-actions {
+    width: 100%;
+    margin-inline: 0;
+    justify-content: flex-start;
+  }
+
+  .expense-description-trigger {
+    width: 36px;
+    height: 36px;
+  }
+
+  .expense-description-modal-card {
+    width: min(100%, 94vw);
+    padding: 1rem;
+    border-radius: 18px;
+  }
+
+  .expense-description-modal-head h3 {
+    font-size: 1.05rem;
+  }
+
+  .expense-description-modal-body {
+    padding: 0.9rem;
   }
 
   .expense-table tbody td {

@@ -2,6 +2,7 @@ import { formatarMoeda, getThemeVar } from './common.js';
 
 const walletEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
 const walletDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+const walletLogoUrl = new URL('../img/logo.png', import.meta.url).href;
 
 export const CarteirasModulo = {
     lista: JSON.parse(localStorage.getItem('carteiras')) || [],
@@ -222,10 +223,27 @@ export const CarteirasModulo = {
             const borderColor = isLight ? 'rgba(167, 190, 217, 0.95)' : '#334155';
             const accentColor = getThemeVar('--accent');
             const accentSoft = getThemeVar('--accent-soft');
+            const walletSeed = `${wallet.nome}${wallet.tipo}${index}`
+                .split('')
+                .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            const walletDigits = String(walletSeed).slice(-4).padStart(4, '0');
+            const walletAlias = wallet.tipo.includes('Vale')
+                ? 'Beneficio'
+                : wallet.tipo.includes('Crédito')
+                    ? 'Credit'
+                    : wallet.tipo.includes('Débito')
+                        ? 'Debit'
+                        : 'Wallet';
 
             return `
                 <div class="wallet-card" style="background: linear-gradient(135deg, ${corFundo} 0%, ${darkColor} 100%); border: 1px solid ${borderColor};">
                     <div class="wallet-card-top">
+                        <div class="wallet-card-brand">
+                            <span class="wallet-brand-logo" aria-hidden="true">
+                                <img src="${walletLogoUrl}" alt="">
+                            </span>
+                            <span class="wallet-network">${walletAlias}</span>
+                        </div>
                         <div class="wallet-card-actions">
                             <button class="btn-action btn-edit" onclick="window.CarteirasModulo.abrirModalEdicao(${index})" aria-label="Editar carteira ${wallet.nome}" title="Editar carteira">
                                 <img src="${walletEditIconUrl}" alt="Editar">
@@ -240,6 +258,7 @@ export const CarteirasModulo = {
                         <div class="wallet-card-copy">
                             <span class="wallet-name-label">Carteira</span>
                             <h4 class="wallet-name">${wallet.nome}</h4>
+                            <span class="wallet-card-number">•••• ${walletDigits}</span>
                             <span class="wallet-balance">${displayValue}</span>
                         </div>
 
@@ -265,6 +284,11 @@ export const CarteirasModulo = {
                                 <span class="wallet-meta-label">Status</span>
                                 <strong class="wallet-meta-value">${wallet.ilimitado ? 'Sem teto' : `${porcentagem}% usado`}</strong>
                             </div>
+                        </div>
+
+                        <div class="wallet-card-signature">
+                            <span class="wallet-signature-label">Carteira digital</span>
+                            <span class="wallet-signature-value">Vision Finance</span>
                         </div>
                     </div>
                 </div>
