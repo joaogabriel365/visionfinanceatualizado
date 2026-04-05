@@ -1,12 +1,12 @@
 ﻿<div class="planning-card-prof planning-budget-card" style="background: var(--card-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 25px;">
-    <div class="planning-summary-head" style="display: flex; justify-content: space-between; align-items: start;">
+    <div class="planning-summary-head">
         <div class="planning-summary-copy">
             <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Orçamento Mensal</h3>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 20px 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Defina seu teto de gastos e monitore a alocação em metas.</p>
         </div>
-        <div class="planning-limit-panel" style="text-align: right;">
+        <div class="planning-limit-panel">
             <p style="color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; letter-spacing: 1px; margin: 0;">LIMITE ESTABELECIDO:</p>
-            <div class="planning-limit-display" style="display: flex; align-items: center; justify-content: flex-end; gap: 10px; margin-top: 5px;">
+            <div class="planning-limit-display">
                 <button class="budget-limit-add-btn" onclick="PlanejamentoModulo.abrirModalAdicionarValor()" 
                         style="background: transparent; border: none; cursor: pointer; padding: 0; display: flex; align-items: center;" 
                         title="Somar ao limite atual">
@@ -17,7 +17,7 @@
         </div>
     </div>
 
-    <div class="planning-budget-form" style="display: flex; gap: 10px; margin-bottom: 30px; max-width: 350px;">
+    <div class="planning-budget-form" style="display: flex; gap: 10px; max-width: 350px;">
         <input type="text" id="orcamentoMensalInput" placeholder="R$ 0,00" 
                class="planning-budget-input"
                style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 12px; color: var(--text-primary); outline: none;">
@@ -27,7 +27,7 @@
         </button>
     </div>
 
-    <div class="planning-progress-summary" style="margin-top: 20px;">
+    <div class="planning-progress-summary">
         <div class="planning-progress-top" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
             <span style="color: var(--text-primary); font-size: 0.85rem; font-weight: 600;">Uso do Orçamento <span style="color:var(--text-secondary)">(Alocado em Metas)</span></span>
             <span id="progresso-porcentagem-text" style="color: var(--text-primary); font-size: 0.85rem; font-weight: bold;">0%</span>
@@ -67,6 +67,9 @@
         </thead>
         <tbody id="goalsTableBody"></tbody>
     </table>
+    <div class="planning-goals-empty-state" id="planningGoalsEmptyState" hidden>
+        <p class="planning-goals-empty-text">Nenhuma meta financeira cadastrada.</p>
+    </div>
     </div>
 </div>
 

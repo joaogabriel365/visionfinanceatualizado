@@ -272,12 +272,19 @@ export const PlanejamentoModulo = {
 
     renderizarMetas() {
         const tbody = document.getElementById('goalsTableBody');
-        if (!tbody) return;
+        const table = document.querySelector('.planning-goals-table');
+        const emptyState = document.getElementById('planningGoalsEmptyState');
+        if (!tbody || !table || !emptyState) return;
 
         if (metas.length === 0) {
-            tbody.innerHTML = `<tr class="planning-goal-empty-row"><td colspan="5" style="text-align:center; padding:50px; color:#94a3b8;">Nenhuma meta financeira cadastrada.</td></tr>`;
+            tbody.innerHTML = '';
+            table.hidden = true;
+            emptyState.hidden = false;
             return;
         }
+
+        table.hidden = false;
+        emptyState.hidden = true;
 
         const isLight = document.body.classList.contains('light-theme');
         const progressBg = isLight ? (getThemeVar('--border-color') || '#dccdb9') : '#1a253a';

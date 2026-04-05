@@ -21,7 +21,7 @@
     --modal-bg: #fbf7f1;
     --modal-overlay: rgba(15, 23, 42, 0.44);
     --btn-hover: rgba(var(--accent-rgb), 0.12);
-    --navbar-bg: rgba(251, 247, 241, 0.92);
+    --navbar-bg: #fbf7f1;
     --shadow: rgba(124, 98, 60, 0.10);
     --shadow-strong: rgba(124, 98, 60, 0.14);
     
@@ -83,7 +83,7 @@ body.dark-theme {
     --modal-bg: #0b1118;
     --modal-overlay: rgba(0,0,0,0.82);
     --btn-hover: rgba(var(--accent-rgb), 0.14);
-    --navbar-bg: rgba(5, 10, 15, 0.95);
+    --navbar-bg: #050a0f;
     --shadow: rgba(0, 0, 0, 0.24);
     --shadow-strong: rgba(0, 0, 0, 0.35);
     --cyan-light: #e6c86a;
@@ -707,7 +707,7 @@ body.dark-theme .form-feedback.is-success {
 }
 
 body.light-theme .navbar {
-    background: var(--bg-primary);
+    background: var(--navbar-bg);
     border-bottom-color: var(--landing-box-border);
     box-shadow: 0 12px 28px rgba(124, 98, 60, 0.12);
 }
@@ -881,7 +881,7 @@ body.light-theme .navbar {
 /* ========== DARK THEME BUTTON STYLES ========== */
 
 .dark-theme .navbar {
-    background: var(--bg-primary);
+    background: var(--navbar-bg);
     border-bottom-color: rgba(var(--accent-rgb), 0.16);
     box-shadow: 0 16px 32px rgba(0, 0, 0, 0.32);
 }

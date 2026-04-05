@@ -58,3 +58,50 @@
         </form>
     </div>
 </div>
+
+<div id="walletInfoModal" class="modal-overlay" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1100; align-items: flex-start; justify-content: center; backdrop-filter: blur(5px); overflow-y: auto; padding: 16px 12px;">
+    <div class="modal-content-card wallet-info-modal-card" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 20px; width: 100%; max-width: 980px;">
+        <button type="button" class="wallet-info-close" id="walletInfoClose" aria-label="Fechar detalhes da carteira">&times;</button>
+        <div class="wallet-info-header">
+            <div class="wallet-info-title-group">
+                <span class="wallet-info-eyebrow">Detalhes da carteira</span>
+                <h3 id="walletInfoTitle">Carteira</h3>
+                <p id="walletInfoSubtitle">Veja as despesas pagas com este cartão ao longo dos meses.</p>
+            </div>
+            <div class="wallet-info-filter-group">
+                <label for="walletExpenseMonthFilter">Filtrar por mês</label>
+                <select id="walletExpenseMonthFilter" class="wallet-info-filter-select">
+                    <option value="all">Todos os meses</option>
+                    <option value="0">Janeiro</option>
+                    <option value="1">Fevereiro</option>
+                    <option value="2">Março</option>
+                    <option value="3">Abril</option>
+                    <option value="4">Maio</option>
+                    <option value="5">Junho</option>
+                    <option value="6">Julho</option>
+                    <option value="7">Agosto</option>
+                    <option value="8">Setembro</option>
+                    <option value="9">Outubro</option>
+                    <option value="10">Novembro</option>
+                    <option value="11">Dezembro</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="wallet-info-summary" id="walletInfoSummary"></div>
+        <div class="wallet-info-list" id="walletExpenseList"></div>
+    </div>
+</div>
+
+<div id="walletDescriptionModal" class="modal-overlay wallet-description-modal" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
+    <div class="wallet-description-modal-card" role="dialog" aria-modal="true" aria-labelledby="walletDescriptionTitle">
+        <div class="wallet-description-modal-head">
+            <div>
+                <span class="wallet-description-modal-eyebrow">Comentário</span>
+                <h3 id="walletDescriptionTitle">Descrição da despesa</h3>
+            </div>
+            <button type="button" id="walletDescriptionClose" class="wallet-description-close" aria-label="Fechar descrição">&times;</button>
+        </div>
+        <div id="walletDescriptionBody" class="wallet-description-modal-body"></div>
+    </div>
+</div>

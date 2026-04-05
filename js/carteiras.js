@@ -1,11 +1,15 @@
 import { formatarMoeda, getThemeVar } from './common.js';
 
+const walletCommentIconUrl = new URL('../img/comentario.png', import.meta.url).href;
 const walletEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
 const walletDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+const walletInfoIconUrl = new URL('../img/informacoes.png', import.meta.url).href;
 const walletLogoUrl = new URL('../img/logo.png', import.meta.url).href;
+const walletMonthLabels = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export const CarteirasModulo = {
     lista: JSON.parse(localStorage.getItem('carteiras')) || [],
+    carteiraInfoAtualIndex: -1,
     coresPredefinidas: [
         '#1e293b', '#4c1d95', '#1e3a8a', '#14532d',
         '#7c2d12', '#701a75', '#450a0a', '#064e3b'
@@ -18,6 +22,12 @@ export const CarteirasModulo = {
         this.configurarLogicaTipo();
         this.renderizarSeletorCores();
         this.configurarModal();
+        this.configurarModalInformacoes();
+        this.configurarModalDescricao();
+    },
+
+    getDespesas() {
+        return JSON.parse(localStorage.getItem('despesas')) || [];
     },
 
     atualizarLabelLimite(tipo) {
@@ -124,6 +134,209 @@ export const CarteirasModulo = {
         });
     },
 
+    configurarModalInformacoes() {
+        const modal = document.getElementById('walletInfoModal');
+        const closeButton = document.getElementById('walletInfoClose');
+        const monthFilter = document.getElementById('walletExpenseMonthFilter');
+        if (!modal || modal.dataset.bound === 'true') return;
+
+        modal.dataset.bound = 'true';
+
+        closeButton?.addEventListener('click', () => this.fecharModalInformacoes());
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.fecharModalInformacoes();
+            }
+        });
+
+        monthFilter?.addEventListener('change', () => {
+            this.renderizarDetalhesCarteira();
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                this.fecharModalInformacoes();
+            }
+        });
+    },
+
+    configurarModalDescricao() {
+        const modal = document.getElementById('walletDescriptionModal');
+        const closeButton = document.getElementById('walletDescriptionClose');
+        if (!modal || modal.dataset.bound === 'true') return;
+
+        modal.dataset.bound = 'true';
+
+        closeButton?.addEventListener('click', () => this.fecharModalDescricao());
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.fecharModalDescricao();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.style.display === 'flex') {
+                this.fecharModalDescricao();
+            }
+        });
+    },
+
+    abrirModalDescricao(titulo, descricao) {
+        const modal = document.getElementById('walletDescriptionModal');
+        const title = document.getElementById('walletDescriptionTitle');
+        const body = document.getElementById('walletDescriptionBody');
+        if (!modal || !title || !body) return;
+
+        title.textContent = titulo ? `Descrição de ${titulo}` : 'Descrição da despesa';
+        body.textContent = descricao || 'Nenhuma descrição informada.';
+        modal.style.display = 'flex';
+    },
+
+    fecharModalDescricao() {
+        const modal = document.getElementById('walletDescriptionModal');
+        if (modal) modal.style.display = 'none';
+    },
+
+    obterDespesasDaCarteira(nomeCarteira) {
+        return this.getDespesas().filter((despesa) => despesa.cartao === nomeCarteira);
+    },
+
+    obterDataDespesa(dataString) {
+        if (!dataString || typeof dataString !== 'string') return null;
+        const [ano, mes, dia] = dataString.split('-').map(Number);
+        if (!ano || !mes || !dia) return null;
+        return new Date(ano, mes - 1, dia);
+    },
+
+    formatarDataCarteira(dataString) {
+        const data = this.obterDataDespesa(dataString);
+        if (!data) return 'Data nao informada';
+
+        return new Intl.DateTimeFormat('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        }).format(data);
+    },
+
+    abrirModalInformacoes(index) {
+        const wallet = this.lista[index];
+        const modal = document.getElementById('walletInfoModal');
+        const monthFilter = document.getElementById('walletExpenseMonthFilter');
+        if (!wallet || !modal || !monthFilter) return;
+
+        this.carteiraInfoAtualIndex = index;
+        monthFilter.value = 'all';
+        this.renderizarDetalhesCarteira();
+        modal.style.display = 'flex';
+    },
+
+    fecharModalInformacoes() {
+        const modal = document.getElementById('walletInfoModal');
+        const summary = document.getElementById('walletInfoSummary');
+        const list = document.getElementById('walletExpenseList');
+        const monthFilter = document.getElementById('walletExpenseMonthFilter');
+
+        this.carteiraInfoAtualIndex = -1;
+        if (monthFilter) monthFilter.value = 'all';
+        if (summary) summary.innerHTML = '';
+        if (list) list.innerHTML = '';
+        if (modal) modal.style.display = 'none';
+    },
+
+    renderizarDetalhesCarteira() {
+        const wallet = this.lista[this.carteiraInfoAtualIndex];
+        const title = document.getElementById('walletInfoTitle');
+        const subtitle = document.getElementById('walletInfoSubtitle');
+        const summary = document.getElementById('walletInfoSummary');
+        const list = document.getElementById('walletExpenseList');
+        const monthFilter = document.getElementById('walletExpenseMonthFilter');
+        if (!wallet || !title || !subtitle || !summary || !list || !monthFilter) return;
+
+        const selectedMonth = monthFilter.value;
+        const allExpenses = this.obterDespesasDaCarteira(wallet.nome)
+            .sort((a, b) => new Date(b.data) - new Date(a.data));
+
+        const filteredExpenses = allExpenses.filter((despesa) => {
+            if (selectedMonth === 'all') return true;
+            const data = this.obterDataDespesa(despesa.data);
+            return data && data.getMonth() === Number(selectedMonth);
+        });
+
+        const totalGasto = filteredExpenses.reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
+        const ultimaDespesa = filteredExpenses[0];
+        const periodoSelecionado = selectedMonth === 'all' ? 'Todos os meses' : walletMonthLabels[Number(selectedMonth)];
+
+        title.textContent = wallet.nome;
+        subtitle.textContent = `Despesas pagas com ${wallet.nome} em ${periodoSelecionado.toLowerCase()}.`;
+
+        summary.innerHTML = `
+            <article class="wallet-info-summary-card">
+                <span class="wallet-info-summary-label">Periodo</span>
+                <strong class="wallet-info-summary-value">${periodoSelecionado}</strong>
+            </article>
+            <article class="wallet-info-summary-card">
+                <span class="wallet-info-summary-label">Total gasto</span>
+                <strong class="wallet-info-summary-value">${formatarMoeda(totalGasto)}</strong>
+            </article>
+            <article class="wallet-info-summary-card">
+                <span class="wallet-info-summary-label">Quantidade</span>
+                <strong class="wallet-info-summary-value">${filteredExpenses.length} despesa${filteredExpenses.length === 1 ? '' : 's'}</strong>
+            </article>
+            <article class="wallet-info-summary-card">
+                <span class="wallet-info-summary-label">Ultimo lancamento</span>
+                <strong class="wallet-info-summary-value">${ultimaDespesa ? this.formatarDataCarteira(ultimaDespesa.data) : 'Sem lancamentos'}</strong>
+            </article>
+        `;
+
+        if (filteredExpenses.length === 0) {
+            list.innerHTML = `
+                <div class="wallet-info-empty-state">
+                    <div class="wallet-info-empty-icon">
+                        <img src="${walletInfoIconUrl}" alt="Informacoes da carteira">
+                    </div>
+                    <h4>Nenhuma despesa encontrada</h4>
+                    <p>Não há lançamentos vinculados a esta carteira no período selecionado.</p>
+                </div>
+            `;
+            return;
+        }
+
+        list.innerHTML = filteredExpenses.map((despesa) => {
+            const tituloSeguro = JSON.stringify(despesa.titulo || 'Despesa');
+            const observacaoSegura = JSON.stringify(despesa.observacao || '');
+            const comentarioHtml = despesa.observacao
+                ? `<button type="button" class="wallet-expense-comment-trigger" onclick='window.CarteirasModulo.abrirModalDescricao(${tituloSeguro}, ${observacaoSegura})' aria-label="Abrir descrição da despesa ${despesa.titulo || 'Despesa'}" title="Abrir descrição">
+                        <img src="${walletCommentIconUrl}" class="wallet-expense-comment-icon" alt="Comentário">
+                   </button>`
+                : `<span class="wallet-expense-no-comment">Sem descrição</span>`;
+
+            return `
+                <article class="wallet-expense-item">
+                    <div class="wallet-expense-main">
+                        <div class="wallet-expense-heading">
+                            <h4>${despesa.titulo || 'Despesa sem titulo'}</h4>
+                            <span class="wallet-expense-value">${formatarMoeda(parseFloat(despesa.valor) || 0)}</span>
+                        </div>
+                        <div class="wallet-expense-meta-row">
+                            <span class="wallet-expense-chip">${despesa.categoria || 'Sem categoria'}</span>
+                            <span class="wallet-expense-chip">${despesa.pagamento || wallet.tipo}</span>
+                            <span class="wallet-expense-chip">${this.formatarDataCarteira(despesa.data)}</span>
+                        </div>
+                    </div>
+                    <div class="wallet-expense-side">
+                        <span class="wallet-expense-side-label">Descrição</span>
+                        <div class="wallet-expense-comment-wrap">
+                            ${comentarioHtml}
+                        </div>
+                    </div>
+                </article>
+            `;
+        }).join('');
+    },
+
     configurarMascara() {
         const inputLimit = document.getElementById('walletLimit');
         if (!inputLimit) return;
@@ -196,6 +409,7 @@ export const CarteirasModulo = {
         if (!grid) return;
 
         if (this.lista.length === 0) {
+            grid.classList.add('wallets-grid-empty');
             grid.innerHTML = `
                 <div class="wallet-empty-state">
                     <div class="wallet-empty-card">
@@ -212,6 +426,8 @@ export const CarteirasModulo = {
             `;
             return;
         }
+
+        grid.classList.remove('wallets-grid-empty');
 
         grid.innerHTML = this.lista.map((wallet, index) => {
             const gastoAtual = this.calcularGastoCartao(wallet.nome);
@@ -245,6 +461,9 @@ export const CarteirasModulo = {
                             <span class="wallet-network">${walletAlias}</span>
                         </div>
                         <div class="wallet-card-actions">
+                            <button class="btn-action btn-info" onclick="window.CarteirasModulo.abrirModalInformacoes(${index})" aria-label="Ver despesas da carteira ${wallet.nome}" title="Ver despesas da carteira">
+                                <img src="${walletInfoIconUrl}" alt="Informacoes">
+                            </button>
                             <button class="btn-action btn-edit" onclick="window.CarteirasModulo.abrirModalEdicao(${index})" aria-label="Editar carteira ${wallet.nome}" title="Editar carteira">
                                 <img src="${walletEditIconUrl}" alt="Editar">
                             </button>
