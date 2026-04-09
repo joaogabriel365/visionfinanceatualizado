@@ -1,4 +1,10 @@
-﻿<div class="filter-container">
+﻿<script>
+if (window.top === window.self) {
+    window.location.replace('../dashboard.html?section=relatorios#relatorios');
+}
+</script>
+
+<div class="filter-container">
     <div class="filter-actions">
         <div class="filter-group">
             <label>Ano:</label>
@@ -18,18 +24,18 @@
         <div class="reports-chart-head">
             <div class="reports-title-block">
                 <p class="report-eyebrow">Análise visual</p>
-                <h3 class="report-main-title">Comparativo Mensal por Categoria</h3>
+                <h3 class="report-main-title">Comparativo por Ciclo Financeiro</h3>
             </div>
-            <div class="report-header-chip">12 meses</div>
+            <div class="report-header-chip">12 ciclos</div>
         </div>
         <div class="reports-chart-tools">
             <div class="month-visibility-control" id="monthVisibilityControl">
                 <button type="button" class="month-visibility-trigger" id="monthVisibilityTrigger" aria-expanded="false" aria-controls="monthVisibilityPopover">
-                    <span>Ocultar meses</span>
+                    <span>Ocultar ciclos</span>
                     <span class="month-visibility-count" id="monthVisibilityCount">0</span>
                 </button>
                 <div class="month-visibility-popover" id="monthVisibilityPopover" hidden>
-                    <p class="month-visibility-title">Selecione os meses para ocultar</p>
+                    <p class="month-visibility-title">Selecione os ciclos para ocultar</p>
                     <div class="month-visibility-list" id="monthVisibilityList"></div>
                 </div>
             </div>
@@ -54,7 +60,7 @@
     <div class="ranking-header">
         <div class="header-info">
             <h3>Ranking de Maiores Gastos</h3>
-            <p>Os maiores gastos individuais do período</p>
+            <p>Maiores gastos do ano filtrado</p>
         </div>
         <div class="header-badge">Top 5</div>
     </div>

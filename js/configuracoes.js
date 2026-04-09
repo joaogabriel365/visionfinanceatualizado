@@ -1,4 +1,4 @@
-import { applyStoredTheme, applyThemeClasses } from './common.js';
+import { applyStoredTheme, applyThemeClasses, ensureFinancialDataIntegrity, getThemeSettings } from './common.js';
 
 export const ConfiguracoesModulo = {
     init: function() {
@@ -19,6 +19,7 @@ export const ConfiguracoesModulo = {
         this.checkAlertaOrcamentoMeta = document.getElementById('checkAlertaOrcamentoMeta');
         this.checkLembreteMetas = document.getElementById('checkLembreteMetas');
         this.selectMoeda = document.getElementById('selectMoeda');
+        this.selectDiaVirada = document.getElementById('selectDiaVirada');
         this.checkTemaEscuro = document.getElementById('checkTemaEscuro');
     },
 
@@ -85,7 +86,7 @@ export const ConfiguracoesModulo = {
     },
 
     applyTheme: function() {
-        const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+        const settings = getThemeSettings();
         const isDark = settings.temaEscuro === true;
         this.checkTemaEscuro.checked = isDark;
         applyStoredTheme(document.body);
@@ -115,6 +116,7 @@ export const ConfiguracoesModulo = {
     saveSettings: function() {
         const settings = {
             moeda: this.selectMoeda.value,
+            diaViradaMes: Number(this.selectDiaVirada?.value || 1),
             temaEscuro: this.checkTemaEscuro.checked,
             notificacoes: {
                 geral: this.checkNotificacoesGeral.checked,
@@ -126,6 +128,7 @@ export const ConfiguracoesModulo = {
         };
 
         localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
+    ensureFinancialDataIntegrity();
         this.mostrarFeedback();
         window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settings }));
 
@@ -134,10 +137,11 @@ export const ConfiguracoesModulo = {
     },
 
     loadSettings: function() {
-        const saved = JSON.parse(localStorage.getItem('visionFinance_settings'));
+        const saved = getThemeSettings();
 
         if (saved) {
             this.selectMoeda.value = saved.moeda || 'BRL';
+            if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
             this.checkTemaEscuro.checked = saved.temaEscuro === true;
             this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
             this.checkAlertaOrcamento.checked = saved.notificacoes?.orcamento || false;

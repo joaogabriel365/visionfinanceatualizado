@@ -1,4 +1,4 @@
-import { applyStoredTheme, confirmarAcao, getThemeVar, getThemeSettings, toggleThemePreference } from './common.js';
+import { applyStoredTheme, confirmarAcao, ensureFinancialDataIntegrity, getThemeVar, getThemeSettings, toggleThemePreference } from './common.js';
 
 // 1. IMPORTS DOS MÓDULOS
 import { Painel } from './painel.js';
@@ -8,6 +8,13 @@ import { PlanejamentoModulo } from './planejamento.js';
 import { CarteirasModulo } from './carteiras.js';
 import { PerfilModulo } from './perfil.js'; 
 import { ConfiguracoesModulo } from './configuracoes.js';
+import painelTemplate from '../HTML/painel.html';
+import despesasTemplate from '../HTML/despesas.html';
+import carteirasTemplate from '../HTML/carteiras.html';
+import planejamentoTemplate from '../HTML/planejamento.html';
+import relatoriosTemplate from '../HTML/relatorios.html';
+import perfilTemplate from '../HTML/perfil.html';
+import configuracoesTemplate from '../HTML/configuracoes.html';
 
 // 2. EXPOSIÇÃO GLOBAL
 window.Painel = Painel;
@@ -28,7 +35,53 @@ const modulos = {
     'configuracoes': ConfiguracoesModulo
 };
 
+const secoesHtml = {
+    'painel': painelTemplate,
+    'despesas': despesasTemplate,
+    'carteiras': carteirasTemplate,
+    'planejamento': planejamentoTemplate,
+    'relatorios': relatoriosTemplate,
+    'perfil': perfilTemplate,
+    'configuracoes': configuracoesTemplate
+};
+
 let secaoAtiva = 'painel';
+
+async function carregarHtmlSecao(sectionId) {
+    const html = secoesHtml[sectionId];
+    if (!html) {
+        throw new Error(`Arquivo ${sectionId}.html não encontrado.`);
+    }
+
+    return html;
+}
+
+function isSecaoValida(sectionId) {
+    return Object.prototype.hasOwnProperty.call(modulos, sectionId);
+}
+
+function getSecaoInicial() {
+    const params = new URLSearchParams(window.location.search);
+    const querySection = params.get('section');
+    const hashSection = window.location.hash.replace('#', '').trim();
+
+    if (isSecaoValida(querySection)) {
+        return querySection;
+    }
+
+    if (isSecaoValida(hashSection)) {
+        return hashSection;
+    }
+
+    return 'painel';
+}
+
+function atualizarUrlSecao(sectionId) {
+    const url = new URL(window.location.href);
+    url.searchParams.set('section', sectionId);
+    url.hash = sectionId;
+    window.history.replaceState({ section: sectionId }, '', url);
+}
 
 function getProfileData() {
     return JSON.parse(localStorage.getItem('visionFinance_profile')) || {};
@@ -149,11 +202,12 @@ function configurarSaidaDashboard() {
 // 4. MOTOR DE NAVEGAÇÃO SPA
 async function navegar(sectionId) {
     try {
+        if (!isSecaoValida(sectionId)) {
+            throw new Error(`Secao inválida: ${sectionId}`);
+        }
+
         secaoAtiva = sectionId;
-        const response = await fetch(`./HTML/${sectionId}.html`);
-        if (!response.ok) throw new Error(`Arquivo ${sectionId}.html não encontrado.`);
-        
-        const html = await response.text();
+        const html = await carregarHtmlSecao(sectionId);
         const container = document.getElementById('dynamic-content');
         if (container) container.innerHTML = html;
 
@@ -174,6 +228,8 @@ async function navegar(sectionId) {
         document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
         const navItem = document.querySelector(`[data-section="${sectionId}"]`);
         if (navItem) navItem.classList.add('active');
+
+        atualizarUrlSecao(sectionId);
 
         requestAnimationFrame(() => {
             setTimeout(() => {
@@ -290,13 +346,14 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
+    ensureFinancialDataIntegrity();
     aplicarTemaGlobal();
     aplicarAvatarPerfil();
     gerenciarBotaoModo();
     gerenciarBotaoOlho();
     configurarSidebarMobile();
     configurarSaidaDashboard();
-    navegar('painel');
+    navegar(getSecaoInicial());
 });
 
 window.addEventListener('keydown', (e) => {
@@ -307,6 +364,7 @@ window.addEventListener('keydown', (e) => {
 
 // Listener para quando as configurações são atualizadas
 window.addEventListener('settingsUpdated', () => {
+    ensureFinancialDataIntegrity();
     aplicarTemaGlobal();
     gerenciarBotaoModo();
     // Re-renderiza o módulo ativo para aplicar totalmente as cores atualizadas (ex: gráficos de relatórios)
@@ -314,6 +372,8 @@ window.addEventListener('settingsUpdated', () => {
         modulos[secaoAtiva].init();
     }
 });
+
+window.navegar = navegar;
 
 window.addEventListener('profileUpdated', () => {
     aplicarAvatarPerfil();

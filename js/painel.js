@@ -1,21 +1,21 @@
-import { formatarMoeda, getCategoryBadgeStyle, getHojeFormatado, getThemeVar } from './common.js';
+import { formatarMoeda, getCategoryBadgeStyle, getCurrentFinancialSnapshot, getThemeVar } from './common.js';
 
 export const Painel = {
     init() {
-        const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
-        const metas = JSON.parse(localStorage.getItem('metas')) || []; // Puxar metas para o cálculo
-        const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
-        const hoje = getHojeFormatado();
+        const snapshot = getCurrentFinancialSnapshot();
+        const despesas = snapshot.despesas;
+        const metas = snapshot.metas;
+        const limite = snapshot.budget;
         const ocultarAtivo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
 
         const badge = document.getElementById('dataAtualBadge');
-        if (badge) badge.innerText = hoje;
+        if (badge) badge.innerText = `Ciclo ${snapshot.cycleInfo.label}`;
 
-        this.renderizarCards(despesas, metas, limite); // Passando metas agora
-        this.renderizarTabelaHoje(despesas, hoje);
+        this.renderizarCards(despesas, metas, limite);
+        this.renderizarTabelaHoje(despesas);
         this.gerarGraficoPizza(despesas, ocultarAtivo);    
         this.gerarGraficoBarras(despesas, ocultarAtivo);
-        this.melhorarBotaoOlho(); // Adicionado para nitidez
+        this.melhorarBotaoOlho();
     },
 
     renderizarCards(despesas, metas, limite) {
@@ -50,14 +50,18 @@ export const Painel = {
         }
     },
 
-    renderizarTabelaHoje(despesas, hoje) {
+    renderizarTabelaHoje(despesas) {
         const tbody = document.getElementById('expenseTableBody');
         if (!tbody) return;
 
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+
         const despesasHoje = despesas.filter(d => {
             if (!d.data) return false;
-            let dataFormatada = d.data.includes('-') ? d.data.split('-').reverse().join('/') : d.data;
-            return dataFormatada === hoje;
+            const data = new Date(`${d.data}T00:00:00`);
+            data.setHours(0, 0, 0, 0);
+            return data.getTime() === hoje.getTime();
         }).reverse();
 
         if (despesasHoje.length === 0) {

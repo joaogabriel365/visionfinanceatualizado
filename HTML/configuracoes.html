@@ -1,4 +1,10 @@
-﻿<div class="config-container">
+﻿<script>
+if (window.top === window.self) {
+    window.location.replace('../dashboard.html?section=configuracoes#configuracoes');
+}
+</script>
+
+<div class="config-container">
 
     <div class="config-card">
         <h3 class="card-subtitle">Preferências do Sistema</h3>
@@ -11,6 +17,18 @@
                     <option value="USD">$ - Dólar Americano</option>
                     <option value="EUR">€ - Euro</option>
                     <option value="GBP">£ - Libra Esterlina</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label for="selectDiaVirada" class="form-label">Dia da virada do ciclo</label>
+                <select id="selectDiaVirada" class="select">
+                    <option value="1">Dia 1</option>
+                    <option value="5">Dia 5</option>
+                    <option value="10">Dia 10</option>
+                    <option value="15">Dia 15</option>
+                    <option value="20">Dia 20</option>
+                    <option value="25">Dia 25</option>
                 </select>
             </div>
 

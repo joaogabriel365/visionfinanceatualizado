@@ -1,14 +1,14 @@
-import { formatarMoeda, getThemeVar } from './common.js';
+import { formatarMoeda, getCarteirasData, getCurrentCycleInfo, getDespesasData, getThemeVar, syncCarteiraGastosDoCiclo } from './common.js';
 
-const walletCommentIconUrl = new URL('../img/comentario.png', import.meta.url).href;
-const walletEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
-const walletDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
-const walletInfoIconUrl = new URL('../img/informacoes.png', import.meta.url).href;
-const walletLogoUrl = new URL('../img/logo.png', import.meta.url).href;
+const walletCommentIconUrl = './img/comentario.png';
+const walletEditIconUrl = './img/lapis.png';
+const walletDeleteIconUrl = './img/lixeira.png';
+const walletInfoIconUrl = './img/informacoes.png';
+const walletLogoUrl = './img/logo.png';
 const walletMonthLabels = ['Janeiro', 'Fevereiro', 'Marco', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
 
 export const CarteirasModulo = {
-    lista: JSON.parse(localStorage.getItem('carteiras')) || [],
+    lista: [],
     carteiraInfoAtualIndex: -1,
     coresPredefinidas: [
         '#1e293b', '#4c1d95', '#1e3a8a', '#14532d',
@@ -16,6 +16,8 @@ export const CarteirasModulo = {
     ],
 
     init() {
+        syncCarteiraGastosDoCiclo();
+        this.lista = getCarteirasData();
         this.renderizarWallets();
         this.configurarFormulario();
         this.configurarMascara();
@@ -27,7 +29,7 @@ export const CarteirasModulo = {
     },
 
     getDespesas() {
-        return JSON.parse(localStorage.getItem('despesas')) || [];
+        return getDespesasData();
     },
 
     atualizarLabelLimite(tipo) {
@@ -374,7 +376,7 @@ export const CarteirasModulo = {
     },
 
     calcularGastoCartao(nomeCartao) {
-        const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
+        const despesas = getDespesasData({ cycleInfo: getCurrentCycleInfo() });
         return despesas
             .filter((despesa) => despesa.cartao === nomeCartao)
             .reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);

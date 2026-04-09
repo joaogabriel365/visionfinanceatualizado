@@ -1,8 +1,8 @@
-import { salvarNoStorage, formatarMoeda, tratarClasseCategoria, confirmarAcao, getCategoryBadgeStyle, getThemeVar } from './common.js';
+import { formatarMoeda, confirmarAcao, getCarteirasData, getCategoryBadgeStyle, getDespesasData, getThemeVar, setDespesasData, syncCarteiraGastosDoCiclo } from './common.js';
 
-const editIconUrl = new URL('../img/lapis.png', import.meta.url).href;
-const deleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
-const commentIconUrl = new URL('../img/comentario.png', import.meta.url).href;
+const editIconUrl = './img/lapis.png';
+const deleteIconUrl = './img/lixeira.png';
+const commentIconUrl = './img/comentario.png';
 
 export const DespesasModulo = {
     init() {
@@ -15,12 +15,12 @@ export const DespesasModulo = {
     },
 
     getDespesas() {
-        return JSON.parse(localStorage.getItem('despesas')) || [];
+        return getDespesasData();
     },
 
     // Obtém as carteiras (contas/cartões) cadastradas no sistema
     getCarteiras() {
-        return JSON.parse(localStorage.getItem('carteiras')) || [];
+        return getCarteirasData();
     },
 
     obterEstiloCategoria(categoria) {
@@ -490,7 +490,7 @@ export const DespesasModulo = {
             if (index === -1) despesas.push(novaDespesa);
             else despesas[index] = novaDespesa;
 
-            localStorage.setItem('despesas', JSON.stringify(despesas));
+            setDespesasData(despesas);
             
             // Forçar atualização das carteiras (limite) imediatamente após salvar
             this.sincronizarGastoCarteiras();
@@ -502,22 +502,7 @@ export const DespesasModulo = {
 
     // Garante que o gasto nas carteiras reflita a soma das parcelas (125)
     sincronizarGastoCarteiras() {
-        const despesas = this.getDespesas();
-        const carteiras = this.getCarteiras();
-
-        // Zerar gastos para recalcular
-        carteiras.forEach(c => c.gasto = 0);
-
-        despesas.forEach(d => {
-            if (d.cartao) {
-                const carteira = carteiras.find(c => c.nome === d.cartao);
-                if (carteira) {
-                    carteira.gasto += d.valor; // d.valor já é o valor da parcela (125)
-                }
-            }
-        });
-
-        localStorage.setItem('carteiras', JSON.stringify(carteiras));
+        syncCarteiraGastosDoCiclo();
     },
 
     configurarFiltros() {
@@ -579,7 +564,7 @@ window.deletarDespesa = async (index) => {
     if (confirmado) {
         let despesas = DespesasModulo.getDespesas();
         despesas.splice(index, 1);
-        localStorage.setItem('despesas', JSON.stringify(despesas));
+        setDespesasData(despesas);
         DespesasModulo.sincronizarGastoCarteiras();
         DespesasModulo.renderizarTabelaCompleta();
     }

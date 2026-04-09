@@ -1,16 +1,23 @@
-import { formatarMoeda, metas, salvarNoStorage, getThemeVar } from './common.js';
+import { addMetaContribution, formatarMoeda, getBudgetForCycle, getCurrentCycleInfo, getDespesasData, getMetasData, getThemeVar, setCurrentCycleBudget, setMetasData } from './common.js';
 
-const planningAddIconUrl = new URL('../img/+.png', import.meta.url).href;
-const planningEditIconUrl = new URL('../img/lapis.png', import.meta.url).href;
-const planningDeleteIconUrl = new URL('../img/lixeira.png', import.meta.url).href;
+const planningAddIconUrl = './img/+.png';
+const planningEditIconUrl = './img/lapis.png';
+const planningDeleteIconUrl = './img/lixeira.png';
 
 export const PlanejamentoModulo = {
     init() {
-        console.log("Iniciando Módulo de Planejamento...");
         this.atualizarInterfaceOrcamento();
         this.renderizarMetas();
         this.atualizarProgressoGlobal();
         this.configurarMascaras();
+    },
+
+    getMetasAtuais() {
+        return getMetasData({ cycleInfo: getCurrentCycleInfo() });
+    },
+
+    getBudgetAtual() {
+        return getBudgetForCycle(getCurrentCycleInfo());
     },
 
     // --- MÁSCARAS E VALIDAÇÃO ---
@@ -90,7 +97,7 @@ export const PlanejamentoModulo = {
 
     // --- LÓGICA DO MÓDULO ---
     atualizarInterfaceOrcamento() {
-        const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
+        const limite = this.getBudgetAtual();
         const display = document.getElementById('valor-limite-display');
         if (display) display.innerText = formatarMoeda(limite);
     },
@@ -104,7 +111,7 @@ export const PlanejamentoModulo = {
                 "Salvar Orçamento",
                 `Deseja definir o limite mensal como ${formatarMoeda(novoValor)}?`,
                 () => {
-                    localStorage.setItem('budget_total', novoValor);
+                    setCurrentCycleBudget(novoValor);
                     this.atualizarInterfaceOrcamento();
                     this.atualizarProgressoGlobal();
                     input.value = '';
@@ -132,11 +139,11 @@ export const PlanejamentoModulo = {
     confirmarSomaLimite() {
         const input = document.getElementById('valorAdicionalInput');
         const valorAdicional = this.parseMoedaParaFloat(input.value);
-        const limiteAtual = parseFloat(localStorage.getItem('budget_total')) || 0;
+        const limiteAtual = this.getBudgetAtual();
 
         if (valorAdicional > 0) {
             const novoLimite = limiteAtual + valorAdicional;
-            localStorage.setItem('budget_total', novoLimite);
+            setCurrentCycleBudget(novoLimite);
             this.atualizarInterfaceOrcamento();
             this.atualizarProgressoGlobal();
             this.fecharModalAdicionarLimite();
@@ -159,7 +166,8 @@ export const PlanejamentoModulo = {
     },
 
     abrirModalEditarMeta(index) {
-        const meta = metas[index];
+        const meta = this.getMetasAtuais()[index];
+        if (!meta) return;
         document.getElementById('tituloModalMeta').innerText = "Editar Meta";
         document.getElementById('indexMetaEdicao').value = index;
         
@@ -211,22 +219,24 @@ export const PlanejamentoModulo = {
         if (nome && alvo > 0) {
             if (inputData) inputData.style.borderColor = "";
             if (erroMsg) erroMsg.style.display = 'none';
+            const metasAtuais = this.getMetasAtuais();
             
             if (indexEdicao !== "") {
-                metas[indexEdicao].nome = nome;
-                metas[indexEdicao].prazo = prazo;
-                metas[indexEdicao].alvo = alvo;
+                metasAtuais[indexEdicao].nome = nome;
+                metasAtuais[indexEdicao].prazo = prazo;
+                metasAtuais[indexEdicao].alvo = alvo;
             } else {
                 const novaMeta = {
                     nome: nome,
                     prazo: prazo,
                     alvo: alvo,
+                    aporteHistorico: [],
                     guardado: 0
                 };
-                metas.push(novaMeta);
+                metasAtuais.push(novaMeta);
             }
 
-            salvarNoStorage();
+            setMetasData(metasAtuais);
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
             this.fecharModalNovaMeta();
@@ -240,8 +250,9 @@ export const PlanejamentoModulo = {
             "Excluir Meta",
             "Deseja realmente remover esta meta financeira?",
             () => {
-                metas.splice(index, 1);
-                salvarNoStorage();
+                const metasAtuais = this.getMetasAtuais();
+                metasAtuais.splice(index, 1);
+                setMetasData(metasAtuais);
                 this.renderizarMetas();
                 this.atualizarProgressoGlobal();
             }
@@ -249,14 +260,12 @@ export const PlanejamentoModulo = {
     },
 
     confirmarAporte() {
-        const index = document.getElementById('indexMetaAporte').value;
+        const index = Number(document.getElementById('indexMetaAporte').value);
         const valInput = document.getElementById('valorAporteMetaInput');
         const valorAporte = this.parseMoedaParaFloat(valInput.value);
 
         if (valorAporte > 0) {
-            const atual = parseFloat(metas[index].guardado) || 0;
-            metas[index].guardado = atual + valorAporte;
-            salvarNoStorage();
+            addMetaContribution(index, valorAporte);
             this.renderizarMetas();
             this.atualizarProgressoGlobal();
             this.fecharModalAporte();
@@ -276,7 +285,9 @@ export const PlanejamentoModulo = {
         const emptyState = document.getElementById('planningGoalsEmptyState');
         if (!tbody || !table || !emptyState) return;
 
-        if (metas.length === 0) {
+        const metasAtuais = this.getMetasAtuais();
+
+        if (metasAtuais.length === 0) {
             tbody.innerHTML = '';
             table.hidden = true;
             emptyState.hidden = false;
@@ -295,7 +306,7 @@ export const PlanejamentoModulo = {
             ? 'border: none;'
             : 'background: var(--bg-surface);';
 
-        tbody.innerHTML = metas.map((meta, index) => {
+        tbody.innerHTML = metasAtuais.map((meta, index) => {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
@@ -330,10 +341,12 @@ export const PlanejamentoModulo = {
     },
 
     atualizarProgressoGlobal() {
-        const limite = parseFloat(localStorage.getItem('budget_total')) || 0;
-        const despesas = JSON.parse(localStorage.getItem('despesas')) || [];
+        const cicloAtual = getCurrentCycleInfo();
+        const limite = this.getBudgetAtual();
+        const despesas = getDespesasData({ cycleInfo: cicloAtual });
+        const metasAtuais = this.getMetasAtuais();
         const totalDespesas = despesas.reduce((sum, item) => sum + (parseFloat(item.valor) || 0), 0);
-        const totalAlocadoMetas = metas.reduce((sum, item) => sum + (parseFloat(item.guardado) || 0), 0);
+        const totalAlocadoMetas = metasAtuais.reduce((sum, item) => sum + (parseFloat(item.guardado) || 0), 0);
         const utilizado = totalDespesas + totalAlocadoMetas;
         const saldo = limite - utilizado;
         const porcentagemValor = limite > 0 ? (utilizado / limite) * 100 : 0;

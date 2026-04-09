@@ -1,4 +1,4 @@
-import { confirmarAcao } from './common.js';
+import { confirmarAcao, formatarMoeda, getBudgetForCycle, getCategoryBadgeStyle, getCurrentCycleInfo, getCurrentFinancialSnapshot, getCyclesForYear, getDespesasData, getMetasData } from './common.js';
 
 export const PerfilModulo = {
     tipoAtivo: '',
@@ -13,6 +13,10 @@ export const PerfilModulo = {
         zoom: 1,
         offsetX: 0,
         offsetY: 0
+    },
+    detalhamentoFiltro: {
+        escopo: 'atual',
+        periodo: '30'
     },
 
     init() {
@@ -46,6 +50,9 @@ export const PerfilModulo = {
         const editorOffsetY = document.getElementById('avatarEditorOffsetY');
         const applyEditorButton = document.getElementById('avatarEditorApplyBtn');
         const editorModal = document.getElementById('modalAvatarEditor');
+        const detailModal = document.getElementById('modalDetalhamento');
+        const filterScope = document.getElementById('filtroEscopo');
+        const filterPeriod = document.getElementById('filtroPeriodo');
 
         const getPasswordValidationMessages = (password) => {
             const messages = [];
@@ -166,6 +173,35 @@ export const PerfilModulo = {
                 if (event.target === editorModal) {
                     this.cancelarEdicaoFoto();
                 }
+            });
+        }
+
+        if (detailModal && !detailModal.dataset.bound) {
+            detailModal.dataset.bound = 'true';
+            detailModal.addEventListener('click', (event) => {
+                if (event.target === detailModal) {
+                    this.fecharModal('modalDetalhamento');
+                }
+            });
+        }
+
+        if (filterScope && !filterScope.dataset.bound) {
+            filterScope.dataset.bound = 'true';
+            filterScope.addEventListener('change', (event) => {
+                this.detalhamentoFiltro.escopo = event.target.value;
+                this.detalhamentoFiltro.periodo = '';
+                this.resetarScrollDetalhamento();
+                this.sincronizarFiltrosDetalhamento();
+                this.atualizarListaDetalhada();
+            });
+        }
+
+        if (filterPeriod && !filterPeriod.dataset.bound) {
+            filterPeriod.dataset.bound = 'true';
+            filterPeriod.addEventListener('change', (event) => {
+                this.detalhamentoFiltro.periodo = event.target.value;
+                this.resetarScrollDetalhamento();
+                this.atualizarListaDetalhada();
             });
         }
 
@@ -548,40 +584,388 @@ export const PerfilModulo = {
         return this.gerarFotoRecortada();
     },
 
-    obterDadosConsolidados() {
-        const despesasGerais = JSON.parse(localStorage.getItem('despesas')) || [];
-        const metas = JSON.parse(localStorage.getItem('metas')) || [];
+    getDespesasRegistradas() {
+        return getDespesasData();
+    },
 
-        const despesasMetas = metas.map((m) => ({
-            titulo: `Meta: ${m.nome}`,
-            valor: parseFloat(m.guardado) || 0,
-            data: new Date().toISOString().split('T')[0],
-            categoria: 'Planejamento'
-        }));
+    getMetasRegistradas(cycleInfo = getCurrentCycleInfo()) {
+        return getMetasData({ cycleInfo });
+    },
 
-        return [...despesasGerais, ...despesasMetas];
+    getBudgetTotal(cycleInfo = getCurrentCycleInfo()) {
+        return getBudgetForCycle(cycleInfo);
+    },
+
+    parseDate(dateString) {
+        if (!dateString || typeof dateString !== 'string') return null;
+
+        const parsedDate = new Date(`${dateString}T00:00:00`);
+        if (Number.isNaN(parsedDate.getTime())) return null;
+
+        parsedDate.setHours(0, 0, 0, 0);
+        return parsedDate;
+    },
+
+    formatarDataDetalhe(dateString) {
+        const parsedDate = this.parseDate(dateString);
+        if (!parsedDate) return 'Data inválida';
+
+        const hoje = new Date();
+        hoje.setHours(0, 0, 0, 0);
+        const ontem = new Date(hoje);
+        ontem.setDate(hoje.getDate() - 1);
+
+        const base = parsedDate.toLocaleDateString('pt-BR', {
+            day: '2-digit',
+            month: 'long',
+            year: 'numeric'
+        });
+
+        if (parsedDate.getTime() === hoje.getTime()) return `Hoje, ${base}`;
+        if (parsedDate.getTime() === ontem.getTime()) return `Ontem, ${base}`;
+        return base.charAt(0).toUpperCase() + base.slice(1);
+    },
+
+    getCiclosDetalhamentoAno() {
+        const cicloAtual = getCurrentCycleInfo();
+        return getCyclesForYear(cicloAtual.year);
+    },
+
+    getCicloDetalhamentoSelecionado() {
+        const ciclos = this.getCiclosDetalhamentoAno();
+        const cicloAtual = getCurrentCycleInfo();
+
+        if (this.detalhamentoFiltro.escopo === 'atual') {
+            return cicloAtual;
+        }
+
+        return ciclos.find((ciclo) => ciclo.id === this.detalhamentoFiltro.periodo) || ciclos[0] || cicloAtual;
+    },
+
+    getOpcoesPeriodoDetalhamento() {
+        const cicloAtual = getCurrentCycleInfo();
+        const ciclos = this.getCiclosDetalhamentoAno();
+
+        if (this.detalhamentoFiltro.escopo === 'mes') {
+            return ciclos
+                .filter((ciclo) => ciclo.id !== cicloAtual.id)
+                .map((ciclo) => ({
+                    value: ciclo.id,
+                    label: ciclo.fullLabel
+                }));
+        }
+
+        return [{ value: cicloAtual.id, label: cicloAtual.fullLabel }];
+    },
+
+    sincronizarFiltrosDetalhamento() {
+        const filterScope = document.getElementById('filtroEscopo');
+        const filterPeriod = document.getElementById('filtroPeriodo');
+        const filterPeriodLabel = document.getElementById('filtroPeriodoLabel');
+        if (!filterScope || !filterPeriod) return;
+
+        filterScope.value = this.detalhamentoFiltro.escopo;
+        const opcoes = this.getOpcoesPeriodoDetalhamento();
+
+        filterPeriod.innerHTML = opcoes
+            .map((opcao) => `<option value="${opcao.value}">${opcao.label}</option>`)
+            .join('');
+
+        if (!opcoes.some((opcao) => opcao.value === this.detalhamentoFiltro.periodo)) {
+            this.detalhamentoFiltro.periodo = opcoes[0]?.value || '';
+        }
+
+        filterPeriod.value = this.detalhamentoFiltro.periodo;
+
+        if (filterPeriodLabel) {
+            filterPeriodLabel.textContent = this.detalhamentoFiltro.escopo === 'mes'
+                ? 'Ciclo do ano'
+                : 'Ciclo ativo';
+        }
+    },
+
+    getDescricaoFiltroDetalhamento() {
+        return this.getCicloDetalhamentoSelecionado().fullLabel;
+    },
+
+    resetarScrollDetalhamento() {
+        const container = document.getElementById('listaDetalhada');
+        if (!container) return;
+        container.scrollTop = 0;
+        container.scrollLeft = 0;
+    },
+
+    filtrarDespesasDetalhamento() {
+        const despesas = this.getDespesasRegistradas();
+        const cicloSelecionado = this.getCicloDetalhamentoSelecionado();
+
+        return despesas
+            .filter((item) => {
+                const parsedDate = this.parseDate(item.data);
+                if (!parsedDate) return false;
+
+                return parsedDate >= cicloSelecionado.startDate && parsedDate <= cicloSelecionado.endDate;
+            })
+            .sort((left, right) => new Date(`${right.data}T00:00:00`) - new Date(`${left.data}T00:00:00`));
+    },
+
+    getCategoriaPrincipal(items) {
+        if (!items.length) return 'Sem registros';
+
+        const categoryTotals = items.reduce((accumulator, item) => {
+            const category = item.categoria || 'Outros';
+            accumulator[category] = (accumulator[category] || 0) + (parseFloat(item.valor) || 0);
+            return accumulator;
+        }, {});
+
+        return Object.entries(categoryTotals)
+            .sort((left, right) => right[1] - left[1])[0]?.[0] || 'Sem registros';
+    },
+
+    getResumoDetalhamento(items) {
+        const cicloSelecionado = this.getCicloDetalhamentoSelecionado();
+        const totalDespesas = items.reduce((accumulator, item) => accumulator + (parseFloat(item.valor) || 0), 0);
+        const totalOriginal = items.reduce((accumulator, item) => accumulator + (parseFloat(item.valorTotalOriginal) || parseFloat(item.valor) || 0), 0);
+        const budget = this.getBudgetTotal(cicloSelecionado);
+        const totalMetas = this.getMetasRegistradas(cicloSelecionado).reduce((accumulator, meta) => accumulator + (parseFloat(meta.guardado) || 0), 0);
+        const averageTicket = items.length ? totalDespesas / items.length : 0;
+
+        return {
+            budget,
+            totalDespesas,
+            totalOriginal,
+            totalMetas,
+            averageTicket,
+            count: items.length,
+            saldo: budget - totalDespesas,
+            percentualConsumido: budget > 0 ? Math.min((totalDespesas / budget) * 100, 999) : 0,
+            categoriaPrincipal: this.getCategoriaPrincipal(items)
+        };
+    },
+
+    escapeHtml(value) {
+        return String(value ?? '')
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#39;');
+    },
+
+    renderizarResumoDetalhamento(items) {
+        const summary = document.getElementById('detalhamentoResumo');
+        if (!summary) return;
+
+        const filtroDescricao = this.getDescricaoFiltroDetalhamento();
+        const resumo = this.getResumoDetalhamento(items);
+        const saldoClass = resumo.saldo >= 0 ? 'is-positive' : 'is-negative';
+
+        if (this.tipoAtivo === 'receitas') {
+            summary.innerHTML = `
+                <article class="detail-summary-card detail-summary-card-hero">
+                    <span class="detail-summary-label">Orçamento</span>
+                    <strong class="detail-summary-value">${formatarMoeda(resumo.budget)}</strong>
+                    <span class="detail-summary-meta">Base de ${this.escapeHtml(filtroDescricao)}.</span>
+                </article>
+                <article class="detail-summary-card">
+                    <span class="detail-summary-label">Despesas</span>
+                    <strong class="detail-summary-value">${formatarMoeda(resumo.totalDespesas)}</strong>
+                    <span class="detail-summary-meta">${resumo.count} item${resumo.count === 1 ? '' : 's'}.</span>
+                </article>
+                <article class="detail-summary-card ${saldoClass}">
+                    <span class="detail-summary-label">Saldo</span>
+                    <strong class="detail-summary-value">${formatarMoeda(resumo.saldo)}</strong>
+                    <span class="detail-summary-meta">${resumo.percentualConsumido.toFixed(0)}% usado.</span>
+                </article>
+                <article class="detail-summary-card">
+                    <span class="detail-summary-label">Metas</span>
+                    <strong class="detail-summary-value">${formatarMoeda(resumo.totalMetas)}</strong>
+                    <span class="detail-summary-meta">Total reservado.</span>
+                </article>`;
+            return;
+        }
+
+        summary.innerHTML = `
+            <article class="detail-summary-card detail-summary-card-hero">
+                <span class="detail-summary-label">Total do período</span>
+                <strong class="detail-summary-value">${formatarMoeda(resumo.totalDespesas)}</strong>
+                <span class="detail-summary-meta">Filtro: ${this.escapeHtml(filtroDescricao)}.</span>
+            </article>
+            <article class="detail-summary-card">
+                <span class="detail-summary-label">Lançamentos</span>
+                <strong class="detail-summary-value">${resumo.count}</strong>
+                <span class="detail-summary-meta">Média: ${formatarMoeda(resumo.averageTicket)}.</span>
+            </article>
+            <article class="detail-summary-card">
+                <span class="detail-summary-label">Categoria principal</span>
+                <strong class="detail-summary-value detail-summary-text">${this.escapeHtml(resumo.categoriaPrincipal)}</strong>
+                <span class="detail-summary-meta">Maior peso.</span>
+            </article>
+            <article class="detail-summary-card">
+                <span class="detail-summary-label">Valor bruto</span>
+                <strong class="detail-summary-value">${formatarMoeda(resumo.totalOriginal)}</strong>
+                <span class="detail-summary-meta">Sem rateio.</span>
+            </article>`;
+    },
+
+    renderizarListaReceitas(items) {
+        const container = document.getElementById('listaDetalhada');
+        if (!container) return;
+
+        const filtroDescricao = this.getDescricaoFiltroDetalhamento();
+        const resumo = this.getResumoDetalhamento(items);
+        const saldoClass = resumo.saldo >= 0 ? 'is-positive' : 'is-negative';
+
+        container.innerHTML = `
+            <section class="detail-section-block">
+                <header class="detail-section-header">
+                    <div>
+                        <h3>Leitura do orçamento</h3>
+                        <p>Comparação rápida.</p>
+                    </div>
+                    <span class="detail-section-pill">${this.escapeHtml(filtroDescricao)}</span>
+                </header>
+                <div class="budget-insight-list">
+                    <article class="budget-insight-row">
+                        <div>
+                            <span class="budget-insight-label">Orçamento</span>
+                            <p>Valor base.</p>
+                        </div>
+                        <strong>${formatarMoeda(resumo.budget)}</strong>
+                    </article>
+                    <article class="budget-insight-row">
+                        <div>
+                            <span class="budget-insight-label">Despesas</span>
+                            <p>Total filtrado.</p>
+                        </div>
+                        <strong>${formatarMoeda(resumo.totalDespesas)}</strong>
+                    </article>
+                    <article class="budget-insight-row ${saldoClass}">
+                        <div>
+                            <span class="budget-insight-label">Saldo</span>
+                            <p>Diferença atual.</p>
+                        </div>
+                        <strong>${formatarMoeda(resumo.saldo)}</strong>
+                    </article>
+                    <article class="budget-insight-row">
+                        <div>
+                            <span class="budget-insight-label">Metas</span>
+                            <p>Total alocado.</p>
+                        </div>
+                        <strong>${formatarMoeda(resumo.totalMetas)}</strong>
+                    </article>
+                </div>
+            </section>`;
+    },
+
+    renderizarListaDespesas(items) {
+        const container = document.getElementById('listaDetalhada');
+        if (!container) return;
+
+        if (!items.length) {
+            container.innerHTML = `
+                <section class="detail-empty-state">
+                    <h3>Sem despesas</h3>
+                    <p>Troque o filtro.</p>
+                </section>`;
+            return;
+        }
+
+        const groups = items.reduce((accumulator, item) => {
+            const groupKey = item.data;
+            accumulator[groupKey] = accumulator[groupKey] || [];
+            accumulator[groupKey].push(item);
+            return accumulator;
+        }, {});
+
+        const groupedHtml = Object.keys(groups)
+            .sort((left, right) => new Date(`${right}T00:00:00`) - new Date(`${left}T00:00:00`))
+            .map((groupKey) => {
+                const cards = groups[groupKey].map((item) => {
+                    const estiloCategoria = getCategoryBadgeStyle(item.categoria);
+                    const valorImpacto = parseFloat(item.valor) || 0;
+                    const valorExibicao = parseFloat(item.valorTotalOriginal) || valorImpacto;
+                    const observacao = (item.observacao || '').trim();
+                    const pagamento = this.escapeHtml(item.pagamento || 'Sem método');
+                    const categoria = this.escapeHtml(item.categoria || 'Outros');
+                    const titulo = this.escapeHtml(item.titulo || 'Despesa');
+                    const parcelas = item.parcelas ? `<span class="detail-chip detail-chip-muted">${this.escapeHtml(item.parcelas)}</span>` : '';
+                    const cartao = item.cartao ? `<span class="detail-chip detail-chip-muted">${this.escapeHtml(item.cartao)}</span>` : '';
+                    const impactoMensal = valorExibicao !== valorImpacto
+                        ? `<span class="detail-inline-note">Impacto: ${formatarMoeda(valorImpacto)}</span>`
+                        : '';
+
+                    return `
+                        <article class="expense-detail-card">
+                            <div class="expense-detail-main">
+                                <div class="expense-detail-topline">
+                                    <h4>${titulo}</h4>
+                                    <strong class="expense-detail-value">${formatarMoeda(valorExibicao)}</strong>
+                                </div>
+                                <div class="expense-detail-meta">
+                                    <span class="detail-chip detail-chip-category" style="--detail-chip-bg:${estiloCategoria.bg}; --detail-chip-text:${estiloCategoria.text}; --detail-chip-border:${estiloCategoria.border};">${categoria}</span>
+                                    <span class="detail-chip">${pagamento}</span>
+                                    ${parcelas}
+                                    ${cartao}
+                                </div>
+                                ${impactoMensal}
+                                ${observacao ? `<p class="expense-detail-description">${this.escapeHtml(observacao)}</p>` : ''}
+                            </div>
+                        </article>`;
+                }).join('');
+
+                return `
+                    <section class="expense-detail-group">
+                        <header class="expense-detail-group-header">
+                            <h3>${this.escapeHtml(this.formatarDataDetalhe(groupKey))}</h3>
+                            <span>${groups[groupKey].length} item${groups[groupKey].length === 1 ? '' : 's'}</span>
+                        </header>
+                        <div class="expense-detail-group-list">${cards}</div>
+                    </section>`;
+            }).join('');
+
+        container.innerHTML = groupedHtml;
     },
 
     renderizarTotaisResumo() {
-        const hoje = new Date();
-        const dados = this.obterDadosConsolidados();
+        const snapshot = getCurrentFinancialSnapshot();
+        const totalD = snapshot.totalDespesas;
+        const totalR = snapshot.budget;
 
-        const totalD = dados.reduce((acc, item) => {
-            const dataItem = new Date(item.data + 'T00:00:00');
-            if (dataItem.getMonth() === hoje.getMonth()) return acc + item.valor;
-            return acc;
-        }, 0);
-
-        const totalR = parseFloat(localStorage.getItem('budget_total')) || 0;
-
-        document.getElementById('totalDespesas').innerText = `R$ ${totalD.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
-        document.getElementById('totalReceitas').innerText = `R$ ${totalR.toLocaleString('pt-BR', { minimumFractionDigits: 2 })}`;
+        document.getElementById('totalDespesas').innerText = formatarMoeda(totalD);
+        document.getElementById('totalReceitas').innerText = formatarMoeda(totalR);
     },
 
     abrirDetalhamento(tipo) {
         this.tipoAtivo = tipo;
-        document.getElementById('modalDetalhamento').style.display = 'flex';
-        document.getElementById('modalDetalhamentoTitulo').innerText = tipo === 'receitas' ? 'Orçamento Mensal' : 'Detalhamento de Gastos';
+        const cicloAtual = getCurrentCycleInfo();
+        this.detalhamentoFiltro = {
+            escopo: 'atual',
+            periodo: cicloAtual.id
+        };
+
+        const modal = document.getElementById('modalDetalhamento');
+        const title = document.getElementById('modalDetalhamentoTitulo');
+        const kicker = document.getElementById('modalDetalhamentoKicker');
+        const description = document.getElementById('modalDetalhamentoDescricao');
+
+        if (title) {
+            title.innerText = tipo === 'receitas' ? 'Orçamento Mensal (Receita)' : 'Detalhamento de Gastos';
+        }
+
+        if (kicker) {
+            kicker.innerText = tipo === 'receitas' ? 'Orçamento' : 'Despesas';
+        }
+
+        if (description) {
+            description.innerText = tipo === 'receitas'
+                ? 'Comparativo do ciclo.'
+                : 'Itens do ciclo.';
+        }
+
+        this.sincronizarFiltrosDetalhamento();
+        if (modal) modal.style.display = 'flex';
+        this.resetarScrollDetalhamento();
         this.atualizarListaDetalhada();
     },
 
@@ -595,32 +979,17 @@ export const PerfilModulo = {
 
     atualizarListaDetalhada() {
         const container = document.getElementById('listaDetalhada');
+        if (!container) return;
+
         container.innerHTML = '';
+        const itensFiltrados = this.filtrarDespesasDetalhamento();
+        this.renderizarResumoDetalhamento(itensFiltrados);
 
         if (this.tipoAtivo === 'receitas') {
-            const valor = localStorage.getItem('budget_total') || '0';
-            container.innerHTML = `
-                <div class="perfil-item income-border">
-                    <div class="item-info">
-                        <span>Teto de Gastos Definido</span>
-                        <small>Mensal</small>
-                    </div>
-                    <strong class="text-success">R$ ${parseFloat(valor).toFixed(2)}</strong>
-                </div>`;
+            this.renderizarListaReceitas(itensFiltrados);
             return;
         }
 
-        const filtradas = this.obterDadosConsolidados();
-        filtradas.forEach((item) => {
-            const isMeta = item.titulo.includes('Meta:');
-            container.innerHTML += `
-                <div class="perfil-item ${isMeta ? 'meta-border' : ''}">
-                    <div class="item-info">
-                        <span class="${isMeta ? 'text-highlight' : ''}">${item.titulo}</span>
-                        <small class="perfil-tag">${item.categoria}</small>
-                    </div>
-                    <strong class="text-danger">R$ ${item.valor.toFixed(2)}</strong>
-                </div>`;
-        });
+        this.renderizarListaDespesas(itensFiltrados);
     }
 };

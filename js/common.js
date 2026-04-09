@@ -1,11 +1,380 @@
-// Dados Globais
-export let despesasExemplo = JSON.parse(localStorage.getItem('despesas')) || [
+const DESPESAS_STORAGE_KEY = 'despesas';
+const METAS_STORAGE_KEY = 'metas';
+const CARTEIRAS_STORAGE_KEY = 'carteiras';
+const SETTINGS_STORAGE_KEY = 'visionFinance_settings';
+const BUDGET_STORAGE_KEY = 'budget_total';
+const BUDGET_HISTORY_STORAGE_KEY = 'visionFinance_budget_history';
+
+export const TURN_DAY_OPTIONS = [1, 5, 10, 15, 20, 25];
+
+const DEFAULT_SETTINGS = {
+    moeda: 'BRL',
+    temaEscuro: false,
+    diaViradaMes: 1,
+    notificacoes: {
+        geral: false,
+        orcamento: false,
+        orcamentoMeta: false,
+        metas: false
+    },
+    dataAtualizacao: null
+};
+
+const DESPESAS_FALLBACK = [
     { titulo: 'Supermercado', categoria: 'Alimentação', pagamento: 'Cartão de Crédito', valor: 350.0, data: '2026-03-25', observacao: '' },
     { titulo: 'Uber', categoria: 'Transporte', pagamento: 'Cartão de Débito', valor: 45.0, data: '2026-03-25', observacao: '' }
 ];
 
-export let metas = JSON.parse(localStorage.getItem('metas')) || [];
-export let limiteMensal = parseFloat(localStorage.getItem('budget_total')) || 0;
+function lerJsonStorage(chave, fallback) {
+    try {
+        const raw = localStorage.getItem(chave);
+        return raw ? JSON.parse(raw) : fallback;
+    } catch {
+        return fallback;
+    }
+}
+
+function normalizarDiaVirada(valor) {
+    const dia = Number(valor);
+    return TURN_DAY_OPTIONS.includes(dia) ? dia : DEFAULT_SETTINGS.diaViradaMes;
+}
+
+function normalizarSettings(settings = {}) {
+    return {
+        ...DEFAULT_SETTINGS,
+        ...settings,
+        diaViradaMes: normalizarDiaVirada(settings?.diaViradaMes),
+        notificacoes: {
+            ...DEFAULT_SETTINGS.notificacoes,
+            ...(settings?.notificacoes || {})
+        }
+    };
+}
+
+function formatIsoDate(date) {
+    const current = new Date(date);
+    current.setHours(12, 0, 0, 0);
+    return `${current.getFullYear()}-${String(current.getMonth() + 1).padStart(2, '0')}-${String(current.getDate()).padStart(2, '0')}`;
+}
+
+function parseFlexibleDate(dateInput) {
+    if (dateInput instanceof Date) {
+        const parsed = new Date(dateInput);
+        parsed.setHours(12, 0, 0, 0);
+        return Number.isNaN(parsed.getTime()) ? null : parsed;
+    }
+
+    if (typeof dateInput !== 'string' || !dateInput.trim()) return null;
+
+    const value = dateInput.trim();
+    let parsed = null;
+
+    if (value.includes('-')) {
+        parsed = new Date(`${value}T12:00:00`);
+    } else if (value.includes('/')) {
+        const [day, month, year] = value.split('/').map(Number);
+        parsed = new Date(year, month - 1, day, 12, 0, 0, 0);
+    } else {
+        parsed = new Date(value);
+    }
+
+    if (Number.isNaN(parsed.getTime())) return null;
+    parsed.setHours(12, 0, 0, 0);
+    return parsed;
+}
+
+function buildCycleLabel(startDate, endDate) {
+    const startLabel = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(startDate).replace('.', '');
+    const endLabel = new Intl.DateTimeFormat('pt-BR', { day: '2-digit', month: 'short' }).format(endDate).replace('.', '');
+    return `${startLabel} - ${endLabel}`;
+}
+
+export function getMonthTurnDay(settings) {
+    const resolvedSettings = settings || normalizarSettings(lerJsonStorage(SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS));
+    return normalizarDiaVirada(resolvedSettings?.diaViradaMes);
+}
+
+export function getCycleInfo(dateInput = new Date(), turnDay = getMonthTurnDay()) {
+    const reference = parseFlexibleDate(dateInput) || new Date();
+    const cycleStart = new Date(reference.getFullYear(), reference.getMonth(), turnDay, 12, 0, 0, 0);
+
+    if (reference.getDate() < turnDay) {
+        cycleStart.setMonth(cycleStart.getMonth() - 1);
+    }
+
+    const nextCycleStart = new Date(cycleStart.getFullYear(), cycleStart.getMonth() + 1, turnDay, 12, 0, 0, 0);
+    const cycleEnd = new Date(nextCycleStart);
+    cycleEnd.setDate(cycleEnd.getDate() - 1);
+    cycleEnd.setHours(12, 0, 0, 0);
+
+    return {
+        id: formatIsoDate(cycleStart),
+        turnDay,
+        startDate: cycleStart,
+        endDate: cycleEnd,
+        startIso: formatIsoDate(cycleStart),
+        endIso: formatIsoDate(cycleEnd),
+        year: cycleStart.getFullYear(),
+        monthIndex: cycleStart.getMonth(),
+        month: cycleStart.getMonth() + 1,
+        label: buildCycleLabel(cycleStart, cycleEnd),
+        fullLabel: `${buildCycleLabel(cycleStart, cycleEnd)} ${cycleEnd.getFullYear()}`
+    };
+}
+
+export function getCurrentCycleInfo(referenceDate = new Date()) {
+    return getCycleInfo(referenceDate, getMonthTurnDay());
+}
+
+export function getCyclesForYear(year, turnDay = getMonthTurnDay()) {
+    return Array.from({ length: 12 }, (_, monthIndex) => getCycleInfo(new Date(year, monthIndex, turnDay, 12, 0, 0, 0), turnDay));
+}
+
+export function isDateInCycle(dateInput, cycleInfo = getCurrentCycleInfo()) {
+    const parsed = parseFlexibleDate(dateInput);
+    if (!parsed) return false;
+    return parsed >= cycleInfo.startDate && parsed <= cycleInfo.endDate;
+}
+
+function ordenarPorData(a, b) {
+    return (parseFlexibleDate(a?.data)?.getTime() || 0) - (parseFlexibleDate(b?.data)?.getTime() || 0);
+}
+
+export function getDespesasData(options = {}) {
+    const despesas = lerJsonStorage(DESPESAS_STORAGE_KEY, DESPESAS_FALLBACK);
+    const cycleInfo = options.cycleInfo || null;
+
+    const filtradas = cycleInfo
+        ? despesas.filter((item) => item?.data && isDateInCycle(item.data, cycleInfo))
+        : despesas.filter((item) => item?.data);
+
+    return filtradas
+        .map((item) => ({
+            ...item,
+            valor: parseFloat(item.valor) || 0,
+            valorTotalOriginal: parseFloat(item.valorTotalOriginal) || parseFloat(item.valor) || 0,
+            cycleId: item?.data ? getCycleInfo(item.data).id : null
+        }))
+        .sort(ordenarPorData);
+}
+
+export function setDespesasData(despesas = []) {
+    despesasExemplo = despesas;
+    localStorage.setItem(DESPESAS_STORAGE_KEY, JSON.stringify(despesas));
+    return despesasExemplo;
+}
+
+function normalizarAporte(entry, fallbackCycle) {
+    const parsedDate = parseFlexibleDate(entry?.data) || fallbackCycle.startDate;
+    const cycleInfo = entry?.cycleId ? { ...fallbackCycle, id: entry.cycleId } : getCycleInfo(parsedDate, fallbackCycle.turnDay);
+    return {
+        valor: parseFloat(entry?.valor) || 0,
+        data: formatIsoDate(parsedDate),
+        cycleId: entry?.cycleId || cycleInfo.id
+    };
+}
+
+function normalizarMeta(meta, cycleInfo = getCurrentCycleInfo()) {
+    const aporteHistoricoBase = Array.isArray(meta?.aporteHistorico) ? meta.aporteHistorico : [];
+    const aporteHistorico = aporteHistoricoBase.length
+        ? aporteHistoricoBase.map((entry) => normalizarAporte(entry, cycleInfo))
+        : (parseFloat(meta?.guardado) || 0) > 0
+            ? [{ valor: parseFloat(meta.guardado) || 0, data: cycleInfo.startIso, cycleId: cycleInfo.id }]
+            : [];
+
+    const guardadoCiclo = aporteHistorico
+        .filter((entry) => entry.cycleId === cycleInfo.id)
+        .reduce((acc, entry) => acc + (parseFloat(entry.valor) || 0), 0);
+
+    return {
+        ...meta,
+        nome: meta?.nome || 'Meta',
+        prazo: meta?.prazo || '',
+        alvo: parseFloat(meta?.alvo) || 0,
+        guardado: guardadoCiclo,
+        aporteHistorico,
+        totalHistorico: aporteHistorico.reduce((acc, entry) => acc + (parseFloat(entry.valor) || 0), 0)
+    };
+}
+
+function serializarMeta(meta, cycleInfo = getCurrentCycleInfo()) {
+    const metaNormalizada = normalizarMeta(meta, cycleInfo);
+    return {
+        nome: metaNormalizada.nome,
+        prazo: metaNormalizada.prazo,
+        alvo: metaNormalizada.alvo,
+        guardado: metaNormalizada.guardado,
+        aporteHistorico: metaNormalizada.aporteHistorico
+    };
+}
+
+export function getMetasData(options = {}) {
+    const cycleInfo = options.cycleInfo || getCurrentCycleInfo();
+    return lerJsonStorage(METAS_STORAGE_KEY, []).map((meta) => normalizarMeta(meta, cycleInfo));
+}
+
+export function setMetasData(metasList = [], options = {}) {
+    const cycleInfo = options.cycleInfo || getCurrentCycleInfo();
+    const serializadas = metasList.map((meta) => serializarMeta(meta, cycleInfo));
+    metas = serializadas.map((meta) => normalizarMeta(meta, cycleInfo));
+    localStorage.setItem(METAS_STORAGE_KEY, JSON.stringify(serializadas));
+    return metas;
+}
+
+export function getMetaTotalForCycle(meta, cycleInfo = getCurrentCycleInfo()) {
+    return normalizarMeta(meta, cycleInfo).guardado;
+}
+
+export function addMetaContribution(metaIndex, valor, referenceDate = new Date()) {
+    const currentCycle = getCycleInfo(referenceDate, getMonthTurnDay());
+    const metasAtuais = getMetasData({ cycleInfo: currentCycle });
+    const meta = metasAtuais[metaIndex];
+    if (!meta) return metasAtuais;
+
+    meta.aporteHistorico = Array.isArray(meta.aporteHistorico) ? meta.aporteHistorico : [];
+    meta.aporteHistorico.push({
+        valor: parseFloat(valor) || 0,
+        data: formatIsoDate(referenceDate),
+        cycleId: currentCycle.id
+    });
+
+    setMetasData(metasAtuais, { cycleInfo: currentCycle });
+    return getMetasData({ cycleInfo: currentCycle });
+}
+
+export function getCarteirasData() {
+    return lerJsonStorage(CARTEIRAS_STORAGE_KEY, []);
+}
+
+export function setCarteirasData(carteiras = []) {
+    localStorage.setItem(CARTEIRAS_STORAGE_KEY, JSON.stringify(carteiras));
+    return carteiras;
+}
+
+function getBudgetHistorySorted() {
+    const history = lerJsonStorage(BUDGET_HISTORY_STORAGE_KEY, []);
+    return history
+        .map((entry) => ({
+            cycleId: entry?.cycleId || getCurrentCycleInfo().id,
+            valor: parseFloat(entry?.valor) || 0,
+            turnDay: normalizarDiaVirada(entry?.turnDay),
+            updatedAt: entry?.updatedAt || new Date().toISOString()
+        }))
+        .sort((left, right) => (parseFlexibleDate(left.cycleId)?.getTime() || 0) - (parseFlexibleDate(right.cycleId)?.getTime() || 0));
+}
+
+function salvarBudgetHistory(history) {
+    localStorage.setItem(BUDGET_HISTORY_STORAGE_KEY, JSON.stringify(history));
+    return history;
+}
+
+export function getBudgetHistory() {
+    return getBudgetHistorySorted();
+}
+
+export function getBudgetForCycle(cycleInfo = getCurrentCycleInfo()) {
+    const history = getBudgetHistorySorted();
+    const targetTime = cycleInfo.startDate.getTime();
+    const candidate = history
+        .filter((entry) => (parseFlexibleDate(entry.cycleId)?.getTime() || 0) <= targetTime)
+        .sort((left, right) => (parseFlexibleDate(right.cycleId)?.getTime() || 0) - (parseFlexibleDate(left.cycleId)?.getTime() || 0))[0];
+
+    if (candidate) {
+        return parseFloat(candidate.valor) || 0;
+    }
+
+    return parseFloat(localStorage.getItem(BUDGET_STORAGE_KEY)) || 0;
+}
+
+export function setCurrentCycleBudget(valor, referenceDate = new Date()) {
+    const cycleInfo = getCycleInfo(referenceDate, getMonthTurnDay());
+    const history = getBudgetHistorySorted();
+    const normalizedValue = parseFloat(valor) || 0;
+    const existingIndex = history.findIndex((entry) => entry.cycleId === cycleInfo.id);
+    const payload = {
+        cycleId: cycleInfo.id,
+        valor: normalizedValue,
+        turnDay: cycleInfo.turnDay,
+        updatedAt: new Date().toISOString()
+    };
+
+    if (existingIndex >= 0) history[existingIndex] = payload;
+    else history.push(payload);
+
+    limiteMensal = normalizedValue;
+    localStorage.setItem(BUDGET_STORAGE_KEY, String(normalizedValue));
+    salvarBudgetHistory(history);
+    return normalizedValue;
+}
+
+export function syncCarteiraGastosDoCiclo(cycleInfo = getCurrentCycleInfo()) {
+    const despesas = getDespesasData({ cycleInfo });
+    const carteiras = getCarteirasData().map((carteira) => ({ ...carteira, gasto: 0 }));
+
+    despesas.forEach((despesa) => {
+        if (!despesa.cartao) return;
+        const carteira = carteiras.find((item) => item.nome === despesa.cartao);
+        if (carteira) {
+            carteira.gasto += parseFloat(despesa.valor) || 0;
+        }
+    });
+
+    setCarteirasData(carteiras);
+    return carteiras;
+}
+
+export function getCurrentFinancialSnapshot(referenceDate = new Date()) {
+    const cycleInfo = getCycleInfo(referenceDate, getMonthTurnDay());
+    const despesas = getDespesasData({ cycleInfo });
+    const metasCiclo = getMetasData({ cycleInfo });
+    const budget = getBudgetForCycle(cycleInfo);
+
+    return {
+        cycleInfo,
+        despesas,
+        metas: metasCiclo,
+        budget,
+        totalDespesas: despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0),
+        totalMetas: metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0)
+    };
+}
+
+export function getCycleSummariesForYear(year, turnDay = getMonthTurnDay()) {
+    return getCyclesForYear(year, turnDay).map((cycleInfo) => {
+        const despesas = getDespesasData({ cycleInfo });
+        const metasCiclo = getMetasData({ cycleInfo });
+        const totalDespesas = despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0);
+        const totalMetas = metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0);
+        const budget = getBudgetForCycle(cycleInfo);
+        return {
+            ...cycleInfo,
+            despesas,
+            totalDespesas,
+            totalMetas,
+            totalUtilizado: totalDespesas + totalMetas,
+            budget,
+            saldo: budget - (totalDespesas + totalMetas),
+            quantidadeDespesas: despesas.length
+        };
+    });
+}
+
+export function ensureFinancialDataIntegrity(referenceDate = new Date()) {
+    const cycleInfo = getCycleInfo(referenceDate, getMonthTurnDay());
+    const metasNormalizadas = getMetasData({ cycleInfo });
+    setMetasData(metasNormalizadas, { cycleInfo });
+    setCurrentCycleBudget(getBudgetForCycle(cycleInfo), referenceDate);
+    syncCarteiraGastosDoCiclo(cycleInfo);
+    despesasExemplo = getDespesasData();
+    metas = metasNormalizadas;
+    limiteMensal = getBudgetForCycle(cycleInfo);
+    return cycleInfo;
+}
+
+// Dados Globais
+export let despesasExemplo = lerJsonStorage(DESPESAS_STORAGE_KEY, DESPESAS_FALLBACK);
+export let metas = getMetasData();
+export let limiteMensal = getBudgetForCycle(getCurrentCycleInfo());
 
 // Utilitários de Formatação
 export const formatarMoeda = (valor) => {
@@ -48,12 +417,13 @@ export const getHojeFormatado = () => {
 };
 
 export const getThemeSettings = () => {
-    return JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+    return normalizarSettings(lerJsonStorage(SETTINGS_STORAGE_KEY, DEFAULT_SETTINGS));
 };
 
 export const setThemeSettings = (settings) => {
-    localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
-    return settings;
+    const normalized = normalizarSettings(settings);
+    localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
 };
 
 export const setThemePreference = (isDark) => {
@@ -140,9 +510,9 @@ export const getCategoryBadgeStyle = (categoria, isDark = document.body.classLis
 };
 
 export function salvarNoStorage() {
-    localStorage.setItem('despesas', JSON.stringify(despesasExemplo));
-    localStorage.setItem('metas', JSON.stringify(metas));
-    localStorage.setItem('budget_total', localStorage.getItem('budget_total') || "0");
+    setDespesasData(despesasExemplo);
+    setMetasData(metas);
+    setCurrentCycleBudget(localStorage.getItem(BUDGET_STORAGE_KEY) || '0');
 }
 
 export function aplicarMascaraValor(input) {

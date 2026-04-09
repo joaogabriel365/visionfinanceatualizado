@@ -1,3 +1,9 @@
+<script>
+if (window.top === window.self) {
+    window.location.replace('../dashboard.html?section=painel#painel');
+}
+</script>
+
 <div class="dashboard-top-cards">
     <div class="stat-card small-card">
         <div class="stat-info">
@@ -58,10 +64,3 @@
         <tbody id="expenseTableBody"></tbody>
     </table>
 </div>
-
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-
-<script type="module" src="../js/main.js"></script>
-
-</body>
-</html>
