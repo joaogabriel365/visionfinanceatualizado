@@ -305,7 +305,7 @@ export const PlanejamentoModulo = {
                     <td class="planning-goal-target" data-label="Valor Alvo" style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
                     <td class="planning-goal-deadline" data-label="Prazo" style="padding: 20px 15px;">${meta.prazo}</td>
                     <td class="planning-goal-progress-cell" data-label="Progresso" style="padding: 20px 15px;">
-                        <div class="planning-goal-progress" style="display: flex; align-items: center; gap: 10px;">
+                        <div class="planning-goal-progress">
                             <div class="planning-goal-progress-track" style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
                                 <div class="planning-goal-progress-fill" style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar('--accent')}; box-shadow: 0 0 10px ${getThemeVar('--accent-soft')};"></div>
                             </div>
@@ -313,7 +313,7 @@ export const PlanejamentoModulo = {
                         </div>
                     </td>
                     <td class="planning-goal-actions-cell" data-label="Ações" style="padding: 20px 15px; text-align: center;">
-                        <div class="planning-goal-actions" style="display: flex; justify-content: center; gap: 15px;">
+                        <div class="planning-goal-actions">
                                <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})" style="${actionButtonStyle}">
                                    <img src="${planningAddIconUrl}" class="planning-action-icon planning-action-icon-add" alt="Adicionar valor" title="Adicionar valor">
                             </button>

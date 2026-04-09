@@ -44,8 +44,8 @@ body.dark-theme .wallet-primary-action i {
 
 .wallets-grid {
   display: grid;
-  grid-template-columns: minmax(320px, 860px);
-  justify-content: start;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  justify-content: stretch;
   gap: 1rem;
   padding: 0.75rem 0.1rem 0.25rem;
   align-items: stretch;
@@ -104,6 +104,7 @@ body.dark-theme .wallet-primary-action i {
   display: flex;
   justify-content: space-between;
   align-items: flex-start;
+  flex-wrap: wrap;
   gap: 1rem;
 }
 
@@ -147,6 +148,7 @@ body.dark-theme .wallet-primary-action i {
   gap: 0.65rem;
   flex-wrap: wrap;
   justify-content: flex-end;
+  min-width: 0;
 }
 
 .wallet-card .btn-action {
@@ -204,6 +206,12 @@ body.dark-theme .wallet-primary-action i {
   row-gap: 0.8rem;
   min-height: 0;
   align-items: start;
+}
+
+.wallet-card-copy,
+.wallet-card-brand,
+.wallet-card-content {
+  min-width: 0;
 }
 
 .wallet-card-copy {
@@ -1008,7 +1016,7 @@ body.dark-theme .wallet-expense-side {
   }
 
   .wallet-card-top {
-    flex-direction: row;
+    flex-direction: column;
     align-items: flex-start;
   }
 
@@ -1018,8 +1026,8 @@ body.dark-theme .wallet-expense-side {
   }
 
   .wallet-card-actions {
-    width: auto;
-    justify-content: flex-end;
+    width: 100%;
+    justify-content: flex-start;
   }
 
   .wallet-progress-head {

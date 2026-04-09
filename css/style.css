@@ -1885,6 +1885,7 @@ body.dark-theme .showcase-image-light {
     font-size: 1.2rem;
     letter-spacing: 1px;
     text-align: center;
+    min-width: 0;
 }
 
 /* --- HEADER E AVATAR SIMPLIFICADO --- */
@@ -2116,6 +2117,7 @@ body.dark-theme .nav-toggle {
 
     .logo-container {
         min-width: 0;
+        max-width: 100%;
     }
 
     .theme-toggle-btn-nav {
@@ -2381,5 +2383,21 @@ body.dark-theme .nav-toggle {
     .footer-bottom {
         margin-top: 28px;
         padding-top: 20px;
+    }
+}
+
+@media (max-width: 680px) {
+    .navbar {
+        gap: 10px;
+    }
+
+    .logo-container {
+        min-width: 0;
+    }
+
+    .logo-text {
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
 }

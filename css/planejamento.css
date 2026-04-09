@@ -353,16 +353,37 @@ body.light-theme .planning-card-prof .btn-action.btn-add {
 
 .planning-budget-form {
   width: 100%;
+  display: flex;
+  flex-wrap: wrap;
   align-items: stretch;
+  max-width: min(100%, 420px) !important;
+}
+
+.planning-budget-form[style],
+.planning-goals-head[style],
+.planning-progress-top[style],
+.planning-progress-bottom[style] {
+  display: flex !important;
+  flex-wrap: wrap !important;
 }
 
 .planning-budget-input {
   min-width: 0;
+  flex: 1 1 220px;
 }
 
 .planning-budget-save,
 .planning-goals-cta {
   white-space: nowrap;
+}
+
+.planning-budget-save {
+  flex: 0 1 auto;
+}
+
+.planning-goals-head {
+  flex-wrap: wrap;
+  gap: 1rem !important;
 }
 
 .planning-progress-top,
@@ -406,14 +427,32 @@ body.light-theme .planning-card-prof .btn-action.btn-add {
   min-width: 0;
 }
 
+.planning-goal-progress[style] {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center !important;
+  gap: 0.65rem !important;
+}
+
 .planning-goal-progress-track,
 .planning-goal-progress-fill {
   width: 100%;
   max-width: 100%;
 }
 
+.planning-goal-progress-track[style] {
+  min-width: 0;
+}
+
 .planning-goal-actions {
   flex-wrap: wrap;
+}
+
+.planning-goal-actions[style] {
+  display: flex !important;
+  flex-wrap: wrap !important;
+  justify-content: flex-start !important;
+  gap: 0.75rem !important;
 }
 
 .planning-card-prof .btn-action,

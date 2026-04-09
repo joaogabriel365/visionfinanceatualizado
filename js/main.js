@@ -30,6 +30,31 @@ const modulos = {
 
 let secaoAtiva = 'painel';
 
+function getProfileData() {
+    return JSON.parse(localStorage.getItem('visionFinance_profile')) || {};
+}
+
+function getProfileInitials(profile = getProfileData()) {
+    const nome = (profile.nome || 'Joao').trim();
+    const sobrenome = (profile.sobrenome || 'Silva').trim();
+    return `${nome.charAt(0)}${sobrenome.charAt(0)}`.toUpperCase();
+}
+
+function aplicarAvatarPerfil() {
+    const avatar = document.querySelector('.avatar-circle');
+    if (!avatar) return;
+
+    const profile = getProfileData();
+
+    if (profile.foto) {
+        avatar.innerHTML = `<img src="${profile.foto}" alt="Foto de perfil">`;
+        avatar.classList.add('has-photo');
+    } else {
+        avatar.textContent = getProfileInitials(profile);
+        avatar.classList.remove('has-photo');
+    }
+}
+
 function fecharSidebarMobile() {
     document.body.classList.remove('dashboard-sidebar-open');
 
@@ -266,6 +291,7 @@ document.addEventListener('click', (e) => {
 
 document.addEventListener('DOMContentLoaded', () => {
     aplicarTemaGlobal();
+    aplicarAvatarPerfil();
     gerenciarBotaoModo();
     gerenciarBotaoOlho();
     configurarSidebarMobile();
@@ -287,4 +313,8 @@ window.addEventListener('settingsUpdated', () => {
     if (modulos[secaoAtiva] && typeof modulos[secaoAtiva].init === 'function') {
         modulos[secaoAtiva].init();
     }
+});
+
+window.addEventListener('profileUpdated', () => {
+    aplicarAvatarPerfil();
 });

@@ -21,6 +21,23 @@
 .expense-section-title {
   display: grid;
   gap: 0.35rem;
+  min-width: 0;
+}
+
+.expense-table-card[style] {
+  padding: 0 !important;
+}
+
+#modalDespesa .form-row,
+#containerCartao > div,
+#avisoCartaoInexistente > div,
+#modalConfirmacao > div > div:last-child {
+  display: flex;
+  flex-wrap: wrap;
+}
+
+#containerCartao > div > div {
+  min-width: min(100%, 180px);
 }
 
 .section-support-text {
@@ -44,7 +61,7 @@
 
 .filters-bar {
   display: grid;
-  grid-template-columns: repeat(4, minmax(0, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 190px), 1fr));
   gap: 0.9rem;
   margin-bottom: 1.5rem;
 }
@@ -112,6 +129,7 @@
   font-weight: 700;
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
   appearance: none;
+  text-overflow: ellipsis;
 }
 
 .filters-bar .filter-field:not(:first-child) .filter-select {
@@ -204,7 +222,8 @@
 
 .expense-head-actions,
 .expense-cell-actions {
-  width: 10%;
+  width: 132px;
+  min-width: 132px;
   text-align: center;
 }
 
@@ -397,6 +416,7 @@
   display: inline-flex;
   justify-content: center;
   align-items: center;
+  flex-wrap: wrap;
   gap: 0.5rem;
   margin-inline: auto;
 }
@@ -670,7 +690,7 @@ body.light-theme .expense-description-icon {
 
 @media (max-width: 1180px) {
   .filters-bar {
-    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(min(100%, 220px), 1fr));
   }
 }
 
@@ -868,6 +888,7 @@ body.light-theme .expense-description-icon {
   }
 
   .expense-cell-actions {
+    min-width: 0;
     margin-top: 0.15rem !important;
     padding-top: 0.9rem !important;
     border-top: 1px solid rgba(148, 163, 184, 0.24);
@@ -903,6 +924,10 @@ body.light-theme .expense-description-icon {
   #modalConfirmacao > div > div:last-child {
     flex-direction: column !important;
     align-items: stretch !important;
+  }
+
+  #containerCartao > div > div {
+    width: 100%;
   }
 
   .expense-description-modal-card {
@@ -1014,6 +1039,10 @@ body.light-theme .expense-description-icon {
 
   .filters-bar {
     gap: 0.75rem;
+  }
+
+  .filter-field::after {
+    right: 12px;
   }
 
   .filter-select {

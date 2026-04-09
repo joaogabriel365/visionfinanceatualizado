@@ -1,13 +1,31 @@
 ﻿<div class="perfil-container">
     <div class="perfil-card main-info">
         <div class="profile-header">
-            <div class="avatar-large" id="avatarIcon">
-                <span>JS</span>
+            <div class="avatar-upload-group">
+                <div class="avatar-shell">
+                    <button type="button" class="avatar-upload-trigger" id="avatarUploadTrigger" aria-label="Selecionar foto de perfil">
+                        <div class="avatar-large" id="avatarIcon">
+                            <span>JS</span>
+                        </div>
+                    </button>
+                    <button type="button" class="avatar-edit-floating" id="avatarEditFrameBtn" aria-label="Editar enquadramento da foto" hidden>
+                        <img src="./img/lapis-clean.png" alt="Editar enquadramento">
+                    </button>
+                </div>
+                <div class="avatar-actions-row">
+                    <button type="button" class="btn-primary-perfil avatar-change-btn" id="avatarChangeBtn">Escolher foto</button>
+                    <button type="button" class="btn-link-sm avatar-remove-btn" id="avatarRemoveBtn" hidden>Remover foto</button>
+                </div>
+                <input type="file" id="perfilFotoInput" accept="image/*" hidden>
             </div>
             <div class="profile-details">
+                <span class="profile-eyebrow">Perfil</span>
                 <h2 id="userNameDisplay">João Silva</h2>
                 <p id="userEmailDisplay">joao@exemplo.com</p>
-                <button class="btn-outline-sm" onclick="PerfilModulo.abrirModalSenha()">Alterar Senha</button>
+                <div class="profile-inline-actions">
+                    <button class="btn-outline-sm" onclick="PerfilModulo.abrirModalSenha()">Alterar Senha</button>
+                </div>
+                <div class="avatar-feedback" id="avatarFeedback" hidden></div>
             </div>
         </div>
 
@@ -126,5 +144,42 @@
                 <button type="submit" class="btn-accent-blue">Confirmar Alteração</button>
             </div>
         </form>
+    </div>
+</div>
+
+<div id="modalAvatarEditor" class="modal-overlay" style="display:none;">
+    <div class="modal-card avatar-editor-card">
+        <div class="modal-header avatar-editor-header">
+            <div>
+                <h2>Ajustar enquadramento</h2>
+                <p class="avatar-editor-subtitle">Posicione a foto como quiser antes de aplicar ao perfil.</p>
+            </div>
+            <button class="btn-close-x" type="button" onclick="PerfilModulo.cancelarEdicaoFoto()">&times;</button>
+        </div>
+        <div class="modal-body avatar-editor-body">
+            <div class="avatar-editor-preview-wrap">
+                <div class="avatar-editor-preview-frame" id="avatarEditorFrame">
+                    <img id="avatarEditorImage" alt="Pré-visualização do enquadramento da foto">
+                </div>
+            </div>
+            <div class="avatar-editor-controls">
+                <div class="avatar-editor-control">
+                    <label for="avatarEditorZoom">Zoom</label>
+                    <input type="range" id="avatarEditorZoom" min="100" max="300" value="100">
+                </div>
+                <div class="avatar-editor-control">
+                    <label for="avatarEditorOffsetX">Horizontal</label>
+                    <input type="range" id="avatarEditorOffsetX" min="-100" max="100" value="0">
+                </div>
+                <div class="avatar-editor-control">
+                    <label for="avatarEditorOffsetY">Vertical</label>
+                    <input type="range" id="avatarEditorOffsetY" min="-100" max="100" value="0">
+                </div>
+            </div>
+        </div>
+        <div class="modal-footer avatar-editor-footer">
+            <button type="button" class="btn-link-sm avatar-editor-cancel" onclick="PerfilModulo.cancelarEdicaoFoto()">Cancelar</button>
+            <button type="button" class="btn-primary-perfil" id="avatarEditorApplyBtn">Aplicar enquadramento</button>
+        </div>
     </div>
 </div>

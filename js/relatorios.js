@@ -88,6 +88,7 @@ export const RelatoriosModulo = {
         const refresh = () => {
             this.gerarGraficoComparativo();
             this.renderizarResumo();
+            this.renderizarRanking();
             this.atualizarControleOcultarMeses();
         };
 
@@ -195,36 +196,64 @@ export const RelatoriosModulo = {
         const container = document.getElementById('resumoPeriodoContainer');
         if (!container) return;
 
-        const totalGeral = this.despesas.reduce((acc, d) => acc + parseFloat(d.valor), 0);
-        const mediaDiaria = totalGeral > 0 ? totalGeral / 30 : 0;
-        
-        const economiaSimulada = 1750.00; 
-        const porcentagemEconomia = 29;
+        const selectedYear = this.getSelectedYear();
+        const despesasAno = this.getDespesasPorAno(selectedYear);
+        const limiteMensal = parseFloat(localStorage.getItem('budget_total')) || 0;
+        const mesReferencia = this.getMesReferenciaResumo(selectedYear, despesasAno);
+        const contextoResumo = this.getContextoResumo(selectedYear, mesReferencia);
 
-        // Limpo de estilos inline, usando agora as classes resumo-item, resumo-label, etc.
+        const despesasMes = despesasAno.filter((despesa) => {
+            const parsed = this.parseDate(despesa.data);
+            return parsed && parsed.month === mesReferencia;
+        });
+
+        const totalMes = despesasMes.reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
+        const economiaMes = limiteMensal - totalMes;
+        const percentualEconomia = limiteMensal > 0
+            ? Math.round((Math.abs(economiaMes) / limiteMensal) * 100)
+            : 0;
+
+        const mediaDiariaDados = this.calcularMediaDiaria(selectedYear, despesasAno);
+        const diaMaisGasto = this.calcularDiaMaisGasto(despesasAno);
+        const categoriaEmAlta = this.calcularCategoriaEmAlta(selectedYear, mesReferencia);
+
+        const economiaInfo = limiteMensal <= 0
+            ? `Sem orçamento definido em ${contextoResumo.label}`
+            : economiaMes >= 0
+                ? `${percentualEconomia}% do orçamento livre em ${contextoResumo.label}`
+                : `${percentualEconomia}% acima do orçamento em ${contextoResumo.label}`;
+
+        const diaMaisGastoValor = diaMaisGasto ? formatarMoeda(diaMaisGasto.total) : 'R$ 0,00';
+        const diaMaisGastoInfo = diaMaisGasto
+            ? `${diaMaisGasto.dataLabel} - ${diaMaisGasto.weekday}`
+            : `Sem despesas registradas em ${selectedYear}`;
+
+        const categoriaAltaTitulo = categoriaEmAlta?.categoria || 'Sem dados';
+        const categoriaAltaInfo = categoriaEmAlta?.descricao || `Sem comparação disponível em ${contextoResumo.label}`;
+
         container.innerHTML = `
             <div class="resumo-item">
                 <span class="resumo-label">Economia do Mês</span>
-                <h3 class="resumo-value">${formatarMoeda(economiaSimulada)}</h3>
-                <p class="resumo-info">${porcentagemEconomia}% do orçamento</p>
+                <h3 class="resumo-value">${formatarMoeda(economiaMes)}</h3>
+                <p class="resumo-info">${economiaInfo}</p>
             </div>
 
             <div class="resumo-item">
                 <span class="resumo-label">Média Diária</span>
-                <h3 class="resumo-value">${formatarMoeda(mediaDiaria)}</h3>
-                <p class="resumo-info">Últimos 30 dias</p>
+                <h3 class="resumo-value">${formatarMoeda(mediaDiariaDados.media)}</h3>
+                <p class="resumo-info">${mediaDiariaDados.descricao}</p>
             </div>
 
             <div class="resumo-item">
                 <span class="resumo-label">Dia com Mais Gasto</span>
-                <h3 class="resumo-value">R$ 620,00</h3>
-                <p class="resumo-info">12/03 - Sexta-feira</p>
+                <h3 class="resumo-value">${diaMaisGastoValor}</h3>
+                <p class="resumo-info">${diaMaisGastoInfo}</p>
             </div>
 
             <div class="resumo-item">
                 <span class="resumo-label">Categoria em Alta</span>
-                <h3 class="resumo-value">Transporte</h3>
-                <p class="resumo-info highlight">↑ 34% em relação a fev</p>
+                <h3 class="resumo-value">${categoriaAltaTitulo}</h3>
+                <p class="resumo-info ${categoriaEmAlta?.emAlta ? 'highlight' : ''}">${categoriaAltaInfo}</p>
             </div>
         `;
     },
@@ -372,7 +401,7 @@ export const RelatoriosModulo = {
         const container = document.getElementById('rankingGastosContainer');
         if (!container) return;
 
-        const ranking = [...this.despesas]
+        const ranking = [...this.getDespesasPorAno(this.getSelectedYear())]
             .sort((a, b) => parseFloat(b.valor) - parseFloat(a.valor))
             .slice(0, 5);
 
@@ -467,5 +496,169 @@ export const RelatoriosModulo = {
             minimumFractionDigits: 0,
             maximumFractionDigits: 0
         });
+    },
+
+    getSelectedYear() {
+        const yearSelect = document.getElementById('reportYear');
+        return yearSelect ? Number(yearSelect.value) : new Date().getFullYear();
+    },
+
+    getDespesasPorAno(year) {
+        return this.despesas.filter((despesa) => {
+            const parsed = this.parseDate(despesa.data);
+            return parsed && parsed.year === year;
+        });
+    },
+
+    getMesReferenciaResumo(selectedYear, despesasAno) {
+        const hoje = new Date();
+
+        if (selectedYear === hoje.getFullYear()) {
+            return hoje.getMonth() + 1;
+        }
+
+        const mesesComDados = despesasAno
+            .map((despesa) => this.parseDate(despesa.data))
+            .filter(Boolean)
+            .map((parsed) => parsed.month);
+
+        if (!mesesComDados.length) {
+            return 1;
+        }
+
+        return Math.max(...mesesComDados);
+    },
+
+    getContextoResumo(year, month) {
+        const monthName = this.monthNames[month - 1] || 'Mês';
+        return {
+            year,
+            month,
+            label: `${monthName} de ${year}`,
+            shortMonth: monthName.slice(0, 3).toLowerCase()
+        };
+    },
+
+    calcularMediaDiaria(selectedYear, despesasAno) {
+        if (!despesasAno.length) {
+            return {
+                media: 0,
+                descricao: `Sem despesas nos últimos 30 dias de ${selectedYear}`
+            };
+        }
+
+        const datasOrdenadas = despesasAno
+            .map((despesa) => this.parseDateToObject(despesa.data))
+            .filter(Boolean)
+            .sort((a, b) => a - b);
+
+        const dataFinal = selectedYear === new Date().getFullYear()
+            ? new Date()
+            : datasOrdenadas[datasOrdenadas.length - 1];
+
+        const inicioJanela = new Date(dataFinal);
+        inicioJanela.setHours(0, 0, 0, 0);
+        inicioJanela.setDate(inicioJanela.getDate() - 29);
+
+        const totalJanela = despesasAno.reduce((acc, despesa) => {
+            const data = this.parseDateToObject(despesa.data);
+            if (!data) return acc;
+            if (data < inicioJanela || data > dataFinal) return acc;
+            return acc + (parseFloat(despesa.valor) || 0);
+        }, 0);
+
+        return {
+            media: totalJanela / 30,
+            descricao: `Últimos 30 dias até ${this.formatDate(dataFinal)}`
+        };
+    },
+
+    calcularDiaMaisGasto(despesasAno) {
+        if (!despesasAno.length) return null;
+
+        const totaisPorDia = despesasAno.reduce((acc, despesa) => {
+            const parsed = this.parseDate(despesa.data);
+            if (!parsed) return acc;
+            const chave = `${String(parsed.day).padStart(2, '0')}/${String(parsed.month).padStart(2, '0')}/${parsed.year}`;
+            acc[chave] = (acc[chave] || 0) + (parseFloat(despesa.valor) || 0);
+            return acc;
+        }, {});
+
+        const [dataLabel, total] = Object.entries(totaisPorDia)
+            .sort((a, b) => b[1] - a[1])[0] || [];
+
+        if (!dataLabel) return null;
+
+        const data = this.parseDateToObject(dataLabel);
+
+        return {
+            dataLabel,
+            total,
+            weekday: data
+                ? new Intl.DateTimeFormat('pt-BR', { weekday: 'long' }).format(data)
+                    .replace(/^./, (char) => char.toUpperCase())
+                : ''
+        };
+    },
+
+    calcularCategoriaEmAlta(selectedYear, mesReferencia) {
+        const contextoAtual = { year: selectedYear, month: mesReferencia };
+        const contextoAnterior = mesReferencia === 1
+            ? { year: selectedYear - 1, month: 12 }
+            : { year: selectedYear, month: mesReferencia - 1 };
+
+        const totaisAtuais = this.agruparTotaisCategoriaPorMes(contextoAtual.year, contextoAtual.month);
+        const totaisAnteriores = this.agruparTotaisCategoriaPorMes(contextoAnterior.year, contextoAnterior.month);
+        const categoriasAtuais = Object.entries(totaisAtuais);
+
+        if (!categoriasAtuais.length) {
+            return null;
+        }
+
+        const crescimento = categoriasAtuais
+            .map(([categoria, totalAtual]) => {
+                const totalAnterior = totaisAnteriores[categoria] || 0;
+                if (totalAnterior <= 0 || totalAtual <= totalAnterior) return null;
+                return {
+                    categoria,
+                    emAlta: true,
+                    percentual: Math.round(((totalAtual - totalAnterior) / totalAnterior) * 100),
+                    descricao: `↑ ${Math.round(((totalAtual - totalAnterior) / totalAnterior) * 100)}% em relação a ${this.monthNames[contextoAnterior.month - 1].slice(0, 3).toLowerCase()}`
+                };
+            })
+            .filter(Boolean)
+            .sort((a, b) => b.percentual - a.percentual);
+
+        if (crescimento.length) {
+            return crescimento[0];
+        }
+
+        const [categoriaTop] = categoriasAtuais.sort((a, b) => b[1] - a[1])[0];
+        return {
+            categoria: categoriaTop,
+            emAlta: false,
+            descricao: `Maior volume em ${this.monthNames[mesReferencia - 1].slice(0, 3).toLowerCase()}`
+        };
+    },
+
+    agruparTotaisCategoriaPorMes(year, month) {
+        return this.despesas.reduce((acc, despesa) => {
+            const parsed = this.parseDate(despesa.data);
+            if (!parsed || parsed.year !== year || parsed.month !== month) return acc;
+            const categoria = despesa.categoria || 'Outros';
+            acc[categoria] = (acc[categoria] || 0) + (parseFloat(despesa.valor) || 0);
+            return acc;
+        }, {});
+    },
+
+    parseDateToObject(dateString) {
+        const parsed = this.parseDate(dateString);
+        if (!parsed) return null;
+        return new Date(parsed.year, parsed.month - 1, parsed.day, 12, 0, 0, 0);
+    },
+
+    formatDate(date) {
+        if (!(date instanceof Date) || Number.isNaN(date.getTime())) return '--/--/----';
+        return new Intl.DateTimeFormat('pt-BR').format(date);
     }
 };
