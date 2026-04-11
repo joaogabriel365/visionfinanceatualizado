@@ -19,8 +19,10 @@ export const ConfiguracoesModulo = {
         this.checkAlertaOrcamentoMeta = document.getElementById('checkAlertaOrcamentoMeta');
         this.checkLembreteMetas = document.getElementById('checkLembreteMetas');
         this.selectMoeda = document.getElementById('selectMoeda');
+        this.selectCorTema = document.getElementById('selectCorTema');
         this.selectDiaVirada = document.getElementById('selectDiaVirada');
         this.checkTemaEscuro = document.getElementById('checkTemaEscuro');
+        this.btnAbrirTutorial = document.getElementById('btnAbrirTutorial');
     },
 
     bindEvents: function() {
@@ -38,6 +40,14 @@ export const ConfiguracoesModulo = {
         this.checkTemaEscuro.addEventListener('change', (e) => {
             this.toggleTheme(e.target.checked);
         });
+
+        if (this.btnAbrirTutorial) {
+            this.btnAbrirTutorial.addEventListener('click', () => {
+                window.dispatchEvent(new CustomEvent('visionFinance:openTutorial', {
+                    detail: { startStep: 0 }
+                }));
+            });
+        }
     },
 
     toggleNotificacoes: function(isEnabled) {
@@ -116,6 +126,7 @@ export const ConfiguracoesModulo = {
     saveSettings: function() {
         const settings = {
             moeda: this.selectMoeda.value,
+            corTema: this.selectCorTema?.value || 'azul',
             diaViradaMes: Number(this.selectDiaVirada?.value || 1),
             temaEscuro: this.checkTemaEscuro.checked,
             notificacoes: {
@@ -141,6 +152,7 @@ export const ConfiguracoesModulo = {
 
         if (saved) {
             this.selectMoeda.value = saved.moeda || 'BRL';
+            if (this.selectCorTema) this.selectCorTema.value = saved.corTema || 'azul';
             if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
             this.checkTemaEscuro.checked = saved.temaEscuro === true;
             this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;

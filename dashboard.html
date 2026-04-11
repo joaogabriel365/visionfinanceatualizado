@@ -73,6 +73,39 @@
         </div>
     </div>
 
+    <div id="tutorialOverlay" class="tutorial-overlay" hidden aria-hidden="true">
+        <div class="tutorial-backdrop"></div>
+        <section class="tutorial-dialog" role="dialog" aria-modal="true" aria-labelledby="tutorialTitle" aria-describedby="tutorialDescription">
+            <header class="tutorial-header">
+                <div>
+                    <span class="tutorial-eyebrow">Primeiros passos</span>
+                    <h2 id="tutorialTitle">Conheça o Vision Finance</h2>
+                    <p id="tutorialDescription">Um resumo rápido das áreas principais e das suas preferências iniciais.</p>
+                </div>
+                <div class="tutorial-progress-wrap">
+                    <span id="tutorialStepCounter" class="tutorial-step-counter">Passo 1 de 8</span>
+                    <div class="tutorial-progress-bar" aria-hidden="true">
+                        <span id="tutorialProgressFill"></span>
+                    </div>
+                </div>
+            </header>
+
+            <div class="tutorial-body">
+                <div id="tutorialContent" class="tutorial-content"></div>
+            </div>
+
+            <footer class="tutorial-footer">
+                <div class="tutorial-footer-actions tutorial-footer-actions-left">
+                    <button id="tutorialPrevBtn" type="button" class="tutorial-secondary-btn" hidden>Anterior</button>
+                    <button id="tutorialLaterBtn" type="button" class="tutorial-secondary-btn">Talvez mais tarde</button>
+                </div>
+                <div class="tutorial-footer-actions tutorial-footer-actions-right">
+                    <button id="tutorialNextBtn" type="button" class="tutorial-primary-btn">Próximo</button>
+                </div>
+            </footer>
+        </section>
+    </div>
+
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <script src="js/dashboard.bundle.js"></script>
 </body>

@@ -185,6 +185,8 @@ function handleAuthRedirect(form) {
         btn.disabled = true;
     }
 
+    sessionStorage.setItem('visionFinance_justLoggedIn', 'true');
+
     setTimeout(() => {
         window.location.href = 'dashboard.html';
     }, 1000);
@@ -200,6 +202,22 @@ function updateLandingThemeToggle() {
     const isDark = getStoredThemeSettings().temaEscuro === true;
     themeToggleLanding.setAttribute('aria-pressed', String(isDark));
     themeToggleLanding.title = isDark ? 'Ativar modo claro' : 'Ativar modo escuro';
+}
+
+function applyLandingTheme() {
+    const settings = getStoredThemeSettings();
+    const isDark = settings.temaEscuro === true;
+    const colorTheme = settings.corTema || 'azul';
+
+    document.body.dataset.theme = isDark ? 'dark' : 'light';
+    document.body.dataset.colorTheme = colorTheme;
+    document.body.classList.toggle('dark-theme', isDark);
+    document.body.classList.toggle('light-theme', !isDark);
+
+    const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+    if (themeColorMeta) {
+        themeColorMeta.setAttribute('content', isDark ? '#050a0f' : '#084ca0');
+    }
 }
 
 function toggleLandingTheme() {
@@ -246,9 +264,11 @@ window.addEventListener('resize', () => {
 });
 
 window.addEventListener('settingsUpdated', () => {
+    applyLandingTheme();
     updateLandingThemeToggle();
 });
 
+applyLandingTheme();
 updateLandingThemeToggle();
 
 // --- EVENTOS DE CLIQUE ---

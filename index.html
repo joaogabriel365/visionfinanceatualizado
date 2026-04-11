@@ -313,9 +313,11 @@
         function aplicarTema() {
             const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
             const isDark = settings.temaEscuro === true;
+            const colorTheme = settings.corTema || 'azul';
             const body = document.body;
 
             body.dataset.theme = isDark ? 'dark' : 'light';
+            body.dataset.colorTheme = colorTheme;
             body.classList.toggle('dark-theme', isDark);
             body.classList.toggle('light-theme', !isDark);
         }

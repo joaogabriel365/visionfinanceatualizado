@@ -21,6 +21,18 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-group">
+                <label for="selectCorTema" class="form-label">Cor do tema</label>
+                <select id="selectCorTema" class="select">
+                    <option value="azul">Azul</option>
+                    <option value="dourado">Dourado</option>
+                    <option value="oceano">Oceano</option>
+                    <option value="grafite">Grafite</option>
+                    <option value="aurora">Aurora</option>
+                    <option value="terracota">Terracota</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="selectDiaVirada" class="form-label">Dia da virada do ciclo</label>
                 <select id="selectDiaVirada" class="select">
                     <option value="1">Dia 1</option>
@@ -98,6 +110,7 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnAbrirTutorial">Ver tutorial novamente</button>
                 <button type="submit" class="btn btn-primary">Salvar Configurações</button>
             </div>
         </form>

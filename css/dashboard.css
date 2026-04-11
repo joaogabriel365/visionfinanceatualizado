@@ -6,3 +6,1051 @@
 @import "./relatorios.css";
 @import "./perfil.css";
 @import "./configuracoes.css";
+
+.tutorial-overlay {
+	position: fixed;
+	inset: 0;
+	z-index: 4000;
+	display: grid;
+	place-items: center;
+	padding: 14px;
+	overflow: auto;
+}
+
+.tutorial-overlay[hidden] {
+	display: none;
+}
+
+.tutorial-backdrop {
+	position: absolute;
+	inset: 0;
+	background:
+		radial-gradient(circle at top left, rgba(var(--accent-rgb), 0.22), transparent 28%),
+		radial-gradient(circle at bottom right, rgba(var(--accent-rgb), 0.12), transparent 24%),
+		rgba(15, 23, 42, 0.6);
+	backdrop-filter: blur(18px);
+}
+
+.tutorial-dialog {
+	position: relative;
+	width: min(100%, 1140px);
+	height: min(92dvh, 940px);
+	max-height: calc(100dvh - 12px);
+	display: grid;
+	grid-template-rows: auto 1fr auto;
+	gap: 18px;
+	padding: 24px;
+	border-radius: 28px;
+	background: linear-gradient(180deg, color-mix(in srgb, var(--modal-bg) 94%, white 6%) 0%, var(--modal-bg) 100%);
+	border: 1px solid rgba(var(--accent-rgb), 0.18);
+	box-shadow: 0 32px 80px rgba(15, 23, 42, 0.24);
+	overflow: hidden;
+}
+
+.tutorial-dialog::before {
+	content: "";
+	position: absolute;
+	top: -120px;
+	right: -120px;
+	width: 280px;
+	height: 280px;
+	border-radius: 50%;
+	background: radial-gradient(circle, rgba(var(--accent-rgb), 0.18), transparent 66%);
+	pointer-events: none;
+}
+
+.tutorial-header,
+.tutorial-footer {
+	position: relative;
+	z-index: 1;
+}
+
+.tutorial-header {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	align-items: flex-start;
+}
+
+.tutorial-eyebrow {
+	display: inline-flex;
+	padding: 6px 12px;
+	border-radius: 999px;
+	background: rgba(var(--accent-rgb), 0.12);
+	color: var(--accent);
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.08em;
+	text-transform: uppercase;
+	margin-bottom: 10px;
+}
+
+.tutorial-header h2 {
+	font-size: clamp(1.6rem, 2.6vw, 2.35rem);
+	line-height: 1.05;
+	margin-bottom: 6px;
+}
+
+.tutorial-header p {
+	max-width: 560px;
+	color: var(--text-secondary);
+	font-size: 0.98rem;
+}
+
+.tutorial-progress-wrap {
+	min-width: 180px;
+	display: grid;
+	gap: 10px;
+}
+
+.tutorial-step-counter {
+	text-align: right;
+	color: var(--text-secondary);
+	font-weight: 700;
+}
+
+.tutorial-progress-bar {
+	width: 100%;
+	height: 10px;
+	border-radius: 999px;
+	background: rgba(var(--accent-rgb), 0.12);
+	overflow: hidden;
+}
+
+.tutorial-progress-bar span {
+	display: block;
+	width: 12.5%;
+	height: 100%;
+	border-radius: inherit;
+	background: linear-gradient(90deg, var(--accent), color-mix(in srgb, var(--accent) 72%, white 28%));
+	transition: width 0.32s ease;
+}
+
+.tutorial-body {
+	position: relative;
+	z-index: 1;
+	min-height: 0;
+	overflow-y: auto;
+	overscroll-behavior: contain;
+	padding-right: 6px;
+}
+
+.tutorial-content {
+	height: 100%;
+	display: grid;
+	min-height: 0;
+	animation: tutorialFadeIn 0.28s ease;
+}
+
+.tutorial-intro-page {
+	display: grid;
+	min-height: 100%;
+	place-items: center;
+}
+
+.tutorial-intro-card {
+	width: min(100%, 920px);
+	display: grid;
+	gap: 14px;
+	padding: 34px;
+	min-height: 360px;
+	border-radius: 28px;
+	border: 1px solid rgba(var(--accent-rgb), 0.16);
+	background:
+		radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.14), transparent 32%),
+		linear-gradient(135deg, color-mix(in srgb, var(--card-bg-alt) 88%, white 12%), var(--card-bg));
+	box-shadow: 0 24px 56px rgba(15, 23, 42, 0.14);
+}
+
+.tutorial-intro-card h3 {
+	font-size: clamp(1.8rem, 3vw, 2.6rem);
+	line-height: 1.05;
+}
+
+.tutorial-intro-card > p {
+	font-size: 1rem;
+	color: var(--text-secondary);
+	max-width: 60ch;
+}
+
+.tutorial-intro-points {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 10px;
+	margin-top: 2px;
+}
+
+.tutorial-intro-point {
+	display: grid;
+	gap: 6px;
+	padding: 14px;
+	border-radius: 20px;
+	background: rgba(var(--accent-rgb), 0.08);
+	border: 1px solid rgba(var(--accent-rgb), 0.12);
+}
+
+.tutorial-intro-point strong {
+	font-size: 0.94rem;
+	color: var(--text-primary);
+}
+
+.tutorial-intro-point span {
+	color: var(--text-secondary);
+	line-height: 1.45;
+	font-size: 0.9rem;
+}
+
+.tutorial-page {
+	display: grid;
+	grid-template-columns: 1fr;
+	grid-template-rows: auto 1fr;
+	gap: 10px;
+	min-height: 100%;
+	align-items: start;
+}
+
+.tutorial-visual,
+.tutorial-copy,
+.tutorial-config-panel,
+.tutorial-config-summary {
+	border-radius: 24px;
+	border: 1px solid var(--border-color);
+	background: color-mix(in srgb, var(--card-bg) 92%, white 8%);
+	box-shadow: var(--shadow-soft);
+}
+
+.tutorial-visual {
+	position: relative;
+	overflow: hidden;
+	min-height: 360px;
+	padding: 14px;
+	display: grid;
+	place-items: center;
+	background:
+		linear-gradient(180deg, rgba(var(--accent-rgb), 0.08), transparent 52%),
+		linear-gradient(135deg, color-mix(in srgb, var(--card-bg-alt) 88%, white 12%), var(--card-bg));
+}
+
+.tutorial-visual::before,
+.tutorial-visual::after {
+	content: "";
+	position: absolute;
+	border-radius: 24px;
+	border: 1px dashed rgba(var(--accent-rgb), 0.24);
+}
+
+.tutorial-visual::before {
+	inset: 24px 24px auto auto;
+	width: 120px;
+	height: 120px;
+}
+
+.tutorial-visual::after {
+	inset: auto auto 28px 24px;
+	width: 180px;
+	height: 90px;
+}
+
+.tutorial-placeholder {
+	position: relative;
+	z-index: 1;
+	width: min(100%, 760px);
+	height: 100%;
+	display: grid;
+	align-content: center;
+	gap: 12px;
+	justify-items: start;
+}
+
+.tutorial-icon-badge {
+	width: 72px;
+	height: 72px;
+	display: grid;
+	place-items: center;
+	border-radius: 22px;
+	background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.16), rgba(var(--accent-rgb), 0.32));
+	color: var(--accent);
+	font-size: 1.8rem;
+	font-weight: 800;
+}
+
+.tutorial-placeholder-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 10px;
+}
+
+.tutorial-placeholder-meta-floating {
+	position: absolute;
+	left: 18px;
+	right: 18px;
+	bottom: 18px;
+	z-index: 2;
+}
+
+.tutorial-placeholder-meta span {
+	padding: 8px 12px;
+	border-radius: 999px;
+	background: rgba(var(--accent-rgb), 0.1);
+	color: var(--text-secondary);
+	font-size: 0.82rem;
+	font-weight: 700;
+}
+
+.tutorial-panel-frame {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	max-width: 980px;
+	aspect-ratio: 16 / 9;
+	display: grid;
+	grid-template-rows: auto 1fr;
+	padding: 0;
+	border-radius: 24px;
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.76), rgba(255, 255, 255, 0.2));
+	border: 1px solid rgba(var(--accent-rgb), 0.16);
+	box-shadow: 0 24px 54px rgba(15, 23, 42, 0.18);
+	overflow: hidden;
+}
+
+body.dark-theme .tutorial-panel-frame {
+	background: linear-gradient(180deg, rgba(15, 23, 42, 0.82), rgba(15, 23, 42, 0.54));
+	border-color: rgba(255, 255, 255, 0.08);
+	box-shadow: 0 28px 60px rgba(0, 0, 0, 0.34);
+}
+
+.tutorial-panel-frame::before {
+	content: "";
+	position: absolute;
+	inset: 14px;
+	border-radius: 18px;
+	border: 1px solid rgba(var(--accent-rgb), 0.12);
+	pointer-events: none;
+}
+
+.tutorial-panel-toolbar {
+	position: relative;
+	z-index: 1;
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 10px 14px;
+	background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.08), rgba(var(--accent-rgb), 0.02));
+	border-bottom: 1px solid rgba(var(--accent-rgb), 0.12);
+}
+
+.tutorial-panel-dots {
+	display: flex;
+	gap: 6px;
+}
+
+.tutorial-panel-dots span {
+	width: 10px;
+	height: 10px;
+	border-radius: 50%;
+	background: rgba(var(--accent-rgb), 0.26);
+}
+
+.tutorial-panel-dots span:nth-child(1) {
+	background: rgba(239, 68, 68, 0.8);
+}
+
+.tutorial-panel-dots span:nth-child(2) {
+	background: rgba(245, 158, 11, 0.8);
+}
+
+.tutorial-panel-dots span:nth-child(3) {
+	background: rgba(16, 185, 129, 0.8);
+}
+
+.tutorial-panel-toolbar-label {
+	font-size: 0.78rem;
+	font-weight: 700;
+	letter-spacing: 0.04em;
+	text-transform: uppercase;
+	color: var(--text-secondary);
+}
+
+.tutorial-panel-media {
+	position: relative;
+	padding: 12px 12px 58px;
+	display: grid;
+	place-items: center;
+	background:
+		radial-gradient(circle at top center, rgba(var(--accent-rgb), 0.14), transparent 48%),
+		linear-gradient(180deg, rgba(255, 255, 255, 0.1), transparent 22%);
+}
+
+.tutorial-panel-media::after {
+	content: "";
+	position: absolute;
+	inset: auto 10px 10px 10px;
+	height: 56px;
+	border-radius: 20px;
+	background: linear-gradient(180deg, rgba(15, 23, 42, 0), rgba(15, 23, 42, 0.16));
+	pointer-events: none;
+}
+
+.tutorial-panel-image {
+	position: relative;
+	z-index: 1;
+	width: 100%;
+	height: auto;
+	max-height: 100%;
+	object-fit: contain;
+	object-position: center top;
+	border-radius: 18px;
+	border: 1px solid rgba(var(--accent-rgb), 0.12);
+	box-shadow: 0 18px 36px rgba(15, 23, 42, 0.18);
+	background: rgba(255, 255, 255, 0.72);
+}
+
+body.dark-theme .tutorial-panel-image {
+	background: rgba(2, 6, 23, 0.82);
+	box-shadow: 0 20px 38px rgba(0, 0, 0, 0.34);
+}
+
+.tutorial-panel-frame .tutorial-placeholder-meta-floating span {
+	background: rgba(15, 23, 42, 0.56);
+	color: #f8fafc;
+	border: 1px solid rgba(255, 255, 255, 0.14);
+	backdrop-filter: blur(8px);
+}
+
+.tutorial-copy {
+	padding: 16px 18px;
+	display: grid;
+	align-content: start;
+	gap: 10px;
+}
+
+.tutorial-copy h3,
+.tutorial-config-panel h3,
+.tutorial-config-summary h3 {
+	font-size: clamp(1.35rem, 1.9vw, 1.9rem);
+}
+
+.tutorial-copy p,
+.tutorial-config-summary p {
+	color: var(--text-secondary);
+	font-size: 0.92rem;
+}
+
+.tutorial-feature-list {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 10px;
+}
+
+.tutorial-feature-item {
+	display: flex;
+	gap: 12px;
+	align-items: flex-start;
+	padding: 10px 12px;
+	border-radius: 18px;
+	background: rgba(var(--accent-rgb), 0.08);
+}
+
+.tutorial-feature-item span:last-child {
+	font-size: 0.92rem;
+	line-height: 1.45;
+}
+
+.tutorial-feature-item strong {
+	display: block;
+	margin-bottom: 4px;
+}
+
+.tutorial-feature-dot {
+	flex: 0 0 12px;
+	width: 12px;
+	height: 12px;
+	border-radius: 50%;
+	margin-top: 7px;
+	background: var(--accent);
+	box-shadow: 0 0 0 6px rgba(var(--accent-rgb), 0.14);
+}
+
+.tutorial-config-page {
+	display: grid;
+	grid-template-columns: 1fr;
+	gap: 0;
+}
+
+.tutorial-config-panel,
+.tutorial-config-summary {
+	padding: 18px;
+}
+
+.tutorial-config-panel-full {
+	min-height: 100%;
+	display: grid;
+	align-content: start;
+	gap: 10px;
+}
+
+.tutorial-config-layout {
+	display: grid;
+	grid-template-columns: minmax(0, 1.15fr) minmax(280px, 0.85fr);
+	gap: 14px;
+	margin-top: 6px;
+}
+
+.tutorial-config-stack {
+	display: grid;
+	gap: 10px;
+}
+
+.tutorial-config-card,
+.tutorial-config-summary-card {
+	display: grid;
+	gap: 10px;
+	padding: 14px;
+	border-radius: 18px;
+	border: 1px solid rgba(var(--accent-rgb), 0.12);
+	background: rgba(var(--accent-rgb), 0.05);
+	box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03);
+}
+
+.tutorial-config-card-header {
+	display: grid;
+	gap: 2px;
+}
+
+.tutorial-config-card-header strong,
+.tutorial-config-summary-card h4 {
+	font-size: 1rem;
+	color: var(--text-primary);
+}
+
+.tutorial-config-card-header span,
+.tutorial-config-summary-card p {
+	font-size: 0.86rem;
+	color: var(--text-secondary);
+	line-height: 1.45;
+}
+
+.tutorial-config-aside {
+	display: grid;
+}
+
+.tutorial-config-summary-card {
+	align-content: start;
+	background:
+		radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.12), transparent 34%),
+		rgba(var(--accent-rgb), 0.05);
+}
+
+.tutorial-form-grid {
+	display: grid;
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px 10px;
+	margin-top: 8px;
+}
+
+.tutorial-form-grid-basic {
+	margin-top: 0;
+}
+
+.tutorial-field {
+	display: grid;
+	gap: 6px;
+}
+
+.tutorial-field-full {
+	grid-column: 1 / -1;
+}
+
+.tutorial-field label,
+.tutorial-toggle-group > span {
+	font-size: 0.84rem;
+	font-weight: 700;
+	color: var(--text-primary);
+}
+
+.tutorial-field select {
+	width: 100%;
+	min-height: 42px;
+	border-radius: 12px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-surface);
+	color: var(--text-primary);
+	padding: 0 12px;
+	font-size: 0.9rem;
+}
+
+.tutorial-choice-grid {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.tutorial-choice-grid-compact {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+.tutorial-choice-btn {
+	min-height: 40px;
+	border-radius: 12px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-surface);
+	color: var(--text-primary);
+	font-size: 0.84rem;
+	font-weight: 700;
+	text-transform: none;
+	letter-spacing: normal;
+	box-shadow: none;
+	padding: 0 10px;
+}
+
+.tutorial-choice-btn.is-active {
+	border-color: rgba(var(--accent-rgb), 0.42);
+	background: rgba(var(--accent-rgb), 0.14);
+	color: var(--accent);
+}
+
+.tutorial-toggle-group {
+	display: grid;
+	gap: 6px;
+}
+
+.tutorial-toggle-list {
+	display: grid;
+	grid-template-columns: repeat(4, minmax(0, 1fr));
+	gap: 6px;
+}
+
+.tutorial-toggle-list-rich {
+	grid-template-columns: repeat(2, minmax(0, 1fr));
+	gap: 8px;
+}
+
+.tutorial-toggle {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 8px 10px;
+	border-radius: 12px;
+	border: 1px solid var(--border-color);
+	background: var(--bg-surface);
+	font-size: 0.84rem;
+	font-weight: 700;
+}
+
+.tutorial-toggle-rich {
+	align-items: flex-start;
+	min-height: 72px;
+	padding: 12px;
+	gap: 10px;
+}
+
+.tutorial-toggle-rich span {
+	display: grid;
+	gap: 2px;
+}
+
+.tutorial-toggle-rich strong {
+	font-size: 0.92rem;
+	color: var(--text-primary);
+}
+
+.tutorial-toggle-rich small {
+	font-size: 0.78rem;
+	line-height: 1.35;
+	color: var(--text-secondary);
+}
+
+.tutorial-toggle input {
+	width: 16px;
+	height: 16px;
+	accent-color: var(--accent);
+}
+
+.tutorial-summary-strip {
+	display: grid;
+	grid-template-columns: repeat(3, minmax(0, 1fr));
+	gap: 8px;
+	margin-top: 2px;
+}
+
+.tutorial-summary-chip {
+	display: grid;
+	gap: 3px;
+	padding: 10px 12px;
+	border-radius: 12px;
+	background: rgba(var(--accent-rgb), 0.08);
+	border: 1px solid rgba(var(--accent-rgb), 0.12);
+}
+
+.tutorial-summary-chip strong {
+	font-size: 0.76rem;
+	text-transform: uppercase;
+	letter-spacing: 0.04em;
+	color: var(--text-secondary);
+}
+
+.tutorial-summary-chip span {
+	font-size: 0.88rem;
+	font-weight: 700;
+	color: var(--text-primary);
+	white-space: normal;
+	overflow: visible;
+	text-overflow: clip;
+	line-height: 1.3;
+	word-break: break-word;
+}
+
+.tutorial-summary-chip-wide {
+	grid-column: span 3;
+}
+
+.tutorial-summary-list {
+	display: grid;
+	gap: 12px;
+	margin-top: 18px;
+}
+
+.tutorial-summary-list-professional {
+	gap: 8px;
+	margin-top: 2px;
+}
+
+.tutorial-summary-item {
+	display: flex;
+	justify-content: space-between;
+	gap: 12px;
+	padding: 12px 14px;
+	border-radius: 16px;
+	background: rgba(var(--accent-rgb), 0.08);
+}
+
+.tutorial-summary-item strong {
+	font-size: 0.92rem;
+	font-weight: 800;
+	color: var(--text-primary);
+	text-align: right;
+}
+
+.tutorial-summary-item-stack {
+	align-items: flex-start;
+}
+
+.tutorial-summary-item-stack strong {
+	max-width: 60%;
+	line-height: 1.35;
+}
+
+.tutorial-summary-item span:last-child {
+	font-weight: 700;
+	color: var(--accent);
+}
+
+.tutorial-footer {
+	display: flex;
+	justify-content: space-between;
+	gap: 16px;
+	align-items: center;
+	padding-top: 10px;
+	border-top: 1px solid rgba(var(--accent-rgb), 0.12);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0), color-mix(in srgb, var(--modal-bg) 92%, white 8%) 30%);
+}
+
+.tutorial-footer-actions {
+	display: flex;
+	align-items: center;
+	gap: 12px;
+	flex-wrap: wrap;
+}
+
+.tutorial-footer-actions-right {
+	margin-left: auto;
+}
+
+.tutorial-footer-actions-left .tutorial-secondary-btn[hidden],
+.tutorial-footer-actions-right .tutorial-primary-btn[hidden],
+.tutorial-footer-actions-left .tutorial-primary-btn[hidden],
+.tutorial-footer-actions-right .tutorial-secondary-btn[hidden] {
+	display: none;
+}
+
+.tutorial-primary-btn,
+.tutorial-secondary-btn {
+	min-height: 46px;
+	padding: 0 20px;
+	border-radius: 14px;
+	font-size: 0.9rem;
+}
+
+.tutorial-primary-btn {
+	background: linear-gradient(135deg, var(--accent), color-mix(in srgb, var(--accent) 75%, white 25%));
+	color: var(--text-on-accent);
+	margin-left: auto;
+}
+
+.tutorial-secondary-btn {
+	background: transparent;
+	color: var(--text-secondary);
+	border: 1px solid var(--border-color);
+	box-shadow: none;
+}
+
+body.dashboard-tutorial-open {
+	overflow: hidden;
+}
+
+@keyframes tutorialFadeIn {
+	from {
+		opacity: 0;
+		transform: translateY(10px);
+	}
+
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (max-width: 900px) {
+	.tutorial-overlay {
+		padding: 10px;
+	}
+
+	.tutorial-dialog {
+		gap: 14px;
+		padding: 18px;
+		height: calc(100dvh - 8px);
+		max-height: calc(100dvh - 8px);
+	}
+
+	.tutorial-header,
+	.tutorial-page,
+	.tutorial-config-page,
+	.tutorial-footer {
+		grid-template-columns: 1fr;
+		display: grid;
+	}
+
+	.tutorial-visual {
+		min-height: 300px;
+	}
+
+	.tutorial-step-counter {
+		text-align: left;
+	}
+
+	.tutorial-intro-points {
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-config-layout {
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-form-grid,
+	.tutorial-summary-strip {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-feature-list {
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-toggle-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-toggle-list-rich {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-footer-actions-right {
+		margin-left: 0;
+	}
+
+	.tutorial-placeholder-meta-floating {
+		left: 14px;
+		right: 14px;
+		bottom: 14px;
+	}
+}
+
+@media (max-width: 640px) {
+	.tutorial-overlay {
+		padding: 4px;
+	}
+
+	.tutorial-dialog {
+		gap: 12px;
+		padding: 14px;
+		border-radius: 18px;
+		height: calc(100dvh - 4px);
+		max-height: calc(100dvh - 4px);
+	}
+
+	.tutorial-visual,
+	.tutorial-copy,
+	.tutorial-intro-card,
+	.tutorial-config-panel,
+	.tutorial-config-summary {
+		padding: 14px;
+		border-radius: 16px;
+	}
+
+	.tutorial-header {
+		gap: 10px;
+	}
+
+	.tutorial-header h2 {
+		font-size: clamp(1.3rem, 6vw, 1.8rem);
+	}
+
+	.tutorial-header p,
+	.tutorial-copy p,
+	.tutorial-intro-card > p,
+	.tutorial-config-summary p {
+		font-size: 0.88rem;
+	}
+
+	.tutorial-visual {
+		min-height: 220px;
+		padding: 8px;
+	}
+
+	.tutorial-panel-frame {
+		max-width: none;
+		aspect-ratio: 1.7 / 1;
+	}
+
+	.tutorial-panel-toolbar {
+		padding: 7px 9px;
+	}
+
+	.tutorial-panel-media {
+		padding: 8px 8px 52px;
+	}
+
+	.tutorial-placeholder-meta-floating {
+		position: static;
+		margin-top: 6px;
+	}
+
+	.tutorial-config-card,
+	.tutorial-config-summary-card {
+		padding: 12px;
+	}
+
+	.tutorial-form-grid,
+	.tutorial-summary-strip {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-choice-grid {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-choice-grid-compact {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-toggle-list {
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+	}
+
+	.tutorial-toggle-list-rich {
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-summary-chip-wide {
+		grid-column: span 2;
+	}
+
+	.tutorial-intro-points,
+	.tutorial-footer-actions {
+		display: grid;
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-footer {
+		display: flex;
+		flex-direction: column;
+		align-items: stretch;
+		gap: 10px;
+	}
+
+	.tutorial-footer-actions-left,
+	.tutorial-footer-actions-right {
+		width: 100%;
+	}
+
+	.tutorial-primary-btn,
+	.tutorial-secondary-btn {
+		width: 100%;
+		min-height: 42px;
+		font-size: 0.86rem;
+		padding: 0 14px;
+	}
+}
+
+@media (max-width: 420px) {
+	.tutorial-dialog {
+		padding: 12px;
+	}
+
+	.tutorial-progress-wrap {
+		min-width: 0;
+	}
+
+	.tutorial-intro-card,
+	.tutorial-copy,
+	.tutorial-config-panel,
+	.tutorial-config-summary {
+		gap: 10px;
+	}
+
+	.tutorial-intro-card {
+		padding: 24px;
+		min-height: 0;
+	}
+
+	.tutorial-feature-item,
+	.tutorial-toggle,
+	.tutorial-summary-item,
+	.tutorial-intro-point {
+		padding: 10px;
+	}
+
+	.tutorial-summary-item {
+		align-items: flex-start;
+	}
+
+	.tutorial-summary-item strong {
+		max-width: 52%;
+		text-align: right;
+	}
+
+	.tutorial-choice-btn,
+	.tutorial-field select {
+		min-height: 38px;
+		font-size: 0.8rem;
+	}
+
+	.tutorial-toggle {
+		font-size: 0.8rem;
+	}
+
+	.tutorial-summary-chip span {
+		font-size: 0.8rem;
+	}
+
+	.tutorial-choice-grid,
+	.tutorial-form-grid,
+	.tutorial-summary-strip,
+	.tutorial-toggle-list {
+		grid-template-columns: 1fr;
+	}
+
+	.tutorial-summary-chip-wide {
+		grid-column: span 1;
+	}
+}

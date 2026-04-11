@@ -4,11 +4,14 @@ const CARTEIRAS_STORAGE_KEY = 'carteiras';
 const SETTINGS_STORAGE_KEY = 'visionFinance_settings';
 const BUDGET_STORAGE_KEY = 'budget_total';
 const BUDGET_HISTORY_STORAGE_KEY = 'visionFinance_budget_history';
+export const TUTORIAL_STORAGE_KEY = 'visionFinance_tutorial';
 
 export const TURN_DAY_OPTIONS = [1, 5, 10, 15, 20, 25];
+export const COLOR_THEME_OPTIONS = ['azul', 'dourado', 'oceano', 'grafite', 'aurora', 'terracota'];
 
 const DEFAULT_SETTINGS = {
     moeda: 'BRL',
+    corTema: 'azul',
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -43,11 +46,26 @@ function normalizarSettings(settings = {}) {
     return {
         ...DEFAULT_SETTINGS,
         ...settings,
+        corTema: COLOR_THEME_OPTIONS.includes(settings?.corTema) ? settings.corTema : DEFAULT_SETTINGS.corTema,
         diaViradaMes: normalizarDiaVirada(settings?.diaViradaMes),
         notificacoes: {
             ...DEFAULT_SETTINGS.notificacoes,
             ...(settings?.notificacoes || {})
         }
+    };
+}
+
+function normalizarTutorialState(state = {}) {
+    const currentStep = Number(state?.currentStep);
+    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 8) : 0;
+
+    return {
+        completed: state?.completed === true,
+        currentStep: safeStep,
+        skipped: state?.skipped === true,
+        lastShownAt: state?.lastShownAt || null,
+        completedAt: state?.completedAt || null,
+        updatedAt: state?.updatedAt || null
     };
 }
 
@@ -426,6 +444,21 @@ export const setThemeSettings = (settings) => {
     return normalized;
 };
 
+export const getTutorialState = () => {
+    return normalizarTutorialState(lerJsonStorage(TUTORIAL_STORAGE_KEY, {}));
+};
+
+export const setTutorialState = (state) => {
+    const normalized = normalizarTutorialState({
+        ...getTutorialState(),
+        ...state,
+        updatedAt: new Date().toISOString()
+    });
+
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
+};
+
 export const setThemePreference = (isDark) => {
     const settings = getThemeSettings();
     settings.temaEscuro = isDark;
@@ -442,7 +475,10 @@ export const toggleThemePreference = () => {
 export const applyThemeClasses = (isDark, element = document.body) => {
     if (!element) return isDark;
 
+    const settings = getThemeSettings();
+
     element.dataset.theme = isDark ? 'dark' : 'light';
+    element.dataset.colorTheme = settings.corTema || DEFAULT_SETTINGS.corTema;
     element.classList.toggle('dark-theme', isDark);
     element.classList.toggle('light-theme', !isDark);
 

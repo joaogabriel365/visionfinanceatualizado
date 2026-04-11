@@ -6,9 +6,12 @@
   var SETTINGS_STORAGE_KEY = "visionFinance_settings";
   var BUDGET_STORAGE_KEY = "budget_total";
   var BUDGET_HISTORY_STORAGE_KEY = "visionFinance_budget_history";
+  var TUTORIAL_STORAGE_KEY = "visionFinance_tutorial";
   var TURN_DAY_OPTIONS = [1, 5, 10, 15, 20, 25];
+  var COLOR_THEME_OPTIONS = ["azul", "dourado", "oceano", "grafite", "aurora", "terracota"];
   var DEFAULT_SETTINGS = {
     moeda: "BRL",
+    corTema: "azul",
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -39,11 +42,24 @@
     return {
       ...DEFAULT_SETTINGS,
       ...settings,
+      corTema: COLOR_THEME_OPTIONS.includes(settings?.corTema) ? settings.corTema : DEFAULT_SETTINGS.corTema,
       diaViradaMes: normalizarDiaVirada(settings?.diaViradaMes),
       notificacoes: {
         ...DEFAULT_SETTINGS.notificacoes,
         ...settings?.notificacoes || {}
       }
+    };
+  }
+  function normalizarTutorialState(state = {}) {
+    const currentStep = Number(state?.currentStep);
+    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 8) : 0;
+    return {
+      completed: state?.completed === true,
+      currentStep: safeStep,
+      skipped: state?.skipped === true,
+      lastShownAt: state?.lastShownAt || null,
+      completedAt: state?.completedAt || null,
+      updatedAt: state?.updatedAt || null
     };
   }
   function formatIsoDate(date) {
@@ -331,6 +347,18 @@
     localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(normalized));
     return normalized;
   };
+  var getTutorialState = () => {
+    return normalizarTutorialState(lerJsonStorage(TUTORIAL_STORAGE_KEY, {}));
+  };
+  var setTutorialState = (state) => {
+    const normalized = normalizarTutorialState({
+      ...getTutorialState(),
+      ...state,
+      updatedAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    localStorage.setItem(TUTORIAL_STORAGE_KEY, JSON.stringify(normalized));
+    return normalized;
+  };
   var setThemePreference = (isDark) => {
     const settings = getThemeSettings();
     settings.temaEscuro = isDark;
@@ -344,7 +372,9 @@
   };
   var applyThemeClasses = (isDark, element = document.body) => {
     if (!element) return isDark;
+    const settings = getThemeSettings();
     element.dataset.theme = isDark ? "dark" : "light";
+    element.dataset.colorTheme = settings.corTema || DEFAULT_SETTINGS.corTema;
     element.classList.toggle("dark-theme", isDark);
     element.classList.toggle("light-theme", !isDark);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -3144,8 +3174,10 @@
       this.checkAlertaOrcamentoMeta = document.getElementById("checkAlertaOrcamentoMeta");
       this.checkLembreteMetas = document.getElementById("checkLembreteMetas");
       this.selectMoeda = document.getElementById("selectMoeda");
+      this.selectCorTema = document.getElementById("selectCorTema");
       this.selectDiaVirada = document.getElementById("selectDiaVirada");
       this.checkTemaEscuro = document.getElementById("checkTemaEscuro");
+      this.btnAbrirTutorial = document.getElementById("btnAbrirTutorial");
     },
     bindEvents: function() {
       this.form.addEventListener("submit", (e) => {
@@ -3159,6 +3191,13 @@
       this.checkTemaEscuro.addEventListener("change", (e) => {
         this.toggleTheme(e.target.checked);
       });
+      if (this.btnAbrirTutorial) {
+        this.btnAbrirTutorial.addEventListener("click", () => {
+          window.dispatchEvent(new CustomEvent("visionFinance:openTutorial", {
+            detail: { startStep: 0 }
+          }));
+        });
+      }
     },
     toggleNotificacoes: function(isEnabled) {
       if (isEnabled) {
@@ -3222,6 +3261,7 @@
     saveSettings: function() {
       const settings = {
         moeda: this.selectMoeda.value,
+        corTema: this.selectCorTema?.value || "azul",
         diaViradaMes: Number(this.selectDiaVirada?.value || 1),
         temaEscuro: this.checkTemaEscuro.checked,
         notificacoes: {
@@ -3242,6 +3282,7 @@
       const saved = getThemeSettings();
       if (saved) {
         this.selectMoeda.value = saved.moeda || "BRL";
+        if (this.selectCorTema) this.selectCorTema.value = saved.corTema || "azul";
         if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
         this.checkTemaEscuro.checked = saved.temaEscuro === true;
         this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
@@ -4117,6 +4158,18 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-group">
+                <label for="selectCorTema" class="form-label">Cor do tema</label>
+                <select id="selectCorTema" class="select">
+                    <option value="azul">Azul</option>
+                    <option value="dourado">Dourado</option>
+                    <option value="oceano">Oceano</option>
+                    <option value="grafite">Grafite</option>
+                    <option value="aurora">Aurora</option>
+                    <option value="terracota">Terracota</option>
+                </select>
+            </div>
+
+            <div class="form-group">
                 <label for="selectDiaVirada" class="form-label">Dia da virada do ciclo</label>
                 <select id="selectDiaVirada" class="select">
                     <option value="1">Dia 1</option>
@@ -4194,6 +4247,7 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-actions">
+                <button type="button" class="btn btn-secondary" id="btnAbrirTutorial">Ver tutorial novamente</button>
                 <button type="submit" class="btn btn-primary">Salvar Configura\xE7\xF5es</button>
             </div>
         </form>
@@ -4228,6 +4282,503 @@ if (window.top === window.self) {
     "configuracoes": configuracoes_default
   };
   var secaoAtiva = "painel";
+  var LOGIN_SESSION_KEY = "visionFinance_justLoggedIn";
+  var TOTAL_TUTORIAL_STEPS = 8;
+  var TUTORIAL_SECTIONS = [
+    {
+      title: "Painel",
+      subtitle: "Vis\xE3o consolidada da sua vida financeira",
+      description: "Acompanhe saldo dispon\xEDvel, distribui\xE7\xE3o dos gastos, metas e os indicadores mais importantes logo no primeiro acesso.",
+      badge: "Resumo em tempo real",
+      stat: "Indicadores e atalhos",
+      accent: "01"
+    },
+    {
+      title: "Despesas",
+      subtitle: "Registro r\xE1pido dos seus lan\xE7amentos",
+      description: "Cadastre despesas com categoria, forma de pagamento, data e observa\xE7\xF5es para manter o hist\xF3rico sempre organizado.",
+      badge: "Controle di\xE1rio",
+      stat: "Categorias e filtros",
+      accent: "02"
+    },
+    {
+      title: "Carteiras",
+      subtitle: "Gerencie contas, cart\xF5es e saldos",
+      description: "Centralize suas carteiras para visualizar limites, gastos acumulados e distribui\xE7\xE3o entre meios de pagamento.",
+      badge: "Meios de pagamento",
+      stat: "Saldo por carteira",
+      accent: "03"
+    },
+    {
+      title: "Planejamento",
+      subtitle: "Defina metas e acompanhe evolu\xE7\xE3o",
+      description: "Estabele\xE7a objetivos financeiros, acompanhe aportes por ciclo e enxergue com clareza o que falta para cada meta.",
+      badge: "Objetivos mensais",
+      stat: "Metas por ciclo",
+      accent: "04"
+    },
+    {
+      title: "Relat\xF3rios",
+      subtitle: "Leitura anal\xEDtica dos seus h\xE1bitos",
+      description: "Use gr\xE1ficos, rankings e comparativos para entender tend\xEAncias e tomar decis\xF5es melhores com base nos dados.",
+      badge: "Insights visuais",
+      stat: "Comparativos e tend\xEAncias",
+      accent: "05"
+    },
+    {
+      title: "Perfil",
+      subtitle: "Identidade e informa\xE7\xF5es da conta",
+      description: "Atualize seus dados pessoais, sua foto e os detalhes que personalizam a experi\xEAncia do seu ambiente.",
+      badge: "Dados do usu\xE1rio",
+      stat: "Personaliza\xE7\xE3o da conta",
+      accent: "06"
+    },
+    {
+      title: "Configura\xE7\xF5es",
+      subtitle: "Ajustes permanentes do sistema",
+      description: "Defina moeda, dia de virada, notifica\xE7\xF5es e apar\xEAncia para adaptar o Vision Finance \xE0 sua rotina.",
+      badge: "Prefer\xEAncias persistentes",
+      stat: "Tema e notifica\xE7\xF5es",
+      accent: "07"
+    }
+  ];
+  var TUTORIAL_COLOR_LABELS = {
+    azul: "Azul",
+    dourado: "Dourado",
+    oceano: "Oceano",
+    grafite: "Grafite",
+    aurora: "Aurora",
+    terracota: "Terracota"
+  };
+  var TUTORIAL_CURRENCY_LABELS = {
+    BRL: "Real Brasileiro",
+    USD: "D\xF3lar Americano",
+    EUR: "Euro",
+    GBP: "Libra Esterlina"
+  };
+  var tutorialElements = null;
+  var tutorialDraftSettings = null;
+  function getTutorialCurrentStep() {
+    return getTutorialState().currentStep ?? 0;
+  }
+  function escapeHtml(value = "") {
+    return String(value).replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;").replaceAll('"', "&quot;").replaceAll("'", "&#39;");
+  }
+  function getTutorialDraftSettings() {
+    if (tutorialDraftSettings) return tutorialDraftSettings;
+    const settings = getThemeSettings();
+    tutorialDraftSettings = {
+      moeda: settings.moeda || "BRL",
+      corTema: settings.corTema || "azul",
+      diaViradaMes: Number(settings.diaViradaMes || 1),
+      temaEscuro: settings.temaEscuro === true,
+      notificacoes: {
+        geral: settings.notificacoes?.geral === true,
+        orcamento: settings.notificacoes?.orcamento === true,
+        orcamentoMeta: settings.notificacoes?.orcamentoMeta === true,
+        metas: settings.notificacoes?.metas === true
+      }
+    };
+    return tutorialDraftSettings;
+  }
+  function getThemeModeLabel(isDark) {
+    return isDark ? "Escuro" : "Claro";
+  }
+  function getNotificationSummary(notificacoes = {}) {
+    const activeItems = [
+      notificacoes.geral ? "Geral" : null,
+      notificacoes.orcamento ? "Or\xE7amento" : null,
+      notificacoes.orcamentoMeta ? "Meta de or\xE7amento" : null,
+      notificacoes.metas ? "Metas" : null
+    ].filter(Boolean);
+    return activeItems.length ? activeItems.join(", ") : "Desativadas";
+  }
+  function persistTutorialPreferences() {
+    const currentSettings = getThemeSettings();
+    const nextSettings = {
+      ...currentSettings,
+      ...getTutorialDraftSettings(),
+      notificacoes: {
+        ...currentSettings.notificacoes,
+        ...getTutorialDraftSettings().notificacoes
+      },
+      dataAtualizacao: (/* @__PURE__ */ new Date()).toISOString()
+    };
+    const saved = setThemeSettings(nextSettings);
+    ensureFinancialDataIntegrity();
+    window.dispatchEvent(new CustomEvent("settingsUpdated", { detail: saved }));
+    return saved;
+  }
+  function cacheTutorialElements() {
+    if (tutorialElements) return tutorialElements;
+    tutorialElements = {
+      overlay: document.getElementById("tutorialOverlay"),
+      content: document.getElementById("tutorialContent"),
+      title: document.getElementById("tutorialTitle"),
+      description: document.getElementById("tutorialDescription"),
+      counter: document.getElementById("tutorialStepCounter"),
+      progressFill: document.getElementById("tutorialProgressFill"),
+      previousButton: document.getElementById("tutorialPrevBtn"),
+      nextButton: document.getElementById("tutorialNextBtn"),
+      laterButton: document.getElementById("tutorialLaterBtn")
+    };
+    return tutorialElements;
+  }
+  function renderTutorialIntroPage() {
+    return `
+        <div class="tutorial-intro-page">
+            <section class="tutorial-intro-card">
+                <span class="tutorial-eyebrow">Boas-vindas</span>
+                <h3>Vamos come\xE7ar o tutorial?</h3>
+                <p>Conhe\xE7a rapidamente as \xE1reas principais do Vision Finance e finalize suas prefer\xEAncias iniciais antes do primeiro uso.</p>
+                <div class="tutorial-intro-points">
+                    <div class="tutorial-intro-point">
+                        <strong>Vis\xE3o r\xE1pida do sistema</strong>
+                        <span>Painel, despesas, carteiras, planejamento, relat\xF3rios, perfil e configura\xE7\xF5es.</span>
+                    </div>
+                    <div class="tutorial-intro-point">
+                        <strong>Configura\xE7\xE3o inicial guiada</strong>
+                        <span>Ao final, voc\xEA define ciclo, moeda, tema, modo visual e notifica\xE7\xF5es.</span>
+                    </div>
+                    <div class="tutorial-intro-point">
+                        <strong>Voc\xEA pode retomar depois</strong>
+                        <span>Se preferir, escolha Talvez mais tarde e volte no pr\xF3ximo login.</span>
+                    </div>
+                </div>
+            </section>
+        </div>
+    `;
+  }
+  function renderTutorialSectionPage(step) {
+    const section = TUTORIAL_SECTIONS[step - 1];
+    const isPainel = step === 1;
+    const isDark = getThemeSettings().temaEscuro === true;
+    const painelVisual = isPainel ? `
+            <div class="tutorial-panel-frame">
+                <div class="tutorial-panel-toolbar" aria-hidden="true">
+                    <div class="tutorial-panel-dots">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="tutorial-panel-toolbar-label">Painel Vision Finance</div>
+                </div>
+                <div class="tutorial-panel-media">
+                    <img
+                        src="${isDark ? "./img/dashboard-modo.escuro.jpeg" : "./img/dashboard-modo.claro.jpeg"}"
+                        alt="Pr\xE9via do painel do Vision Finance no modo ${isDark ? "escuro" : "claro"}"
+                        class="tutorial-panel-image"
+                    >
+                </div>
+            </div>
+        ` : `
+            <div class="tutorial-placeholder">
+                <div class="tutorial-icon-badge">${escapeHtml(section.accent)}</div>
+                <div>
+                    <p class="tutorial-eyebrow">Imagem da tela</p>
+                    <h3>${escapeHtml(section.title)}</h3>
+                    <p>Placeholder pronto para receber uma captura ou ilustra\xE7\xE3o dessa \xE1rea futuramente.</p>
+                </div>
+                <div class="tutorial-placeholder-meta">
+                    <span>${escapeHtml(section.badge)}</span>
+                    <span>${escapeHtml(section.stat)}</span>
+                </div>
+            </div>
+        `;
+    return `
+        <div class="tutorial-page">
+            <article class="tutorial-copy">
+                <div>
+                    <span class="tutorial-eyebrow">Se\xE7\xE3o ${step}</span>
+                    <h3>${escapeHtml(section.subtitle)}</h3>
+                </div>
+                <p>${escapeHtml(section.description)}</p>
+                <div class="tutorial-feature-list">
+                    <div class="tutorial-feature-item">
+                        <span class="tutorial-feature-dot" aria-hidden="true"></span>
+                        <div>
+                            <strong>Navega\xE7\xE3o dedicada</strong>
+                            <span>Acesse ${escapeHtml(section.title.toLowerCase())} pela barra lateral quando precisar.</span>
+                        </div>
+                    </div>
+                    <div class="tutorial-feature-item">
+                        <span class="tutorial-feature-dot" aria-hidden="true"></span>
+                        <div>
+                            <strong>Leitura consistente</strong>
+                            <span>Essa \xE1rea segue tema, moeda e ciclo definidos por voc\xEA.</span>
+                        </div>
+                    </div>
+                </div>
+            </article>
+            <article class="tutorial-visual" aria-label="Espa\xE7o reservado para imagem da se\xE7\xE3o ${escapeHtml(section.title)}">
+                ${painelVisual}
+            </article>
+        </div>
+    `;
+  }
+  function renderTutorialSetupPage() {
+    const draft = getTutorialDraftSettings();
+    const notificationGeneral = draft.notificacoes.geral === true;
+    return `
+        <div class="tutorial-config-page">
+            <section class="tutorial-config-panel tutorial-config-panel-full">
+                <span class="tutorial-eyebrow">Passo final</span>
+
+                <div class="tutorial-config-layout">
+                    <div class="tutorial-config-stack">
+                        <section class="tutorial-config-card">
+                            <div class="tutorial-config-card-header">
+                                <strong>Base do sistema</strong>
+                                <span>Ciclo e moeda padr\xE3o</span>
+                            </div>
+                            <div class="tutorial-form-grid tutorial-form-grid-basic">
+                                <div class="tutorial-field">
+                                    <label for="tutorialTurnDay">Virada do ciclo</label>
+                                    <select id="tutorialTurnDay" data-setting="diaViradaMes">
+                                        <option value="1" ${draft.diaViradaMes === 1 ? "selected" : ""}>Dia 1</option>
+                                        <option value="5" ${draft.diaViradaMes === 5 ? "selected" : ""}>Dia 5</option>
+                                        <option value="10" ${draft.diaViradaMes === 10 ? "selected" : ""}>Dia 10</option>
+                                        <option value="15" ${draft.diaViradaMes === 15 ? "selected" : ""}>Dia 15</option>
+                                        <option value="20" ${draft.diaViradaMes === 20 ? "selected" : ""}>Dia 20</option>
+                                        <option value="25" ${draft.diaViradaMes === 25 ? "selected" : ""}>Dia 25</option>
+                                    </select>
+                                </div>
+                                <div class="tutorial-field">
+                                    <label for="tutorialCurrency">Moeda</label>
+                                    <select id="tutorialCurrency" data-setting="moeda">
+                                        <option value="BRL" ${draft.moeda === "BRL" ? "selected" : ""}>R$ - Real Brasileiro</option>
+                                        <option value="USD" ${draft.moeda === "USD" ? "selected" : ""}>$ - D\xF3lar Americano</option>
+                                        <option value="EUR" ${draft.moeda === "EUR" ? "selected" : ""}>\u20AC - Euro</option>
+                                        <option value="GBP" ${draft.moeda === "GBP" ? "selected" : ""}>\xA3 - Libra Esterlina</option>
+                                    </select>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="tutorial-config-card">
+                            <div class="tutorial-config-card-header">
+                                <strong>Apar\xEAncia</strong>
+                                <span>Escolha o estilo visual ideal</span>
+                            </div>
+                            <div class="tutorial-field tutorial-field-full">
+                                <label>Cor do site</label>
+                                <div class="tutorial-choice-grid" data-setting-group="corTema">
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "azul" ? "is-active" : ""}" data-setting="corTema" data-value="azul">Azul</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "dourado" ? "is-active" : ""}" data-setting="corTema" data-value="dourado">Dourado</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "oceano" ? "is-active" : ""}" data-setting="corTema" data-value="oceano">Oceano</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "grafite" ? "is-active" : ""}" data-setting="corTema" data-value="grafite">Grafite</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "aurora" ? "is-active" : ""}" data-setting="corTema" data-value="aurora">Aurora</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "terracota" ? "is-active" : ""}" data-setting="corTema" data-value="terracota">Terracota</button>
+                                </div>
+                            </div>
+                            <div class="tutorial-field tutorial-field-full">
+                                <label>Modo visual</label>
+                                <div class="tutorial-choice-grid tutorial-choice-grid-compact" data-setting-group="temaEscuro">
+                                    <button type="button" class="tutorial-choice-btn ${draft.temaEscuro ? "" : "is-active"}" data-setting="temaEscuro" data-value="false">Claro</button>
+                                    <button type="button" class="tutorial-choice-btn ${draft.temaEscuro ? "is-active" : ""}" data-setting="temaEscuro" data-value="true">Escuro</button>
+                                </div>
+                            </div>
+                        </section>
+
+                        <section class="tutorial-config-card">
+                            <div class="tutorial-config-card-header">
+                                <strong>Notifica\xE7\xF5es</strong>
+                                <span>Defina quais alertas permanecem ativos</span>
+                            </div>
+                            <div class="tutorial-toggle-list tutorial-toggle-list-rich">
+                                <label class="tutorial-toggle tutorial-toggle-rich">
+                                    <input type="checkbox" data-setting="notificacoes.geral" ${notificationGeneral ? "checked" : ""}>
+                                    <span>
+                                        <strong>Geral</strong>
+                                        <small>Ativa os demais alertas</small>
+                                    </span>
+                                </label>
+                                <label class="tutorial-toggle tutorial-toggle-rich">
+                                    <input type="checkbox" data-setting="notificacoes.orcamento" ${draft.notificacoes.orcamento ? "checked" : ""} ${notificationGeneral ? "" : "disabled"}>
+                                    <span>
+                                        <strong>Or\xE7amento</strong>
+                                        <small>Limites do m\xEAs</small>
+                                    </span>
+                                </label>
+                                <label class="tutorial-toggle tutorial-toggle-rich">
+                                    <input type="checkbox" data-setting="notificacoes.orcamentoMeta" ${draft.notificacoes.orcamentoMeta ? "checked" : ""} ${notificationGeneral ? "" : "disabled"}>
+                                    <span>
+                                        <strong>Meta</strong>
+                                        <small>Avisos de or\xE7amento-meta</small>
+                                    </span>
+                                </label>
+                                <label class="tutorial-toggle tutorial-toggle-rich">
+                                    <input type="checkbox" data-setting="notificacoes.metas" ${draft.notificacoes.metas ? "checked" : ""} ${notificationGeneral ? "" : "disabled"}>
+                                    <span>
+                                        <strong>Metas</strong>
+                                        <small>Lembretes de objetivos</small>
+                                    </span>
+                                </label>
+                            </div>
+                        </section>
+                    </div>
+
+                    <aside class="tutorial-config-aside">
+                        <div class="tutorial-config-summary-card">
+                            <span class="tutorial-eyebrow">Resumo aplicado</span>
+                            <h4>Como seu ambiente ficar\xE1</h4>
+                            <p>Essas escolhas ser\xE3o usadas nas pr\xF3ximas sess\xF5es e podem ser alteradas depois em Configura\xE7\xF5es.</p>
+                            <div class="tutorial-summary-list tutorial-summary-list-professional">
+                                <div class="tutorial-summary-item"><span>Ciclo financeiro</span><strong>Dia ${draft.diaViradaMes}</strong></div>
+                                <div class="tutorial-summary-item"><span>Moeda principal</span><strong>${escapeHtml(TUTORIAL_CURRENCY_LABELS[draft.moeda] || draft.moeda)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Cor do site</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTema] || draft.corTema)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Modo visual</span><strong>${escapeHtml(getThemeModeLabel(draft.temaEscuro))}</strong></div>
+                                <div class="tutorial-summary-item tutorial-summary-item-stack"><span>Notifica\xE7\xF5es ativas</span><strong>${escapeHtml(getNotificationSummary(draft.notificacoes))}</strong></div>
+                            </div>
+                        </div>
+                    </aside>
+                </div>
+            </section>
+        </div>
+    `;
+  }
+  function updateTutorialHeader(step) {
+    const elements = cacheTutorialElements();
+    const isIntroStep = step === 0;
+    const isSetupStep = step === TOTAL_TUTORIAL_STEPS;
+    elements.title.textContent = isIntroStep ? "Vamos come\xE7ar o tutorial" : isSetupStep ? "Finalize sua configura\xE7\xE3o inicial" : `Conhe\xE7a a se\xE7\xE3o ${TUTORIAL_SECTIONS[step - 1].title}`;
+    elements.description.textContent = isIntroStep ? "Veja um guia curto antes de acessar o sistema pela primeira vez." : isSetupStep ? "Defina suas prefer\xEAncias principais antes de come\xE7ar a usar o painel." : "Cada etapa resume uma \xE1rea principal do Vision Finance antes do primeiro uso.";
+    elements.counter.textContent = isIntroStep ? "Introdu\xE7\xE3o" : `Passo ${step} de ${TOTAL_TUTORIAL_STEPS}`;
+    elements.progressFill.style.width = `${isIntroStep ? 0 : step / TOTAL_TUTORIAL_STEPS * 100}%`;
+    elements.nextButton.textContent = isIntroStep ? "Vamos!" : isSetupStep ? "Concluir tutorial" : "Pr\xF3ximo";
+    elements.previousButton.hidden = isIntroStep;
+    elements.laterButton.hidden = !isIntroStep;
+  }
+  function bindTutorialSetupEvents() {
+    const elements = cacheTutorialElements();
+    if (!elements.content) return;
+    elements.content.querySelectorAll('[data-setting="corTema"], [data-setting="temaEscuro"]').forEach((button) => {
+      button.addEventListener("click", () => {
+        const setting = button.dataset.setting;
+        const rawValue = button.dataset.value;
+        const parsedValue = rawValue === "true" ? true : rawValue === "false" ? false : rawValue;
+        getTutorialDraftSettings()[setting] = parsedValue;
+        persistTutorialPreferences();
+        renderTutorialStep(TOTAL_TUTORIAL_STEPS);
+      });
+    });
+    elements.content.querySelectorAll("select[data-setting]").forEach((select) => {
+      select.addEventListener("change", () => {
+        const setting = select.dataset.setting;
+        getTutorialDraftSettings()[setting] = setting === "diaViradaMes" ? Number(select.value) : select.value;
+        persistTutorialPreferences();
+        renderTutorialStep(TOTAL_TUTORIAL_STEPS);
+      });
+    });
+    elements.content.querySelectorAll('input[type="checkbox"][data-setting]').forEach((input) => {
+      input.addEventListener("change", () => {
+        const path = input.dataset.setting;
+        if (path === "notificacoes.geral") {
+          getTutorialDraftSettings().notificacoes.geral = input.checked;
+          if (!input.checked) {
+            getTutorialDraftSettings().notificacoes.orcamento = false;
+            getTutorialDraftSettings().notificacoes.orcamentoMeta = false;
+            getTutorialDraftSettings().notificacoes.metas = false;
+          }
+        } else {
+          const key = path.split(".")[1];
+          getTutorialDraftSettings().notificacoes[key] = input.checked;
+        }
+        persistTutorialPreferences();
+        renderTutorialStep(TOTAL_TUTORIAL_STEPS);
+      });
+    });
+  }
+  function renderTutorialStep(step = getTutorialCurrentStep()) {
+    const elements = cacheTutorialElements();
+    if (!elements.overlay || !elements.content) return;
+    const normalizedStep = Math.min(Math.max(step, 0), TOTAL_TUTORIAL_STEPS);
+    setTutorialState({ currentStep: normalizedStep });
+    updateTutorialHeader(normalizedStep);
+    elements.content.innerHTML = normalizedStep === 0 ? renderTutorialIntroPage() : normalizedStep === TOTAL_TUTORIAL_STEPS ? renderTutorialSetupPage() : renderTutorialSectionPage(normalizedStep);
+    if (normalizedStep === TOTAL_TUTORIAL_STEPS) {
+      bindTutorialSetupEvents();
+    }
+  }
+  function openTutorial(options = {}) {
+    const elements = cacheTutorialElements();
+    if (!elements.overlay) return;
+    const startStep = Number(options.startStep);
+    const resolvedStep = Number.isFinite(startStep) ? Math.min(Math.max(startStep, 0), TOTAL_TUTORIAL_STEPS) : getTutorialCurrentStep();
+    document.body.classList.add("dashboard-tutorial-open");
+    elements.overlay.hidden = false;
+    elements.overlay.setAttribute("aria-hidden", "false");
+    setTutorialState({
+      currentStep: resolvedStep,
+      skipped: false,
+      lastShownAt: (/* @__PURE__ */ new Date()).toISOString()
+    });
+    renderTutorialStep(resolvedStep);
+  }
+  function closeTutorial() {
+    const elements = cacheTutorialElements();
+    if (!elements.overlay) return;
+    document.body.classList.remove("dashboard-tutorial-open");
+    elements.overlay.hidden = true;
+    elements.overlay.setAttribute("aria-hidden", "true");
+    sessionStorage.removeItem(LOGIN_SESSION_KEY);
+  }
+  function handleTutorialNext() {
+    const currentState = getTutorialState();
+    const currentStep = currentState.currentStep ?? 0;
+    if (currentStep >= TOTAL_TUTORIAL_STEPS) {
+      persistTutorialPreferences();
+      setTutorialState({
+        completed: true,
+        skipped: false,
+        currentStep: TOTAL_TUTORIAL_STEPS,
+        completedAt: (/* @__PURE__ */ new Date()).toISOString()
+      });
+      closeTutorial();
+      return;
+    }
+    const nextStep = currentStep + 1;
+    setTutorialState({ completed: false, skipped: false, currentStep: nextStep });
+    renderTutorialStep(nextStep);
+  }
+  function handleTutorialPrevious() {
+    const currentStep = getTutorialCurrentStep();
+    const previousStep = Math.max(currentStep - 1, 0);
+    setTutorialState({ completed: false, skipped: false, currentStep: previousStep });
+    renderTutorialStep(previousStep);
+  }
+  function handleTutorialLater() {
+    const currentState = getTutorialState();
+    setTutorialState({
+      completed: false,
+      skipped: true,
+      currentStep: currentState.currentStep ?? 0
+    });
+    closeTutorial();
+  }
+  function bindTutorialEvents() {
+    const elements = cacheTutorialElements();
+    if (!elements.nextButton || elements.nextButton.dataset.bound === "true") return;
+    elements.previousButton.dataset.bound = "true";
+    elements.nextButton.dataset.bound = "true";
+    elements.laterButton.dataset.bound = "true";
+    elements.previousButton.addEventListener("click", handleTutorialPrevious);
+    elements.nextButton.addEventListener("click", handleTutorialNext);
+    elements.laterButton.addEventListener("click", handleTutorialLater);
+  }
+  function maybeOpenTutorialOnLogin() {
+    const justLoggedIn = sessionStorage.getItem(LOGIN_SESSION_KEY) === "true";
+    const tutorialState = getTutorialState();
+    if (!justLoggedIn || tutorialState.completed) {
+      return;
+    }
+    bindTutorialEvents();
+    openTutorial();
+  }
+  function handleTutorialOpenRequest(event) {
+    bindTutorialEvents();
+    openTutorial({ startStep: event.detail?.startStep ?? 0 });
+  }
   async function carregarHtmlSecao(sectionId) {
     const html = secoesHtml[sectionId];
     if (!html) {
@@ -4474,6 +5025,7 @@ if (window.top === window.self) {
     configurarSidebarMobile();
     configurarSaidaDashboard();
     navegar(getSecaoInicial());
+    maybeOpenTutorialOnLogin();
   });
   window.addEventListener("keydown", (e) => {
     if (e.key === "Escape" && document.body.classList.contains("dashboard-sidebar-open")) {
@@ -4484,6 +5036,9 @@ if (window.top === window.self) {
     ensureFinancialDataIntegrity();
     aplicarTemaGlobal();
     gerenciarBotaoModo();
+    if (getTutorialState().currentStep === TOTAL_TUTORIAL_STEPS && !cacheTutorialElements().overlay?.hidden) {
+      renderTutorialStep(TOTAL_TUTORIAL_STEPS);
+    }
     if (modulos[secaoAtiva] && typeof modulos[secaoAtiva].init === "function") {
       modulos[secaoAtiva].init();
     }
@@ -4492,4 +5047,5 @@ if (window.top === window.self) {
   window.addEventListener("profileUpdated", () => {
     aplicarAvatarPerfil();
   });
+  window.addEventListener("visionFinance:openTutorial", handleTutorialOpenRequest);
 })();
