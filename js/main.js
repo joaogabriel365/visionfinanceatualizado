@@ -48,7 +48,7 @@ const secoesHtml = {
 let secaoAtiva = 'painel';
 
 const LOGIN_SESSION_KEY = 'visionFinance_justLoggedIn';
-const TOTAL_TUTORIAL_STEPS = 8;
+const TOTAL_TUTORIAL_STEPS = 7;
 const TUTORIAL_SECTIONS = [
     {
         title: 'Painel',
@@ -56,7 +56,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Acompanhe saldo disponível, distribuição dos gastos, metas e os indicadores mais importantes logo no primeiro acesso.',
         badge: 'Resumo em tempo real',
         stat: 'Indicadores e atalhos',
-        accent: '01'
+        accent: '01',
+        imageLight: './img/dashboard-modo.claro.jpeg',
+        imageDark: './img/dashboard-modo.escuro.jpeg',
+        imageAlt: 'Prévia da tela de painel do Vision Finance'
     },
     {
         title: 'Despesas',
@@ -64,7 +67,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Cadastre despesas com categoria, forma de pagamento, data e observações para manter o histórico sempre organizado.',
         badge: 'Controle diário',
         stat: 'Categorias e filtros',
-        accent: '02'
+        accent: '02',
+        imageLight: './img/despesas-modo.claro.jfif',
+        imageDark: './img/despesas-modo.escuro.jfif',
+        imageAlt: 'Prévia da tela de despesas do Vision Finance'
     },
     {
         title: 'Carteiras',
@@ -72,7 +78,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Centralize suas carteiras para visualizar limites, gastos acumulados e distribuição entre meios de pagamento.',
         badge: 'Meios de pagamento',
         stat: 'Saldo por carteira',
-        accent: '03'
+        accent: '03',
+        imageLight: './img/carteiras-modo.claro.jfif',
+        imageDark: './img/carteiras-modo.escuro.jfif',
+        imageAlt: 'Prévia da tela de carteiras do Vision Finance'
     },
     {
         title: 'Planejamento',
@@ -80,7 +89,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Estabeleça objetivos financeiros, acompanhe aportes por ciclo e enxergue com clareza o que falta para cada meta.',
         badge: 'Objetivos mensais',
         stat: 'Metas por ciclo',
-        accent: '04'
+        accent: '04',
+        imageLight: './img/planejamento-modo.claro.jfif',
+        imageDark: './img/planejamento-modo.escuro.jfif',
+        imageAlt: 'Prévia da tela de planejamento do Vision Finance'
     },
     {
         title: 'Relatórios',
@@ -88,7 +100,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Use gráficos, rankings e comparativos para entender tendências e tomar decisões melhores com base nos dados.',
         badge: 'Insights visuais',
         stat: 'Comparativos e tendências',
-        accent: '05'
+        accent: '05',
+        imageLight: './img/relatorio-modo.claro.jfif',
+        imageDark: './img/relatorio-modo.escuro.jfif',
+        imageAlt: 'Prévia da tela de relatórios do Vision Finance'
     },
     {
         title: 'Perfil',
@@ -96,15 +111,10 @@ const TUTORIAL_SECTIONS = [
         description: 'Atualize seus dados pessoais, sua foto e os detalhes que personalizam a experiência do seu ambiente.',
         badge: 'Dados do usuário',
         stat: 'Personalização da conta',
-        accent: '06'
-    },
-    {
-        title: 'Configurações',
-        subtitle: 'Ajustes permanentes do sistema',
-        description: 'Defina moeda, dia de virada, notificações e aparência para adaptar o Vision Finance à sua rotina.',
-        badge: 'Preferências persistentes',
-        stat: 'Tema e notificações',
-        accent: '07'
+        accent: '06',
+        imageLight: './img/perfil-modo.claro.jfif',
+        imageDark: './img/perfil-modo.escuro.jpeg',
+        imageAlt: 'Prévia da tela de perfil do Vision Finance'
     }
 ];
 
@@ -123,6 +133,12 @@ const TUTORIAL_CURRENCY_LABELS = {
     EUR: 'Euro',
     GBP: 'Libra Esterlina'
 };
+
+function renderTutorialColorChoices(setting, selectedValue) {
+    return Object.entries(TUTORIAL_COLOR_LABELS)
+        .map(([value, label]) => `<button type="button" class="tutorial-choice-btn ${selectedValue === value ? 'is-active' : ''}" data-setting="${setting}" data-value="${value}">${label}</button>`)
+        .join('');
+}
 
 let tutorialElements = null;
 let tutorialDraftSettings = null;
@@ -146,7 +162,8 @@ function getTutorialDraftSettings() {
     const settings = getThemeSettings();
     tutorialDraftSettings = {
         moeda: settings.moeda || 'BRL',
-        corTema: settings.corTema || 'azul',
+        corTemaClaro: settings.corTemaClaro || settings.corTema || 'azul',
+        corTemaEscuro: settings.corTemaEscuro || settings.corTema || 'azul',
         diaViradaMes: Number(settings.diaViradaMes || 1),
         temaEscuro: settings.temaEscuro === true,
         notificacoes: {
@@ -221,7 +238,7 @@ function renderTutorialIntroPage() {
                 <div class="tutorial-intro-points">
                     <div class="tutorial-intro-point">
                         <strong>Visão rápida do sistema</strong>
-                        <span>Painel, despesas, carteiras, planejamento, relatórios, perfil e configurações.</span>
+                        <span>Painel, despesas, carteiras, planejamento, relatórios e perfil.</span>
                     </div>
                     <div class="tutorial-intro-point">
                         <strong>Configuração inicial guiada</strong>
@@ -239,9 +256,9 @@ function renderTutorialIntroPage() {
 
 function renderTutorialSectionPage(step) {
     const section = TUTORIAL_SECTIONS[step - 1];
-    const isPainel = step === 1;
     const isDark = getThemeSettings().temaEscuro === true;
-    const painelVisual = isPainel
+    const imageSource = isDark ? section.imageDark : section.imageLight;
+    const sectionVisual = imageSource
         ? `
             <div class="tutorial-panel-frame">
                 <div class="tutorial-panel-toolbar" aria-hidden="true">
@@ -250,12 +267,12 @@ function renderTutorialSectionPage(step) {
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="tutorial-panel-toolbar-label">Painel Vision Finance</div>
+                    <div class="tutorial-panel-toolbar-label">${escapeHtml(section.title)} Vision Finance</div>
                 </div>
                 <div class="tutorial-panel-media">
                     <img
-                        src="${isDark ? './img/dashboard-modo.escuro.jpeg' : './img/dashboard-modo.claro.jpeg'}"
-                        alt="Prévia do painel do Vision Finance no modo ${isDark ? 'escuro' : 'claro'}"
+                        src="${imageSource}"
+                        alt="${escapeHtml(section.imageAlt)} no modo ${isDark ? 'escuro' : 'claro'}"
                         class="tutorial-panel-image"
                     >
                 </div>
@@ -301,8 +318,8 @@ function renderTutorialSectionPage(step) {
                     </div>
                 </div>
             </article>
-            <article class="tutorial-visual" aria-label="Espaço reservado para imagem da seção ${escapeHtml(section.title)}">
-                ${painelVisual}
+            <article class="tutorial-visual" aria-label="Prévia da seção ${escapeHtml(section.title)}">
+                ${sectionVisual}
             </article>
         </div>
     `;
@@ -354,14 +371,15 @@ function renderTutorialSetupPage() {
                                 <span>Escolha o estilo visual ideal</span>
                             </div>
                             <div class="tutorial-field tutorial-field-full">
-                                <label>Cor do site</label>
-                                <div class="tutorial-choice-grid" data-setting-group="corTema">
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'azul' ? 'is-active' : ''}" data-setting="corTema" data-value="azul">Azul</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'dourado' ? 'is-active' : ''}" data-setting="corTema" data-value="dourado">Dourado</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'oceano' ? 'is-active' : ''}" data-setting="corTema" data-value="oceano">Oceano</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'grafite' ? 'is-active' : ''}" data-setting="corTema" data-value="grafite">Grafite</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'aurora' ? 'is-active' : ''}" data-setting="corTema" data-value="aurora">Aurora</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === 'terracota' ? 'is-active' : ''}" data-setting="corTema" data-value="terracota">Terracota</button>
+                                <label>Tema do modo claro</label>
+                                <div class="tutorial-choice-grid" data-setting-group="corTemaClaro">
+                                    ${renderTutorialColorChoices('corTemaClaro', draft.corTemaClaro)}
+                                </div>
+                            </div>
+                            <div class="tutorial-field tutorial-field-full">
+                                <label>Tema do modo escuro</label>
+                                <div class="tutorial-choice-grid" data-setting-group="corTemaEscuro">
+                                    ${renderTutorialColorChoices('corTemaEscuro', draft.corTemaEscuro)}
                                 </div>
                             </div>
                             <div class="tutorial-field tutorial-field-full">
@@ -419,7 +437,8 @@ function renderTutorialSetupPage() {
                             <div class="tutorial-summary-list tutorial-summary-list-professional">
                                 <div class="tutorial-summary-item"><span>Ciclo financeiro</span><strong>Dia ${draft.diaViradaMes}</strong></div>
                                 <div class="tutorial-summary-item"><span>Moeda principal</span><strong>${escapeHtml(TUTORIAL_CURRENCY_LABELS[draft.moeda] || draft.moeda)}</strong></div>
-                                <div class="tutorial-summary-item"><span>Cor do site</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTema] || draft.corTema)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Tema modo claro</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTemaClaro] || draft.corTemaClaro)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Tema modo escuro</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTemaEscuro] || draft.corTemaEscuro)}</strong></div>
                                 <div class="tutorial-summary-item"><span>Modo visual</span><strong>${escapeHtml(getThemeModeLabel(draft.temaEscuro))}</strong></div>
                                 <div class="tutorial-summary-item tutorial-summary-item-stack"><span>Notificações ativas</span><strong>${escapeHtml(getNotificationSummary(draft.notificacoes))}</strong></div>
                             </div>
@@ -457,7 +476,7 @@ function bindTutorialSetupEvents() {
     const elements = cacheTutorialElements();
     if (!elements.content) return;
 
-    elements.content.querySelectorAll('[data-setting="corTema"], [data-setting="temaEscuro"]').forEach((button) => {
+    elements.content.querySelectorAll('[data-setting="corTemaClaro"], [data-setting="corTemaEscuro"], [data-setting="temaEscuro"]').forEach((button) => {
         button.addEventListener('click', () => {
             const setting = button.dataset.setting;
             const rawValue = button.dataset.value;

@@ -231,26 +231,6 @@
 		linear-gradient(135deg, color-mix(in srgb, var(--card-bg-alt) 88%, white 12%), var(--card-bg));
 }
 
-.tutorial-visual::before,
-.tutorial-visual::after {
-	content: "";
-	position: absolute;
-	border-radius: 24px;
-	border: 1px dashed rgba(var(--accent-rgb), 0.24);
-}
-
-.tutorial-visual::before {
-	inset: 24px 24px auto auto;
-	width: 120px;
-	height: 120px;
-}
-
-.tutorial-visual::after {
-	inset: auto auto 28px 24px;
-	width: 180px;
-	height: 90px;
-}
-
 .tutorial-placeholder {
 	position: relative;
 	z-index: 1;

@@ -2097,6 +2097,12 @@ body.dark-theme .nav-toggle {
     .footer-bottom {
         text-align: center;
     }
+
+    .header-quick-actions,
+    .user-info {
+        flex-wrap: wrap;
+        gap: 10px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -2312,6 +2318,29 @@ body.dark-theme .nav-toggle {
     .input-row {
         flex-direction: column;
         gap: 0;
+    }
+
+    .header-quick-actions,
+    .user-info {
+        gap: 8px;
+    }
+}
+
+@media (max-width: 520px) {
+    .cta-group {
+        display: grid;
+        grid-template-columns: 1fr;
+        align-items: stretch;
+    }
+
+    .cta-group > * {
+        width: 100%;
+        min-width: 0;
+    }
+
+    .header-quick-actions,
+    .user-info {
+        gap: 6px;
     }
 }
 

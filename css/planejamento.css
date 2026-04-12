@@ -80,6 +80,12 @@
   margin-top: 1rem;
 }
 
+@media (max-width: 768px) {
+  .planejamento-panel {
+    grid-template-columns: 1fr;
+  }
+}
+
 .plan-card {
   background: var(--card-bg);
   border: 1px solid var(--border-color);

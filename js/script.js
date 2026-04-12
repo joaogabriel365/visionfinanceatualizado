@@ -193,7 +193,21 @@ function handleAuthRedirect(form) {
 }
 
 function getStoredThemeSettings() {
-    return JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+    const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+    const availableThemes = ['azul', 'dourado', 'oceano', 'grafite', 'aurora', 'terracota'];
+    const normalizeColorTheme = (value, fallback = 'azul') => availableThemes.includes(value) ? value : fallback;
+    const legacyTheme = normalizeColorTheme(settings.corTema, 'azul');
+    const corTemaClaro = normalizeColorTheme(settings.corTemaClaro, legacyTheme);
+    const corTemaEscuro = normalizeColorTheme(settings.corTemaEscuro, legacyTheme);
+    const temaEscuro = settings.temaEscuro === true;
+
+    return {
+        ...settings,
+        corTema: temaEscuro ? corTemaEscuro : corTemaClaro,
+        corTemaClaro,
+        corTemaEscuro,
+        temaEscuro
+    };
 }
 
 function updateLandingThemeToggle() {
@@ -207,7 +221,7 @@ function updateLandingThemeToggle() {
 function applyLandingTheme() {
     const settings = getStoredThemeSettings();
     const isDark = settings.temaEscuro === true;
-    const colorTheme = settings.corTema || 'azul';
+    const colorTheme = isDark ? settings.corTemaEscuro : settings.corTemaClaro;
 
     document.body.dataset.theme = isDark ? 'dark' : 'light';
     document.body.dataset.colorTheme = colorTheme;
@@ -223,6 +237,7 @@ function applyLandingTheme() {
 function toggleLandingTheme() {
     const settings = getStoredThemeSettings();
     settings.temaEscuro = settings.temaEscuro !== true;
+    settings.corTema = settings.temaEscuro ? settings.corTemaEscuro : settings.corTemaClaro;
     localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
     window.dispatchEvent(new Event('settingsUpdated'));
 }

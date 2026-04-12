@@ -1,4 +1,4 @@
-import { applyStoredTheme, applyThemeClasses, ensureFinancialDataIntegrity, getThemeSettings } from './common.js';
+import { applyThemeClasses, ensureFinancialDataIntegrity, getThemeSettings, setThemeSettings } from './common.js';
 
 export const ConfiguracoesModulo = {
     init: function() {
@@ -19,7 +19,8 @@ export const ConfiguracoesModulo = {
         this.checkAlertaOrcamentoMeta = document.getElementById('checkAlertaOrcamentoMeta');
         this.checkLembreteMetas = document.getElementById('checkLembreteMetas');
         this.selectMoeda = document.getElementById('selectMoeda');
-        this.selectCorTema = document.getElementById('selectCorTema');
+        this.selectCorTemaClaro = document.getElementById('selectCorTemaClaro');
+        this.selectCorTemaEscuro = document.getElementById('selectCorTemaEscuro');
         this.selectDiaVirada = document.getElementById('selectDiaVirada');
         this.checkTemaEscuro = document.getElementById('checkTemaEscuro');
         this.btnAbrirTutorial = document.getElementById('btnAbrirTutorial');
@@ -36,7 +37,12 @@ export const ConfiguracoesModulo = {
             this.toggleNotificacoes(e.target.checked);
         });
 
-        // Adicionar evento para toggle de tema
+        [this.selectCorTemaClaro, this.selectCorTemaEscuro].forEach((select) => {
+            select?.addEventListener('change', () => {
+                this.applyTheme(this.buildThemePreviewSettings());
+            });
+        });
+
         this.checkTemaEscuro.addEventListener('change', (e) => {
             this.toggleTheme(e.target.checked);
         });
@@ -92,14 +98,25 @@ export const ConfiguracoesModulo = {
     },
 
     toggleTheme: function(isDark) {
-        applyThemeClasses(isDark, document.body);
+        applyThemeClasses(isDark, document.body, this.buildThemePreviewSettings(isDark));
     },
 
-    applyTheme: function() {
-        const settings = getThemeSettings();
+    buildThemePreviewSettings: function(isDark = this.checkTemaEscuro.checked) {
+        const saved = getThemeSettings();
+
+        return {
+            ...saved,
+            corTemaClaro: this.selectCorTemaClaro?.value || saved.corTemaClaro || saved.corTema || 'azul',
+            corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || 'azul',
+            temaEscuro: isDark === true
+        };
+    },
+
+    applyTheme: function(settingsOverride = null) {
+        const settings = settingsOverride || getThemeSettings();
         const isDark = settings.temaEscuro === true;
         this.checkTemaEscuro.checked = isDark;
-        applyStoredTheme(document.body);
+        applyThemeClasses(isDark, document.body, settings);
     },
 
     toggleSubNotifications: function(isEnabled) {
@@ -126,7 +143,8 @@ export const ConfiguracoesModulo = {
     saveSettings: function() {
         const settings = {
             moeda: this.selectMoeda.value,
-            corTema: this.selectCorTema?.value || 'azul',
+            corTemaClaro: this.selectCorTemaClaro?.value || 'azul',
+            corTemaEscuro: this.selectCorTemaEscuro?.value || 'azul',
             diaViradaMes: Number(this.selectDiaVirada?.value || 1),
             temaEscuro: this.checkTemaEscuro.checked,
             notificacoes: {
@@ -138,13 +156,12 @@ export const ConfiguracoesModulo = {
             dataAtualizacao: new Date().toISOString()
         };
 
-        localStorage.setItem('visionFinance_settings', JSON.stringify(settings));
-    ensureFinancialDataIntegrity();
+        const savedSettings = setThemeSettings(settings);
+        ensureFinancialDataIntegrity();
         this.mostrarFeedback();
-        window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: settings }));
+        window.dispatchEvent(new CustomEvent('settingsUpdated', { detail: savedSettings }));
 
-        // Aplicar o tema imediatamente após salvar
-        this.applyTheme();
+        this.applyTheme(savedSettings);
     },
 
     loadSettings: function() {
@@ -152,7 +169,8 @@ export const ConfiguracoesModulo = {
 
         if (saved) {
             this.selectMoeda.value = saved.moeda || 'BRL';
-            if (this.selectCorTema) this.selectCorTema.value = saved.corTema || 'azul';
+            if (this.selectCorTemaClaro) this.selectCorTemaClaro.value = saved.corTemaClaro || saved.corTema || 'azul';
+            if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || 'azul';
             if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
             this.checkTemaEscuro.checked = saved.temaEscuro === true;
             this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
@@ -163,8 +181,7 @@ export const ConfiguracoesModulo = {
             this.toggleSubNotifications(this.checkNotificacoesGeral.checked);
         }
 
-        // Aplicar tema após carregar as configurações
-        this.applyTheme();
+        this.applyTheme(saved);
     },
 
     mostrarFeedback: function() {

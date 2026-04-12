@@ -310,10 +310,32 @@
    
     <script>
         // Aplicar tema salvo ao carregar a página
-        function aplicarTema() {
+        const themeOptions = ['azul', 'dourado', 'oceano', 'grafite', 'aurora', 'terracota'];
+
+        function normalizeThemeColor(value, fallback = 'azul') {
+            return themeOptions.includes(value) ? value : fallback;
+        }
+
+        function getLandingThemeSettings() {
             const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
+            const legacyTheme = normalizeThemeColor(settings.corTema, 'azul');
+            const corTemaClaro = normalizeThemeColor(settings.corTemaClaro, legacyTheme);
+            const corTemaEscuro = normalizeThemeColor(settings.corTemaEscuro, legacyTheme);
+            const temaEscuro = settings.temaEscuro === true;
+
+            return {
+                ...settings,
+                corTema: temaEscuro ? corTemaEscuro : corTemaClaro,
+                corTemaClaro,
+                corTemaEscuro,
+                temaEscuro
+            };
+        }
+
+        function aplicarTema() {
+            const settings = getLandingThemeSettings();
             const isDark = settings.temaEscuro === true;
-            const colorTheme = settings.corTema || 'azul';
+            const colorTheme = isDark ? settings.corTemaEscuro : settings.corTemaClaro;
             const body = document.body;
 
             body.dataset.theme = isDark ? 'dark' : 'light';

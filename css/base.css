@@ -12,11 +12,61 @@ html, body {
   min-height: 100%;
 }
 
+html {
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
   font-family: 'Montserrat', sans-serif;
   line-height: 1.6;
   color: var(--text-color);
   background: var(--bg-primary);
+  overflow-x: hidden;
+}
+
+img,
+svg,
+canvas,
+video,
+iframe {
+  max-width: 100%;
+}
+
+img,
+svg,
+canvas,
+video {
+  height: auto;
+}
+
+button,
+.btn,
+.btn-action,
+.header-icon-btn,
+.notification-btn,
+.avatar-circle,
+.sidebar-toggle,
+.nav-toggle {
+  flex-shrink: 0;
+}
+
+.filters-bar > *,
+.filter-actions > *,
+.form-row > *,
+.modal-footer > *,
+.modal-footer-actions > *,
+.table-header-flex > *,
+.section-header-row > *,
+.user-info > *,
+.header-quick-actions > *,
+.profile-header > *,
+.wallet-card-top > *,
+.wallet-card-content > *,
+.reports-toolbar-main > *,
+.reports-chart-head > *,
+.report-card-header > *,
+.ranking-header > * {
+  min-width: 0;
 }
 
 /* 2. Variáveis de tema */
@@ -1265,6 +1315,38 @@ img, svg {
   }
 }
 
+@media (max-width: 920px) {
+  .dashboard-top-cards,
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  }
+
+  .charts-grid,
+  .reports-boxes-group,
+  .relatorios-section,
+  .planejamento-panel,
+  .theme-select-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filters-bar,
+  .filter-actions,
+  .form-row,
+  .table-header-flex,
+  .section-header-row,
+  .ranking-header,
+  .report-card-header,
+  .wallet-card-top,
+  .wallet-card-footer,
+  .reports-chart-head,
+  .reports-toolbar-main,
+  .header-quick-actions,
+  .user-info {
+    flex-wrap: wrap;
+    gap: 0.8rem;
+  }
+}
+
 @media (max-width: 768px) {
   .main-content {
     --main-content-padding-x: 1rem;
@@ -1360,6 +1442,40 @@ img, svg {
     max-width: none;
   }
 
+  .dashboard-top-cards,
+  .stats-grid,
+  .charts-grid,
+  .reports-boxes-group,
+  .relatorios-section,
+  .planejamento-panel,
+  .theme-select-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .filters-bar,
+  .filter-actions,
+  .form-row,
+  .table-header-flex,
+  .section-header-row,
+  .wallet-card-top,
+  .wallet-card-footer,
+  .reports-chart-head,
+  .reports-toolbar-main,
+  .header-quick-actions,
+  .user-info {
+    flex-wrap: wrap;
+  }
+
+  .btn,
+  button,
+  input[type="button"],
+  input[type="submit"],
+  input[type="reset"] {
+    max-width: 100%;
+    white-space: normal;
+    text-align: center;
+  }
+
   .modal-content-card,
   .modal-card,
   .modal-content {
@@ -1428,6 +1544,12 @@ img, svg {
 
   .user-info {
     gap: 0.35rem;
+  }
+
+  .filters-bar,
+  .theme-select-grid,
+  .planejamento-panel {
+    grid-template-columns: 1fr !important;
   }
 
   .section-header-row > .btn,

@@ -4,10 +4,16 @@ if (window.top === window.self) {
 }
 </script>
 
-<div class="filter-container">
-    <div class="filter-actions">
-        <div class="filter-group">
-            <label>Ano:</label>
+<div class="filter-container reports-toolbar-card">
+    <div class="reports-toolbar-main">
+        <div class="reports-toolbar-intro">
+            <p class="report-eyebrow">Visão executiva</p>
+            <h2 class="reports-toolbar-title">Relatórios financeiros</h2>
+            <p class="reports-toolbar-description">Uma leitura mais clara do ritmo anual, com foco em variação por ciclo, concentração de despesas e comportamento geral do período.</p>
+        </div>
+
+        <div class="reports-year-field">
+            <label for="reportYear">Ano</label>
             <select id="reportYear" class="custom-select">
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
@@ -15,8 +21,9 @@ if (window.top === window.self) {
                 <option value="2027">2027</option>
             </select>
         </div>
-        <!-- Botões de mostrar/ocultar todos os meses removidos -->
     </div>
+
+    <div id="reportsOverviewMetrics" class="reports-overview-metrics" aria-live="polite"></div>
 </div>
 
 <div class="reports-main-layout">
@@ -25,13 +32,14 @@ if (window.top === window.self) {
             <div class="reports-title-block">
                 <p class="report-eyebrow">Análise visual</p>
                 <h3 class="report-main-title">Comparativo por Ciclo Financeiro</h3>
+                <p class="report-subtitle">Acompanhe a distribuição dos gastos por ciclo e ajuste a leitura ocultando períodos específicos quando necessário.</p>
             </div>
-            <div class="report-header-chip">12 ciclos</div>
+            <div class="report-header-chip" id="reportCycleCountChip">12 ciclos visíveis</div>
         </div>
         <div class="reports-chart-tools">
             <div class="month-visibility-control" id="monthVisibilityControl">
                 <button type="button" class="month-visibility-trigger" id="monthVisibilityTrigger" aria-expanded="false" aria-controls="monthVisibilityPopover">
-                    <span>Ocultar ciclos</span>
+                    <span>Gerenciar ciclos</span>
                     <span class="month-visibility-count" id="monthVisibilityCount">0</span>
                 </button>
                 <div class="month-visibility-popover" id="monthVisibilityPopover" hidden>
@@ -43,6 +51,7 @@ if (window.top === window.self) {
         <div class="reports-chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
+        <div id="reportsInsightsContainer" class="reports-insights-grid" aria-live="polite"></div>
     </div>
 
     <aside class="reports-sidebar">
@@ -50,6 +59,7 @@ if (window.top === window.self) {
             <div>
                 <p class="report-eyebrow">Leitura rápida</p>
                 <h3>Resumo do Período</h3>
+                <p class="report-subtitle">Indicadores-chave do ciclo de referência para leitura rápida e tomada de decisão.</p>
             </div>
         </div>
         <div id="resumoPeriodoContainer" class="resumo-list"></div>
@@ -60,7 +70,7 @@ if (window.top === window.self) {
     <div class="ranking-header">
         <div class="header-info">
             <h3>Ranking de Maiores Gastos</h3>
-            <p>Maiores gastos do ano filtrado</p>
+            <p>Os lançamentos de maior peso dentro do ano filtrado, ordenados por impacto financeiro.</p>
         </div>
         <div class="header-badge">Top 5</div>
     </div>

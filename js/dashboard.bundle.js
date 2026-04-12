@@ -12,6 +12,8 @@
   var DEFAULT_SETTINGS = {
     moeda: "BRL",
     corTema: "azul",
+    corTemaClaro: "azul",
+    corTemaEscuro: "azul",
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -38,11 +40,21 @@
     const dia = Number(valor);
     return TURN_DAY_OPTIONS.includes(dia) ? dia : DEFAULT_SETTINGS.diaViradaMes;
   }
+  function normalizarCorTema(valor, fallback = DEFAULT_SETTINGS.corTema) {
+    return COLOR_THEME_OPTIONS.includes(valor) ? valor : fallback;
+  }
   function normalizarSettings(settings = {}) {
+    const temaEscuro = settings?.temaEscuro === true;
+    const corTemaLegado = normalizarCorTema(settings?.corTema, DEFAULT_SETTINGS.corTema);
+    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, corTemaLegado);
+    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, corTemaLegado);
     return {
       ...DEFAULT_SETTINGS,
       ...settings,
-      corTema: COLOR_THEME_OPTIONS.includes(settings?.corTema) ? settings.corTema : DEFAULT_SETTINGS.corTema,
+      corTema: temaEscuro ? corTemaEscuro : corTemaClaro,
+      corTemaClaro,
+      corTemaEscuro,
+      temaEscuro,
       diaViradaMes: normalizarDiaVirada(settings?.diaViradaMes),
       notificacoes: {
         ...DEFAULT_SETTINGS.notificacoes,
@@ -52,7 +64,7 @@
   }
   function normalizarTutorialState(state = {}) {
     const currentStep = Number(state?.currentStep);
-    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 8) : 0;
+    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 7) : 0;
     return {
       completed: state?.completed === true,
       currentStep: safeStep,
@@ -370,11 +382,15 @@
     const isDark = getThemeSettings().temaEscuro === true;
     return setThemePreference(!isDark);
   };
-  var applyThemeClasses = (isDark, element = document.body) => {
+  var getColorThemeForMode = (settings = getThemeSettings(), isDark = settings?.temaEscuro === true) => {
+    const resolvedSettings = normalizarSettings(settings);
+    return isDark ? resolvedSettings.corTemaEscuro : resolvedSettings.corTemaClaro;
+  };
+  var applyThemeClasses = (isDark, element = document.body, settingsOverride = null) => {
     if (!element) return isDark;
-    const settings = getThemeSettings();
+    const settings = normalizarSettings(settingsOverride || getThemeSettings());
     element.dataset.theme = isDark ? "dark" : "light";
-    element.dataset.colorTheme = settings.corTema || DEFAULT_SETTINGS.corTema;
+    element.dataset.colorTheme = getColorThemeForMode(settings, isDark);
     element.classList.toggle("dark-theme", isDark);
     element.classList.toggle("light-theme", !isDark);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
@@ -1135,15 +1151,21 @@
     monthNames: ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
     monthVisibilidade: Array(12).fill(true),
     init() {
+      this.renderizarOverview();
       this.renderizarResumo();
+      this.updateChartContainerMetrics();
       this.gerarGraficoComparativo();
+      this.renderizarInsights();
       this.renderizarRanking();
       this.configurarControleOcultarMeses();
       this.bindResponsiveChart();
+      this.scheduleChartResize();
       const yearSelect = document.getElementById("reportYear");
       if (yearSelect) {
         yearSelect.onchange = () => {
+          this.renderizarOverview();
           this.gerarGraficoComparativo();
+          this.renderizarInsights();
           this.renderizarResumo();
           this.renderizarRanking();
           this.configurarControleOcultarMeses();
@@ -1152,6 +1174,62 @@
     },
     isMobileViewport() {
       return window.innerWidth <= 640;
+    },
+    getChartViewportProfile() {
+      const container = document.querySelector(".reports-chart-container");
+      const width = container?.clientWidth || window.innerWidth;
+      return {
+        width,
+        isCompact: width <= 420,
+        isNarrow: width <= 640,
+        isMedium: width <= 920,
+        useHorizontalBars: width <= 760,
+        labelFontSize: width <= 420 ? 10 : width <= 640 ? 11 : 12,
+        valueFontSize: width <= 420 ? 10 : width <= 760 ? 11 : 12,
+        maxBarThickness: width <= 420 ? 18 : width <= 640 ? 22 : width <= 760 ? 26 : width <= 1100 ? 38 : 52,
+        categoryPercentage: width <= 420 ? 0.86 : width <= 760 ? 0.82 : 0.72,
+        barPercentage: width <= 420 ? 0.66 : width <= 760 ? 0.72 : 0.82,
+        layoutPadding: width <= 420 ? { top: 6, right: 4, bottom: 2, left: 0 } : width <= 760 ? { top: 8, right: 8, bottom: 4, left: 2 } : { top: 12, right: 12, bottom: 2, left: 8 }
+      };
+    },
+    updateChartContainerMetrics(profile = this.getChartViewportProfile()) {
+      const container = document.querySelector(".reports-chart-container");
+      if (!container) return profile;
+      const cycleCount = Math.max(this.getCycleSummaries().length, 1);
+      let nextHeight = 380;
+      if (profile.useHorizontalBars) {
+        const rowHeight = profile.isCompact ? 28 : profile.isNarrow ? 30 : 32;
+        const baseHeight = profile.isCompact ? 124 : 132;
+        nextHeight = baseHeight + cycleCount * rowHeight;
+        nextHeight = Math.max(profile.isCompact ? 336 : 360, Math.min(nextHeight, profile.isCompact ? 520 : 540));
+      } else if (profile.isMedium) {
+        nextHeight = 360;
+      } else {
+        nextHeight = 400;
+      }
+      container.style.setProperty("--reports-chart-height", `${nextHeight}px`);
+      return profile;
+    },
+    refreshResponsiveChartLayout(forceRegenerate = false) {
+      const profile = this.updateChartContainerMetrics();
+      const layoutKey = [
+        profile.useHorizontalBars ? "horizontal" : "vertical",
+        profile.labelFontSize,
+        profile.valueFontSize,
+        profile.maxBarThickness,
+        profile.categoryPercentage,
+        profile.barPercentage,
+        profile.width <= 420 ? "compact" : profile.width <= 760 ? "narrow" : profile.width <= 920 ? "medium" : "wide"
+      ].join(":");
+      if (forceRegenerate || this._lastChartLayoutKey !== layoutKey) {
+        this._lastChartLayoutKey = layoutKey;
+        this.gerarGraficoComparativo();
+        return;
+      }
+      if (!window.myChart) return;
+      window.myChart.resize();
+      window.myChart.update("none");
+      this.atualizarControleOcultarMeses();
     },
     getMonthLabel(name) {
       if (!this.isMobileViewport()) return name;
@@ -1196,13 +1274,34 @@
       if (this._responsiveChartBound) return;
       this._responsiveChartBound = true;
       let resizeTimer = null;
-      window.addEventListener("resize", () => {
+      const scheduleRefresh = (forceRegenerate = false) => {
         clearTimeout(resizeTimer);
         resizeTimer = window.setTimeout(() => {
           if (!document.getElementById("comparisonChart")) return;
-          this.gerarGraficoComparativo();
-          this.atualizarControleOcultarMeses();
+          this.refreshResponsiveChartLayout(forceRegenerate);
         }, 140);
+      };
+      window.addEventListener("resize", () => scheduleRefresh(false));
+      window.addEventListener("orientationchange", () => scheduleRefresh(true));
+      if ("ResizeObserver" in window) {
+        const observedCard = document.querySelector(".chart-card-large");
+        if (observedCard) {
+          this._reportsResizeObserver = new ResizeObserver(() => scheduleRefresh(false));
+          this._reportsResizeObserver.observe(observedCard);
+        }
+      }
+    },
+    scheduleChartResize() {
+      if (this._chartResizeFrame) {
+        window.cancelAnimationFrame(this._chartResizeFrame);
+      }
+      this._chartResizeFrame = window.requestAnimationFrame(() => {
+        this._chartResizeFrame = window.requestAnimationFrame(() => {
+          const chart = window.myChart;
+          if (!chart) return;
+          chart.resize();
+          chart.update("none");
+        });
       });
     },
     configurarControleOcultarMeses() {
@@ -1277,11 +1376,12 @@
     },
     atualizarVisibilidadeGrafico(chart) {
       if (!chart) return;
+      const profile = this.updateChartContainerMetrics();
       const totals = chart.$cycleTotals || [];
       const labels = chart.$cycleLabels || [];
       const monthColors = chart.$monthColors || [];
       const theme = this.obterCoresGrafico();
-      const isMobile = this.isMobileViewport();
+      const isHorizontal = profile.useHorizontalBars;
       const values = totals.map((valor, index) => this.monthVisibilidade[index] ? valor : null);
       const colors = monthColors.map((cor, index) => this.monthVisibilidade[index] ? cor : theme.hiddenBar);
       const visibleValues = values.filter((valor) => valor !== null);
@@ -1291,10 +1391,296 @@
       chart.data.labels = labels.map((label) => this.getMonthLabel(label));
       chart.data.datasets[0].data = values;
       chart.data.datasets[0].backgroundColor = colors;
-      chart.options.scales[isMobile ? "x" : "y"].suggestedMax = suggestedMax;
-      chart.options.scales[isMobile ? "x" : "y"].ticks.stepSize = stepSize;
+      chart.options.scales[isHorizontal ? "x" : "y"].suggestedMax = suggestedMax;
+      chart.options.scales[isHorizontal ? "x" : "y"].ticks.stepSize = stepSize;
       chart.update();
       this.atualizarControleOcultarMeses();
+      this.renderizarOverview();
+      this.renderizarInsights();
+    },
+    getVisibleCycleSummaries() {
+      return this.getCycleSummaries().filter((_, index) => this.monthVisibilidade[index]);
+    },
+    updateReportCycleChip(visibleCount = this.getVisibleCycleSummaries().length, totalCount = this.getCycleSummaries().length) {
+      const chip = document.getElementById("reportCycleCountChip");
+      if (!chip) return;
+      chip.textContent = `${visibleCount}/${totalCount} ciclos vis\xEDveis`;
+    },
+    renderizarOverview() {
+      const container = document.getElementById("reportsOverviewMetrics");
+      if (!container) return;
+      const summaries = this.getCycleSummaries();
+      const visibleSummaries = this.getVisibleCycleSummaries();
+      if (!summaries.length) {
+        container.innerHTML = '<div class="empty-state">Nenhum dado dispon\xEDvel para compor a vis\xE3o executiva.</div>';
+        this.updateReportCycleChip(0, 0);
+        return;
+      }
+      const effectiveSummaries = visibleSummaries.length ? visibleSummaries : summaries;
+      const totalUtilizado = effectiveSummaries.reduce((acc, summary) => acc + (Number(summary.totalUtilizado) || 0), 0);
+      const totalMetas = effectiveSummaries.reduce((acc, summary) => acc + (Number(summary.totalMetas) || 0), 0);
+      const mediaPorCiclo = totalUtilizado / Math.max(effectiveSummaries.length, 1);
+      const peakCycle = effectiveSummaries.reduce((highest, summary) => summary.totalUtilizado > highest.totalUtilizado ? summary : highest, effectiveSummaries[0]);
+      const latestSummary = effectiveSummaries[effectiveSummaries.length - 1];
+      const previousSummary = effectiveSummaries[effectiveSummaries.length - 2];
+      const trendLabel = this.getTrendLabel(latestSummary?.totalUtilizado || 0, previousSummary?.totalUtilizado || 0);
+      const hiddenCount = summaries.length - visibleSummaries.length;
+      const cards = [
+        {
+          label: "Volume anual",
+          value: formatarMoeda(totalUtilizado),
+          meta: hiddenCount > 0 ? `${hiddenCount} ciclo(s) oculto(s)` : "Leitura completa do ano"
+        },
+        {
+          label: "M\xE9dia por ciclo",
+          value: formatarMoeda(mediaPorCiclo),
+          meta: `${effectiveSummaries.length} ciclo(s) considerados`
+        },
+        {
+          label: "Maior concentra\xE7\xE3o",
+          value: peakCycle?.label || "Sem dados",
+          meta: peakCycle ? formatarMoeda(peakCycle.totalUtilizado) : "Sem movimenta\xE7\xE3o"
+        },
+        {
+          label: "Metas registradas",
+          value: formatarMoeda(totalMetas),
+          meta: trendLabel
+        }
+      ];
+      container.innerHTML = cards.map((card) => `
+            <article class="reports-overview-card">
+                <span class="reports-overview-label">${card.label}</span>
+                <strong class="reports-overview-value">${card.value}</strong>
+                <span class="reports-overview-meta">${card.meta}</span>
+            </article>
+        `).join("");
+      this.updateReportCycleChip(visibleSummaries.length || summaries.length, summaries.length);
+    },
+    getTrendLabel(currentValue, previousValue) {
+      if (!previousValue && !currentValue) return "Sem movimento relevante";
+      if (!previousValue && currentValue > 0) return "Primeiro ciclo com movimenta\xE7\xE3o";
+      const diff = currentValue - previousValue;
+      const ratio = previousValue > 0 ? diff / previousValue * 100 : 100;
+      if (Math.abs(diff) < 0.01) return "Est\xE1vel em rela\xE7\xE3o ao ciclo anterior";
+      if (diff > 0) return `${ratio.toFixed(0)}% acima do ciclo anterior`;
+      return `${Math.abs(ratio).toFixed(0)}% abaixo do ciclo anterior`;
+    },
+    buildMotionLinePath(points) {
+      if (!points.length) return "";
+      if (points.length === 1) return `M${points[0].x} ${points[0].y}`;
+      let path = `M${points[0].x} ${points[0].y}`;
+      for (let index = 0; index < points.length - 1; index += 1) {
+        const previous = points[index - 1] || points[index];
+        const current = points[index];
+        const next = points[index + 1];
+        const afterNext = points[index + 2] || next;
+        const controlPointOneX = current.x + (next.x - previous.x) / 6;
+        const controlPointOneY = current.y + (next.y - previous.y) / 6;
+        const controlPointTwoX = next.x - (afterNext.x - current.x) / 6;
+        const controlPointTwoY = next.y - (afterNext.y - current.y) / 6;
+        path += ` C${controlPointOneX.toFixed(2)} ${controlPointOneY.toFixed(2)} ${controlPointTwoX.toFixed(2)} ${controlPointTwoY.toFixed(2)} ${next.x} ${next.y}`;
+      }
+      return path;
+    },
+    buildMotionAreaPath(points, baseline) {
+      if (!points.length) return "";
+      const linePath = this.buildMotionLinePath(points);
+      const first = points[0];
+      const last = points[points.length - 1];
+      return `${linePath} L${last.x} ${baseline} L${first.x} ${baseline} Z`;
+    },
+    buildMotionVisualData(visibleSummaries) {
+      const width = 760;
+      const height = 240;
+      const frame = {
+        x: 24,
+        y: 18,
+        width: 712,
+        height: 198
+      };
+      const orbitRadius = 24;
+      const orbitNodeRadius = 5;
+      const pulseRadiusX = 28;
+      const pulseRadiusY = 14;
+      const latestPulseRadiusX = 24;
+      const latestPulseRadiusY = 12;
+      const pointMaxRadius = 4.5;
+      const pointScaleMax = 1.18;
+      const orbitScaleMax = 1.12;
+      const pulseScaleMax = 1.18;
+      const maxOrbitReachX = orbitRadius + orbitNodeRadius * orbitScaleMax + 4;
+      const maxOrbitReachY = orbitRadius + orbitNodeRadius * orbitScaleMax + 4;
+      const maxPeakReachX = Math.max(maxOrbitReachX, pulseRadiusX * pulseScaleMax);
+      const maxPeakReachY = Math.max(maxOrbitReachY, pulseRadiusY * pulseScaleMax);
+      const maxLatestReachX = latestPulseRadiusX * pulseScaleMax;
+      const maxLatestReachY = latestPulseRadiusY * pulseScaleMax;
+      const maxPointReach = pointMaxRadius * pointScaleMax + 4;
+      const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+      const left = frame.x + maxPeakReachX + 10;
+      const right = frame.x + frame.width - Math.max(maxPeakReachX, maxLatestReachX, maxPointReach) - 10;
+      const top = frame.y + maxPeakReachY + 10;
+      const baseline = frame.y + frame.height - Math.max(maxLatestReachY, maxPointReach) - 10;
+      const usableHeight = baseline - top;
+      const summaries = visibleSummaries.length ? visibleSummaries : [{ label: "Sem dados", totalUtilizado: 0 }];
+      const values = summaries.map((summary) => Number(summary.totalUtilizado) || 0);
+      const maxValue = Math.max(...values, 1);
+      const segment = (right - left) / Math.max(summaries.length, 1);
+      const barWidth = Math.max(14, Math.min(28, segment * 0.42));
+      const pointMinY = top + maxPointReach;
+      const pointMaxY = baseline - maxPointReach;
+      const points = summaries.map((summary, index) => {
+        const value = Number(summary.totalUtilizado) || 0;
+        const rawX = left + segment * index + segment / 2;
+        const normalized = maxValue > 0 ? value / maxValue : 0;
+        const rawY = baseline - normalized * usableHeight;
+        const x = clamp(rawX, left + maxPointReach, right - maxPointReach);
+        const y = clamp(rawY, pointMinY, pointMaxY);
+        return {
+          label: summary.label,
+          value,
+          x: Number(x.toFixed(2)),
+          y: Number(y.toFixed(2))
+        };
+      });
+      const bars = points.map((point, index) => {
+        const heightValue = Math.max(6, baseline - point.y);
+        return {
+          x: Number((point.x - barWidth / 2).toFixed(2)),
+          y: Number((baseline - heightValue).toFixed(2)),
+          width: Number(barWidth.toFixed(2)),
+          height: Number(heightValue.toFixed(2)),
+          delay: `${(index * 0.12).toFixed(2)}s`
+        };
+      });
+      const peakPoint = points.reduce((highest, point) => point.value > highest.value ? point : highest, points[0]);
+      const latestPoint = points[points.length - 1];
+      const peakAnchor = {
+        x: Number(clamp(peakPoint.x, frame.x + maxPeakReachX + 8, frame.x + frame.width - maxPeakReachX - 8).toFixed(2)),
+        y: Number(clamp(peakPoint.y, frame.y + maxPeakReachY + 8, frame.y + frame.height - maxPeakReachY - 8).toFixed(2))
+      };
+      const latestAnchor = {
+        x: Number(clamp(latestPoint.x, frame.x + maxLatestReachX + 8, frame.x + frame.width - maxLatestReachX - 8).toFixed(2)),
+        y: Number(clamp(latestPoint.y, frame.y + maxLatestReachY + 8, frame.y + frame.height - maxLatestReachY - 8).toFixed(2))
+      };
+      const hazeCenterY = Number(clamp(latestAnchor.y + 32, frame.y + 24, frame.y + frame.height - 20).toFixed(2));
+      return {
+        width,
+        height,
+        frame,
+        left,
+        right,
+        top,
+        baseline,
+        orbitRadius,
+        orbitNodeRadius,
+        pulseRadiusX,
+        pulseRadiusY,
+        latestPulseRadiusX,
+        latestPulseRadiusY,
+        points,
+        bars,
+        linePath: this.buildMotionLinePath(points),
+        areaPath: this.buildMotionAreaPath(points, baseline),
+        peakPoint,
+        latestPoint,
+        peakAnchor,
+        latestAnchor,
+        hazeCenterY
+      };
+    },
+    renderizarInsights() {
+      const container = document.getElementById("reportsInsightsContainer");
+      if (!container) return;
+      const year = this.getSelectedYear();
+      const visibleSummaries = this.getVisibleCycleSummaries();
+      if (!visibleSummaries.length) {
+        container.innerHTML = '<div class="empty-state">Todos os ciclos estao ocultos. Reative pelo menos um para visualizar o painel animado.</div>';
+        return;
+      }
+      const motion = this.buildMotionVisualData(visibleSummaries);
+      const gridLines = Array.from({ length: 4 }, (_, index) => Number((motion.top + (motion.baseline - motion.top) / 3 * index).toFixed(2)));
+      container.innerHTML = `
+            <section class="reports-motion-panel" aria-label="Painel visual animado dos relat\xF3rios de ${year}">
+                <div class="reports-motion-header">
+                    <div>
+                        <span class="reports-motion-kicker">Visual em movimento</span>
+                        <h4>Ritmo financeiro do ano</h4>
+                    </div>
+                    <div class="reports-motion-year-badge">${year}</div>
+                </div>
+
+                <div class="reports-motion-scene">
+                    <div class="reports-motion-glow reports-motion-glow-a" aria-hidden="true"></div>
+                    <div class="reports-motion-glow reports-motion-glow-b" aria-hidden="true"></div>
+
+                    <svg class="reports-motion-svg" viewBox="0 0 760 240" role="img" aria-label="Composi\xE7\xE3o visual animada representando a evolu\xE7\xE3o financeira do per\xEDodo">
+                        <defs>
+                            <clipPath id="reportsMotionFrameClip">
+                                <rect x="${motion.frame.x}" y="${motion.frame.y}" width="${motion.frame.width}" height="${motion.frame.height}" rx="20"></rect>
+                            </clipPath>
+                            <linearGradient id="reportsMotionStroke" x1="0%" y1="0%" x2="100%" y2="0%">
+                                <stop offset="0%" stop-color="rgba(255,255,255,0.14)" />
+                                <stop offset="42%" stop-color="var(--accent)" />
+                                <stop offset="100%" stop-color="rgba(255,255,255,0.28)" />
+                            </linearGradient>
+                            <linearGradient id="reportsMotionFill" x1="0" y1="0" x2="0" y2="1">
+                                <stop offset="0%" stop-color="rgba(var(--accent-rgb), 0.26)" />
+                                <stop offset="100%" stop-color="rgba(var(--accent-rgb), 0.02)" />
+                            </linearGradient>
+                            <filter id="reportsMotionLineGlow" x="-10%" y="-20%" width="120%" height="140%">
+                                <feGaussianBlur stdDeviation="3.6" result="blur"></feGaussianBlur>
+                                <feMerge>
+                                    <feMergeNode in="blur"></feMergeNode>
+                                    <feMergeNode in="SourceGraphic"></feMergeNode>
+                                </feMerge>
+                            </filter>
+                            <filter id="reportsMotionBlur">
+                                <feGaussianBlur stdDeviation="12" />
+                            </filter>
+                        </defs>
+
+                        <g clip-path="url(#reportsMotionFrameClip)">
+                            <g class="reports-motion-grid" aria-hidden="true">
+                                ${gridLines.map((y) => `<line x1="${motion.left}" y1="${y}" x2="${motion.right}" y2="${y}"></line>`).join("")}
+                                <line class="reports-motion-baseline" x1="${motion.left}" y1="${motion.baseline}" x2="${motion.right}" y2="${motion.baseline}"></line>
+                            </g>
+
+                            <path class="reports-motion-area" d="${motion.areaPath}"></path>
+                            <path class="reports-motion-line-shadow" d="${motion.linePath}"></path>
+                            <path class="reports-motion-line" d="${motion.linePath}" filter="url(#reportsMotionLineGlow)"></path>
+
+                            <g class="reports-motion-bars" aria-hidden="true">
+                                ${motion.bars.map((bar) => `<rect class="bar" x="${bar.x}" y="${bar.y}" width="${bar.width}" height="${bar.height}" rx="10" style="animation-delay:${bar.delay}"></rect>`).join("")}
+                            </g>
+
+                            <g class="reports-motion-orbit" aria-hidden="true">
+                                <circle class="orbit-path" cx="${motion.peakAnchor.x}" cy="${motion.peakAnchor.y}" r="${motion.orbitRadius}"></circle>
+                                <circle class="orbit-node orbit-node-a" cx="${motion.peakAnchor.x + motion.orbitRadius}" cy="${motion.peakAnchor.y}" r="${motion.orbitNodeRadius}"></circle>
+                                <circle class="orbit-node orbit-node-b" cx="${motion.peakAnchor.x}" cy="${motion.peakAnchor.y - motion.orbitRadius}" r="${motion.orbitNodeRadius}"></circle>
+                            </g>
+
+                            <g class="reports-motion-points" aria-hidden="true">
+                                ${motion.points.map((point) => `<circle cx="${point.x}" cy="${point.y}" r="${point.value === motion.peakPoint.value ? 4.5 : 3.5}"></circle>`).join("")}
+                            </g>
+
+                            <ellipse class="reports-motion-pulse" cx="${motion.peakAnchor.x}" cy="${motion.peakAnchor.y}" rx="${motion.pulseRadiusX}" ry="${motion.pulseRadiusY}"></ellipse>
+                            <ellipse class="reports-motion-pulse reports-motion-pulse-delay" cx="${motion.latestAnchor.x}" cy="${motion.latestAnchor.y}" rx="${motion.latestPulseRadiusX}" ry="${motion.latestPulseRadiusY}"></ellipse>
+                            <ellipse class="reports-motion-haze" cx="${motion.latestAnchor.x}" cy="${motion.hazeCenterY}" rx="62" ry="14" filter="url(#reportsMotionBlur)"></ellipse>
+                        </g>
+                    </svg>
+
+                    <div class="reports-motion-floating-card reports-motion-floating-card-a" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                        <span></span>
+                    </div>
+                    <div class="reports-motion-floating-card reports-motion-floating-card-b" aria-hidden="true">
+                        <span></span>
+                        <span></span>
+                    </div>
+                </div>
+            </section>
+        `;
     },
     renderizarResumo() {
       const container = document.getElementById("resumoPeriodoContainer");
@@ -1354,7 +1740,8 @@
       const summaries = this.getCycleSummaries();
       const monthColors = ["#ef4444", "#3b82f6", "#22c55e", "#f59e0b", "#8b5cf6", "#ec4899", "#10b981", "#0284c7", "#f97316", "#14b8a6", "#f43f5e", "#0ea5e9"];
       const theme = this.obterCoresGrafico();
-      const isMobile = this.isMobileViewport();
+      const profile = this.updateChartContainerMetrics();
+      const isHorizontal = profile.useHorizontalBars;
       const labels = summaries.map((summary, index) => this.monthNames[index]);
       const totals = summaries.map((summary) => summary.totalUtilizado);
       const visibleValues = totals.filter((_, index) => this.monthVisibilidade[index]);
@@ -1373,18 +1760,19 @@
             borderRadius: 0,
             borderSkipped: false,
             hoverBorderWidth: 0,
-            maxBarThickness: isMobile ? 28 : 54,
-            categoryPercentage: isMobile ? 0.9 : 0.72,
-            barPercentage: isMobile ? 0.72 : 0.82
+            maxBarThickness: profile.maxBarThickness,
+            categoryPercentage: profile.categoryPercentage,
+            barPercentage: profile.barPercentage
           }]
         },
         options: {
           responsive: true,
           maintainAspectRatio: false,
-          indexAxis: isMobile ? "y" : "x",
+          indexAxis: isHorizontal ? "y" : "x",
           layout: {
-            padding: isMobile ? { top: 8, right: 6, bottom: 4, left: 2 } : { top: 12, right: 10, bottom: 0, left: 6 }
+            padding: profile.layoutPadding
           },
+          animation: false,
           plugins: {
             legend: { display: false },
             tooltip: {
@@ -1401,13 +1789,13 @@
                 },
                 label: (ctxItem) => {
                   const summary = summaries[ctxItem.dataIndex];
-                  return `${summary?.label || ""}: ${formatarMoeda(isMobile ? ctxItem.parsed.x || 0 : ctxItem.parsed.y || 0)}`;
+                  return `${summary?.label || ""}: ${formatarMoeda(isHorizontal ? ctxItem.parsed.x || 0 : ctxItem.parsed.y || 0)}`;
                 }
               }
             }
           },
           scales: {
-            [isMobile ? "x" : "y"]: {
+            [isHorizontal ? "x" : "y"]: {
               beginAtZero: true,
               suggestedMax,
               grid: {
@@ -1417,19 +1805,23 @@
               border: { display: false },
               ticks: {
                 stepSize,
-                padding: 10,
+                maxTicksLimit: profile.isCompact ? 4 : 6,
+                padding: profile.isCompact ? 6 : 10,
                 color: theme.accent,
-                font: { weight: "800", size: isMobile ? 11 : 12 },
+                font: { weight: "800", size: profile.valueFontSize },
                 callback: (value) => this.formatarEixoValor(value)
               }
             },
-            [isMobile ? "y" : "x"]: {
+            [isHorizontal ? "y" : "x"]: {
               grid: { display: false },
               border: { display: false },
               ticks: {
+                autoSkip: false,
                 color: (tickContext) => this.monthVisibilidade[tickContext.index] ? theme.textPrimary : theme.xTickInactive,
-                font: { weight: "700", size: isMobile ? 11 : 12 },
-                padding: 8
+                font: { weight: "700", size: profile.labelFontSize },
+                padding: profile.isCompact ? 6 : 8,
+                maxRotation: 0,
+                minRotation: 0
               }
             }
           }
@@ -1438,7 +1830,9 @@
       window.myChart.$cycleTotals = totals;
       window.myChart.$cycleLabels = labels;
       window.myChart.$monthColors = monthColors;
+      this.updateReportCycleChip(visibleValues.length, totals.length);
       this.atualizarControleOcultarMeses();
+      this.scheduleChartResize();
     },
     renderizarRanking() {
       const container = document.getElementById("rankingGastosContainer");
@@ -1452,9 +1846,9 @@
         const parts = String(item.data || "--").split("-");
         const dataDisplay = parts.length === 3 ? `${parts[2]}/${parts[1]}/${parts[0]}` : item.data;
         return `
-                <div class="ranking-row">
+                <div class="ranking-row ${index === 0 ? "is-primary" : index < 3 ? "is-featured" : ""}">
                     <div class="row-left">
-                        <div class="rank-number">${index + 1}\xBA</div>
+                        <div class="rank-number">${String(index + 1).padStart(2, "0")}</div>
                         <div class="item-details">
                             <span class="item-date">${dataDisplay}</span>
                             <h4 class="item-title">${item.titulo}</h4>
@@ -3174,7 +3568,8 @@
       this.checkAlertaOrcamentoMeta = document.getElementById("checkAlertaOrcamentoMeta");
       this.checkLembreteMetas = document.getElementById("checkLembreteMetas");
       this.selectMoeda = document.getElementById("selectMoeda");
-      this.selectCorTema = document.getElementById("selectCorTema");
+      this.selectCorTemaClaro = document.getElementById("selectCorTemaClaro");
+      this.selectCorTemaEscuro = document.getElementById("selectCorTemaEscuro");
       this.selectDiaVirada = document.getElementById("selectDiaVirada");
       this.checkTemaEscuro = document.getElementById("checkTemaEscuro");
       this.btnAbrirTutorial = document.getElementById("btnAbrirTutorial");
@@ -3187,6 +3582,11 @@
       this.checkNotificacoesGeral.addEventListener("change", (e) => {
         this.toggleSubNotifications(e.target.checked);
         this.toggleNotificacoes(e.target.checked);
+      });
+      [this.selectCorTemaClaro, this.selectCorTemaEscuro].forEach((select) => {
+        select?.addEventListener("change", () => {
+          this.applyTheme(this.buildThemePreviewSettings());
+        });
       });
       this.checkTemaEscuro.addEventListener("change", (e) => {
         this.toggleTheme(e.target.checked);
@@ -3233,13 +3633,22 @@
       }, 3e3);
     },
     toggleTheme: function(isDark) {
-      applyThemeClasses(isDark, document.body);
+      applyThemeClasses(isDark, document.body, this.buildThemePreviewSettings(isDark));
     },
-    applyTheme: function() {
-      const settings = getThemeSettings();
+    buildThemePreviewSettings: function(isDark = this.checkTemaEscuro.checked) {
+      const saved = getThemeSettings();
+      return {
+        ...saved,
+        corTemaClaro: this.selectCorTemaClaro?.value || saved.corTemaClaro || saved.corTema || "azul",
+        corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || "azul",
+        temaEscuro: isDark === true
+      };
+    },
+    applyTheme: function(settingsOverride = null) {
+      const settings = settingsOverride || getThemeSettings();
       const isDark = settings.temaEscuro === true;
       this.checkTemaEscuro.checked = isDark;
-      applyStoredTheme(document.body);
+      applyThemeClasses(isDark, document.body, settings);
     },
     toggleSubNotifications: function(isEnabled) {
       const dependents = [
@@ -3261,7 +3670,8 @@
     saveSettings: function() {
       const settings = {
         moeda: this.selectMoeda.value,
-        corTema: this.selectCorTema?.value || "azul",
+        corTemaClaro: this.selectCorTemaClaro?.value || "azul",
+        corTemaEscuro: this.selectCorTemaEscuro?.value || "azul",
         diaViradaMes: Number(this.selectDiaVirada?.value || 1),
         temaEscuro: this.checkTemaEscuro.checked,
         notificacoes: {
@@ -3272,17 +3682,18 @@
         },
         dataAtualizacao: (/* @__PURE__ */ new Date()).toISOString()
       };
-      localStorage.setItem("visionFinance_settings", JSON.stringify(settings));
+      const savedSettings = setThemeSettings(settings);
       ensureFinancialDataIntegrity();
       this.mostrarFeedback();
-      window.dispatchEvent(new CustomEvent("settingsUpdated", { detail: settings }));
-      this.applyTheme();
+      window.dispatchEvent(new CustomEvent("settingsUpdated", { detail: savedSettings }));
+      this.applyTheme(savedSettings);
     },
     loadSettings: function() {
       const saved = getThemeSettings();
       if (saved) {
         this.selectMoeda.value = saved.moeda || "BRL";
-        if (this.selectCorTema) this.selectCorTema.value = saved.corTema || "azul";
+        if (this.selectCorTemaClaro) this.selectCorTemaClaro.value = saved.corTemaClaro || saved.corTema || "azul";
+        if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || "azul";
         if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
         this.checkTemaEscuro.checked = saved.temaEscuro === true;
         this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
@@ -3291,7 +3702,7 @@
         this.checkLembreteMetas.checked = saved.notificacoes?.metas || false;
         this.toggleSubNotifications(this.checkNotificacoesGeral.checked);
       }
-      this.applyTheme();
+      this.applyTheme(saved);
     },
     mostrarFeedback: function() {
       const btn = this.form.querySelector(".btn-primary");
@@ -3861,10 +4272,16 @@ if (window.top === window.self) {
 }
 <\/script>
 
-<div class="filter-container">
-    <div class="filter-actions">
-        <div class="filter-group">
-            <label>Ano:</label>
+<div class="filter-container reports-toolbar-card">
+    <div class="reports-toolbar-main">
+        <div class="reports-toolbar-intro">
+            <p class="report-eyebrow">Vis\xE3o executiva</p>
+            <h2 class="reports-toolbar-title">Relat\xF3rios financeiros</h2>
+            <p class="reports-toolbar-description">Uma leitura mais clara do ritmo anual, com foco em varia\xE7\xE3o por ciclo, concentra\xE7\xE3o de despesas e comportamento geral do per\xEDodo.</p>
+        </div>
+
+        <div class="reports-year-field">
+            <label for="reportYear">Ano</label>
             <select id="reportYear" class="custom-select">
                 <option value="2024">2024</option>
                 <option value="2025">2025</option>
@@ -3872,8 +4289,9 @@ if (window.top === window.self) {
                 <option value="2027">2027</option>
             </select>
         </div>
-        <!-- Bot\xF5es de mostrar/ocultar todos os meses removidos -->
     </div>
+
+    <div id="reportsOverviewMetrics" class="reports-overview-metrics" aria-live="polite"></div>
 </div>
 
 <div class="reports-main-layout">
@@ -3882,13 +4300,14 @@ if (window.top === window.self) {
             <div class="reports-title-block">
                 <p class="report-eyebrow">An\xE1lise visual</p>
                 <h3 class="report-main-title">Comparativo por Ciclo Financeiro</h3>
+                <p class="report-subtitle">Acompanhe a distribui\xE7\xE3o dos gastos por ciclo e ajuste a leitura ocultando per\xEDodos espec\xEDficos quando necess\xE1rio.</p>
             </div>
-            <div class="report-header-chip">12 ciclos</div>
+            <div class="report-header-chip" id="reportCycleCountChip">12 ciclos vis\xEDveis</div>
         </div>
         <div class="reports-chart-tools">
             <div class="month-visibility-control" id="monthVisibilityControl">
                 <button type="button" class="month-visibility-trigger" id="monthVisibilityTrigger" aria-expanded="false" aria-controls="monthVisibilityPopover">
-                    <span>Ocultar ciclos</span>
+                    <span>Gerenciar ciclos</span>
                     <span class="month-visibility-count" id="monthVisibilityCount">0</span>
                 </button>
                 <div class="month-visibility-popover" id="monthVisibilityPopover" hidden>
@@ -3900,6 +4319,7 @@ if (window.top === window.self) {
         <div class="reports-chart-container">
             <canvas id="comparisonChart"></canvas>
         </div>
+        <div id="reportsInsightsContainer" class="reports-insights-grid" aria-live="polite"></div>
     </div>
 
     <aside class="reports-sidebar">
@@ -3907,6 +4327,7 @@ if (window.top === window.self) {
             <div>
                 <p class="report-eyebrow">Leitura r\xE1pida</p>
                 <h3>Resumo do Per\xEDodo</h3>
+                <p class="report-subtitle">Indicadores-chave do ciclo de refer\xEAncia para leitura r\xE1pida e tomada de decis\xE3o.</p>
             </div>
         </div>
         <div id="resumoPeriodoContainer" class="resumo-list"></div>
@@ -3917,7 +4338,7 @@ if (window.top === window.self) {
     <div class="ranking-header">
         <div class="header-info">
             <h3>Ranking de Maiores Gastos</h3>
-            <p>Maiores gastos do ano filtrado</p>
+            <p>Os lan\xE7amentos de maior peso dentro do ano filtrado, ordenados por impacto financeiro.</p>
         </div>
         <div class="header-badge">Top 5</div>
     </div>
@@ -4158,15 +4579,32 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-group">
-                <label for="selectCorTema" class="form-label">Cor do tema</label>
-                <select id="selectCorTema" class="select">
-                    <option value="azul">Azul</option>
-                    <option value="dourado">Dourado</option>
-                    <option value="oceano">Oceano</option>
-                    <option value="grafite">Grafite</option>
-                    <option value="aurora">Aurora</option>
-                    <option value="terracota">Terracota</option>
-                </select>
+                <label class="form-label">Temas por modo</label>
+                <div class="theme-select-grid">
+                    <div class="theme-select-card">
+                        <label for="selectCorTemaClaro" class="form-label form-label-inline">Tema do modo claro</label>
+                        <select id="selectCorTemaClaro" class="select">
+                            <option value="azul">Azul</option>
+                            <option value="dourado">Dourado</option>
+                            <option value="oceano">Oceano</option>
+                            <option value="grafite">Grafite</option>
+                            <option value="aurora">Aurora</option>
+                            <option value="terracota">Terracota</option>
+                        </select>
+                    </div>
+                    <div class="theme-select-card">
+                        <label for="selectCorTemaEscuro" class="form-label form-label-inline">Tema do modo escuro</label>
+                        <select id="selectCorTemaEscuro" class="select">
+                            <option value="azul">Azul</option>
+                            <option value="dourado">Dourado</option>
+                            <option value="oceano">Oceano</option>
+                            <option value="grafite">Grafite</option>
+                            <option value="aurora">Aurora</option>
+                            <option value="terracota">Terracota</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="theme-helper-text">Defina uma cor para cada modo. Ao alternar claro e escuro, o sistema usa automaticamente a cor correspondente.</p>
             </div>
 
             <div class="form-group">
@@ -4283,7 +4721,7 @@ if (window.top === window.self) {
   };
   var secaoAtiva = "painel";
   var LOGIN_SESSION_KEY = "visionFinance_justLoggedIn";
-  var TOTAL_TUTORIAL_STEPS = 8;
+  var TOTAL_TUTORIAL_STEPS = 7;
   var TUTORIAL_SECTIONS = [
     {
       title: "Painel",
@@ -4291,7 +4729,10 @@ if (window.top === window.self) {
       description: "Acompanhe saldo dispon\xEDvel, distribui\xE7\xE3o dos gastos, metas e os indicadores mais importantes logo no primeiro acesso.",
       badge: "Resumo em tempo real",
       stat: "Indicadores e atalhos",
-      accent: "01"
+      accent: "01",
+      imageLight: "./img/dashboard-modo.claro.jpeg",
+      imageDark: "./img/dashboard-modo.escuro.jpeg",
+      imageAlt: "Pr\xE9via da tela de painel do Vision Finance"
     },
     {
       title: "Despesas",
@@ -4299,7 +4740,10 @@ if (window.top === window.self) {
       description: "Cadastre despesas com categoria, forma de pagamento, data e observa\xE7\xF5es para manter o hist\xF3rico sempre organizado.",
       badge: "Controle di\xE1rio",
       stat: "Categorias e filtros",
-      accent: "02"
+      accent: "02",
+      imageLight: "./img/despesas-modo.claro.jfif",
+      imageDark: "./img/despesas-modo.escuro.jfif",
+      imageAlt: "Pr\xE9via da tela de despesas do Vision Finance"
     },
     {
       title: "Carteiras",
@@ -4307,7 +4751,10 @@ if (window.top === window.self) {
       description: "Centralize suas carteiras para visualizar limites, gastos acumulados e distribui\xE7\xE3o entre meios de pagamento.",
       badge: "Meios de pagamento",
       stat: "Saldo por carteira",
-      accent: "03"
+      accent: "03",
+      imageLight: "./img/carteiras-modo.claro.jfif",
+      imageDark: "./img/carteiras-modo.escuro.jfif",
+      imageAlt: "Pr\xE9via da tela de carteiras do Vision Finance"
     },
     {
       title: "Planejamento",
@@ -4315,7 +4762,10 @@ if (window.top === window.self) {
       description: "Estabele\xE7a objetivos financeiros, acompanhe aportes por ciclo e enxergue com clareza o que falta para cada meta.",
       badge: "Objetivos mensais",
       stat: "Metas por ciclo",
-      accent: "04"
+      accent: "04",
+      imageLight: "./img/planejamento-modo.claro.jfif",
+      imageDark: "./img/planejamento-modo.escuro.jfif",
+      imageAlt: "Pr\xE9via da tela de planejamento do Vision Finance"
     },
     {
       title: "Relat\xF3rios",
@@ -4323,7 +4773,10 @@ if (window.top === window.self) {
       description: "Use gr\xE1ficos, rankings e comparativos para entender tend\xEAncias e tomar decis\xF5es melhores com base nos dados.",
       badge: "Insights visuais",
       stat: "Comparativos e tend\xEAncias",
-      accent: "05"
+      accent: "05",
+      imageLight: "./img/relatorio-modo.claro.jfif",
+      imageDark: "./img/relatorio-modo.escuro.jfif",
+      imageAlt: "Pr\xE9via da tela de relat\xF3rios do Vision Finance"
     },
     {
       title: "Perfil",
@@ -4331,15 +4784,10 @@ if (window.top === window.self) {
       description: "Atualize seus dados pessoais, sua foto e os detalhes que personalizam a experi\xEAncia do seu ambiente.",
       badge: "Dados do usu\xE1rio",
       stat: "Personaliza\xE7\xE3o da conta",
-      accent: "06"
-    },
-    {
-      title: "Configura\xE7\xF5es",
-      subtitle: "Ajustes permanentes do sistema",
-      description: "Defina moeda, dia de virada, notifica\xE7\xF5es e apar\xEAncia para adaptar o Vision Finance \xE0 sua rotina.",
-      badge: "Prefer\xEAncias persistentes",
-      stat: "Tema e notifica\xE7\xF5es",
-      accent: "07"
+      accent: "06",
+      imageLight: "./img/perfil-modo.claro.jfif",
+      imageDark: "./img/perfil-modo.escuro.jpeg",
+      imageAlt: "Pr\xE9via da tela de perfil do Vision Finance"
     }
   ];
   var TUTORIAL_COLOR_LABELS = {
@@ -4356,6 +4804,9 @@ if (window.top === window.self) {
     EUR: "Euro",
     GBP: "Libra Esterlina"
   };
+  function renderTutorialColorChoices(setting, selectedValue) {
+    return Object.entries(TUTORIAL_COLOR_LABELS).map(([value, label]) => `<button type="button" class="tutorial-choice-btn ${selectedValue === value ? "is-active" : ""}" data-setting="${setting}" data-value="${value}">${label}</button>`).join("");
+  }
   var tutorialElements = null;
   var tutorialDraftSettings = null;
   function getTutorialCurrentStep() {
@@ -4369,7 +4820,8 @@ if (window.top === window.self) {
     const settings = getThemeSettings();
     tutorialDraftSettings = {
       moeda: settings.moeda || "BRL",
-      corTema: settings.corTema || "azul",
+      corTemaClaro: settings.corTemaClaro || settings.corTema || "azul",
+      corTemaEscuro: settings.corTemaEscuro || settings.corTema || "azul",
       diaViradaMes: Number(settings.diaViradaMes || 1),
       temaEscuro: settings.temaEscuro === true,
       notificacoes: {
@@ -4434,7 +4886,7 @@ if (window.top === window.self) {
                 <div class="tutorial-intro-points">
                     <div class="tutorial-intro-point">
                         <strong>Vis\xE3o r\xE1pida do sistema</strong>
-                        <span>Painel, despesas, carteiras, planejamento, relat\xF3rios, perfil e configura\xE7\xF5es.</span>
+                        <span>Painel, despesas, carteiras, planejamento, relat\xF3rios e perfil.</span>
                     </div>
                     <div class="tutorial-intro-point">
                         <strong>Configura\xE7\xE3o inicial guiada</strong>
@@ -4451,9 +4903,9 @@ if (window.top === window.self) {
   }
   function renderTutorialSectionPage(step) {
     const section = TUTORIAL_SECTIONS[step - 1];
-    const isPainel = step === 1;
     const isDark = getThemeSettings().temaEscuro === true;
-    const painelVisual = isPainel ? `
+    const imageSource = isDark ? section.imageDark : section.imageLight;
+    const sectionVisual = imageSource ? `
             <div class="tutorial-panel-frame">
                 <div class="tutorial-panel-toolbar" aria-hidden="true">
                     <div class="tutorial-panel-dots">
@@ -4461,12 +4913,12 @@ if (window.top === window.self) {
                         <span></span>
                         <span></span>
                     </div>
-                    <div class="tutorial-panel-toolbar-label">Painel Vision Finance</div>
+                    <div class="tutorial-panel-toolbar-label">${escapeHtml(section.title)} Vision Finance</div>
                 </div>
                 <div class="tutorial-panel-media">
                     <img
-                        src="${isDark ? "./img/dashboard-modo.escuro.jpeg" : "./img/dashboard-modo.claro.jpeg"}"
-                        alt="Pr\xE9via do painel do Vision Finance no modo ${isDark ? "escuro" : "claro"}"
+                        src="${imageSource}"
+                        alt="${escapeHtml(section.imageAlt)} no modo ${isDark ? "escuro" : "claro"}"
                         class="tutorial-panel-image"
                     >
                 </div>
@@ -4510,8 +4962,8 @@ if (window.top === window.self) {
                     </div>
                 </div>
             </article>
-            <article class="tutorial-visual" aria-label="Espa\xE7o reservado para imagem da se\xE7\xE3o ${escapeHtml(section.title)}">
-                ${painelVisual}
+            <article class="tutorial-visual" aria-label="Pr\xE9via da se\xE7\xE3o ${escapeHtml(section.title)}">
+                ${sectionVisual}
             </article>
         </div>
     `;
@@ -4561,14 +5013,15 @@ if (window.top === window.self) {
                                 <span>Escolha o estilo visual ideal</span>
                             </div>
                             <div class="tutorial-field tutorial-field-full">
-                                <label>Cor do site</label>
-                                <div class="tutorial-choice-grid" data-setting-group="corTema">
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "azul" ? "is-active" : ""}" data-setting="corTema" data-value="azul">Azul</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "dourado" ? "is-active" : ""}" data-setting="corTema" data-value="dourado">Dourado</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "oceano" ? "is-active" : ""}" data-setting="corTema" data-value="oceano">Oceano</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "grafite" ? "is-active" : ""}" data-setting="corTema" data-value="grafite">Grafite</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "aurora" ? "is-active" : ""}" data-setting="corTema" data-value="aurora">Aurora</button>
-                                    <button type="button" class="tutorial-choice-btn ${draft.corTema === "terracota" ? "is-active" : ""}" data-setting="corTema" data-value="terracota">Terracota</button>
+                                <label>Tema do modo claro</label>
+                                <div class="tutorial-choice-grid" data-setting-group="corTemaClaro">
+                                    ${renderTutorialColorChoices("corTemaClaro", draft.corTemaClaro)}
+                                </div>
+                            </div>
+                            <div class="tutorial-field tutorial-field-full">
+                                <label>Tema do modo escuro</label>
+                                <div class="tutorial-choice-grid" data-setting-group="corTemaEscuro">
+                                    ${renderTutorialColorChoices("corTemaEscuro", draft.corTemaEscuro)}
                                 </div>
                             </div>
                             <div class="tutorial-field tutorial-field-full">
@@ -4626,7 +5079,8 @@ if (window.top === window.self) {
                             <div class="tutorial-summary-list tutorial-summary-list-professional">
                                 <div class="tutorial-summary-item"><span>Ciclo financeiro</span><strong>Dia ${draft.diaViradaMes}</strong></div>
                                 <div class="tutorial-summary-item"><span>Moeda principal</span><strong>${escapeHtml(TUTORIAL_CURRENCY_LABELS[draft.moeda] || draft.moeda)}</strong></div>
-                                <div class="tutorial-summary-item"><span>Cor do site</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTema] || draft.corTema)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Tema modo claro</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTemaClaro] || draft.corTemaClaro)}</strong></div>
+                                <div class="tutorial-summary-item"><span>Tema modo escuro</span><strong>${escapeHtml(TUTORIAL_COLOR_LABELS[draft.corTemaEscuro] || draft.corTemaEscuro)}</strong></div>
                                 <div class="tutorial-summary-item"><span>Modo visual</span><strong>${escapeHtml(getThemeModeLabel(draft.temaEscuro))}</strong></div>
                                 <div class="tutorial-summary-item tutorial-summary-item-stack"><span>Notifica\xE7\xF5es ativas</span><strong>${escapeHtml(getNotificationSummary(draft.notificacoes))}</strong></div>
                             </div>
@@ -4652,7 +5106,7 @@ if (window.top === window.self) {
   function bindTutorialSetupEvents() {
     const elements = cacheTutorialElements();
     if (!elements.content) return;
-    elements.content.querySelectorAll('[data-setting="corTema"], [data-setting="temaEscuro"]').forEach((button) => {
+    elements.content.querySelectorAll('[data-setting="corTemaClaro"], [data-setting="corTemaEscuro"], [data-setting="temaEscuro"]').forEach((button) => {
       button.addEventListener("click", () => {
         const setting = button.dataset.setting;
         const rawValue = button.dataset.value;

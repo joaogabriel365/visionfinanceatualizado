@@ -28,7 +28,8 @@
 }
 
 .chart-container {
-  height: 330px;
+  min-height: 250px;
+  height: clamp(250px, 34vw, 330px);
   width: 100%;
   position: relative;
 }
@@ -173,6 +174,15 @@ body.dark-theme .dash-table tbody tr:hover {
 }
 
 @media (max-width: 1024px) {
+  .dashboard-top-cards,
+  .stats-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .charts-grid {
+    grid-template-columns: 1fr;
+  }
+
   .chart-container {
     height: 290px;
   }

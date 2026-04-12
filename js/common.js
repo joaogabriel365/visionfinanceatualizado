@@ -12,6 +12,8 @@ export const COLOR_THEME_OPTIONS = ['azul', 'dourado', 'oceano', 'grafite', 'aur
 const DEFAULT_SETTINGS = {
     moeda: 'BRL',
     corTema: 'azul',
+    corTemaClaro: 'azul',
+    corTemaEscuro: 'azul',
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -42,11 +44,23 @@ function normalizarDiaVirada(valor) {
     return TURN_DAY_OPTIONS.includes(dia) ? dia : DEFAULT_SETTINGS.diaViradaMes;
 }
 
+function normalizarCorTema(valor, fallback = DEFAULT_SETTINGS.corTema) {
+    return COLOR_THEME_OPTIONS.includes(valor) ? valor : fallback;
+}
+
 function normalizarSettings(settings = {}) {
+    const temaEscuro = settings?.temaEscuro === true;
+    const corTemaLegado = normalizarCorTema(settings?.corTema, DEFAULT_SETTINGS.corTema);
+    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, corTemaLegado);
+    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, corTemaLegado);
+
     return {
         ...DEFAULT_SETTINGS,
         ...settings,
-        corTema: COLOR_THEME_OPTIONS.includes(settings?.corTema) ? settings.corTema : DEFAULT_SETTINGS.corTema,
+        corTema: temaEscuro ? corTemaEscuro : corTemaClaro,
+        corTemaClaro,
+        corTemaEscuro,
+        temaEscuro,
         diaViradaMes: normalizarDiaVirada(settings?.diaViradaMes),
         notificacoes: {
             ...DEFAULT_SETTINGS.notificacoes,
@@ -57,7 +71,7 @@ function normalizarSettings(settings = {}) {
 
 function normalizarTutorialState(state = {}) {
     const currentStep = Number(state?.currentStep);
-    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 8) : 0;
+    const safeStep = Number.isFinite(currentStep) ? Math.min(Math.max(currentStep, 0), 7) : 0;
 
     return {
         completed: state?.completed === true,
@@ -472,13 +486,18 @@ export const toggleThemePreference = () => {
     return setThemePreference(!isDark);
 };
 
-export const applyThemeClasses = (isDark, element = document.body) => {
+export const getColorThemeForMode = (settings = getThemeSettings(), isDark = settings?.temaEscuro === true) => {
+    const resolvedSettings = normalizarSettings(settings);
+    return isDark ? resolvedSettings.corTemaEscuro : resolvedSettings.corTemaClaro;
+};
+
+export const applyThemeClasses = (isDark, element = document.body, settingsOverride = null) => {
     if (!element) return isDark;
 
-    const settings = getThemeSettings();
+    const settings = normalizarSettings(settingsOverride || getThemeSettings());
 
     element.dataset.theme = isDark ? 'dark' : 'light';
-    element.dataset.colorTheme = settings.corTema || DEFAULT_SETTINGS.corTema;
+    element.dataset.colorTheme = getColorThemeForMode(settings, isDark);
     element.classList.toggle('dark-theme', isDark);
     element.classList.toggle('light-theme', !isDark);
 

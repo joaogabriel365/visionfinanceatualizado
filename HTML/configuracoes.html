@@ -21,15 +21,32 @@ if (window.top === window.self) {
             </div>
 
             <div class="form-group">
-                <label for="selectCorTema" class="form-label">Cor do tema</label>
-                <select id="selectCorTema" class="select">
-                    <option value="azul">Azul</option>
-                    <option value="dourado">Dourado</option>
-                    <option value="oceano">Oceano</option>
-                    <option value="grafite">Grafite</option>
-                    <option value="aurora">Aurora</option>
-                    <option value="terracota">Terracota</option>
-                </select>
+                <label class="form-label">Temas por modo</label>
+                <div class="theme-select-grid">
+                    <div class="theme-select-card">
+                        <label for="selectCorTemaClaro" class="form-label form-label-inline">Tema do modo claro</label>
+                        <select id="selectCorTemaClaro" class="select">
+                            <option value="azul">Azul</option>
+                            <option value="dourado">Dourado</option>
+                            <option value="oceano">Oceano</option>
+                            <option value="grafite">Grafite</option>
+                            <option value="aurora">Aurora</option>
+                            <option value="terracota">Terracota</option>
+                        </select>
+                    </div>
+                    <div class="theme-select-card">
+                        <label for="selectCorTemaEscuro" class="form-label form-label-inline">Tema do modo escuro</label>
+                        <select id="selectCorTemaEscuro" class="select">
+                            <option value="azul">Azul</option>
+                            <option value="dourado">Dourado</option>
+                            <option value="oceano">Oceano</option>
+                            <option value="grafite">Grafite</option>
+                            <option value="aurora">Aurora</option>
+                            <option value="terracota">Terracota</option>
+                        </select>
+                    </div>
+                </div>
+                <p class="theme-helper-text">Defina uma cor para cada modo. Ao alternar claro e escuro, o sistema usa automaticamente a cor correspondente.</p>
             </div>
 
             <div class="form-group">
