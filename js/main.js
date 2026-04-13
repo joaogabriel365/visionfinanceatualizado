@@ -1,4 +1,4 @@
-import { applyStoredTheme, confirmarAcao, ensureFinancialDataIntegrity, getThemeVar, getThemeSettings, getTutorialState, setThemeSettings, setTutorialState, toggleThemePreference } from './common.js';
+import { applyStoredTheme, confirmarAcao, ensureFinancialDataIntegrity, formatarMoeda, getCurrentFinancialSnapshot, getThemeVar, getThemeSettings, getTutorialState, setThemeSettings, setTutorialState, toggleThemePreference } from './common.js';
 
 // 1. IMPORTS DOS MÓDULOS
 import { Painel } from './painel.js';
@@ -49,6 +49,37 @@ let secaoAtiva = 'painel';
 
 const LOGIN_SESSION_KEY = 'visionFinance_justLoggedIn';
 const TOTAL_TUTORIAL_STEPS = 7;
+const NOTIFICATION_SEEN_STORAGE_KEY = 'visionFinance_notification_seen';
+const NOTIFICATION_BROWSER_SENT_STORAGE_KEY = 'visionFinance_notification_browser_sent';
+const NOTIFICATION_FEED_STORAGE_KEY = 'visionFinance_notification_feed';
+const NOTIFICATION_BUDGET_MILESTONES = [
+    { key: '100', ratio: 1, percentage: 100 },
+    { key: '90', ratio: 0.9, percentage: 90 },
+    { key: '75', ratio: 0.75, percentage: 75 },
+    { key: '50', ratio: 0.5, percentage: 50 }
+];
+const NOTIFICATION_PROGRESS_MILESTONES = [
+    { key: '100', ratio: 1, percentage: 100 },
+    { key: '95', ratio: 0.95, percentage: 95 },
+    { key: '75', ratio: 0.75, percentage: 75 },
+    { key: '50', ratio: 0.5, percentage: 50 }
+];
+const NOTIFICATION_DEADLINE_MILESTONES = [
+    { key: 'due-today', label: 'vence hoje', months: 0, severity: 'critical' },
+    { key: '1-day', label: '1 dia', days: 1, severity: 'critical' },
+    { key: '3-days', label: '3 dias', days: 3, severity: 'critical' },
+    { key: '5-days', label: '5 dias', days: 5, severity: 'warning' },
+    { key: '10-days', label: '10 dias', days: 10, severity: 'warning' },
+    { key: '15-days', label: '15 dias', days: 15, severity: 'warning' },
+    { key: '1-month', label: '1 mes', months: 1, severity: 'warning' },
+    { key: '2-months', label: '2 meses', months: 2, severity: 'info' },
+    { key: '3-months', label: '3 meses', months: 3, severity: 'info' },
+    { key: '6-months', label: '6 meses', months: 6, severity: 'info' }
+];
+const notificationCenterState = {
+    isOpen: false,
+    currentIds: []
+};
 const TUTORIAL_SECTIONS = [
     {
         title: 'Painel',
@@ -163,7 +194,7 @@ function getTutorialDraftSettings() {
     tutorialDraftSettings = {
         moeda: settings.moeda || 'BRL',
         corTemaClaro: settings.corTemaClaro || settings.corTema || 'azul',
-        corTemaEscuro: settings.corTemaEscuro || settings.corTema || 'azul',
+        corTemaEscuro: settings.corTemaEscuro || settings.corTema || 'dourado',
         diaViradaMes: Number(settings.diaViradaMes || 1),
         temaEscuro: settings.temaEscuro === true,
         notificacoes: {
@@ -827,6 +858,7 @@ async function navegar(sectionId) {
                 if (modulos[sectionId] && typeof modulos[sectionId].init === 'function') {
                     modulos[sectionId].init();
                 }
+                refreshNotificationCenter(true);
             }, 50);
         });
 
@@ -863,7 +895,7 @@ function gerenciarBotaoModo() {
         btn.type = 'button';
         btn.className = 'theme-toggle-btn theme-toggle-btn-dashboard header-icon-btn';
         btn.setAttribute('aria-label', 'Alternar modo claro e escuro');
-        btn.innerHTML = '<img src="./img/modo.png" alt="Alternar modo" class="theme-toggle-icon">';
+        btn.innerHTML = '<span aria-hidden="true" class="dashboard-theme-toggle-icon"></span>';
         quickActions.append(btn);
 
         btn.addEventListener('click', () => {
@@ -926,6 +958,567 @@ function gerenciarBotaoOlho() {
     });
 }
 
+function readNotificationIdStore(storageKey) {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(storageKey) || '[]');
+        return Array.isArray(parsed) ? parsed : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeNotificationIdStore(storageKey, ids = []) {
+    const uniqueIds = [...new Set(ids)].slice(-120);
+    localStorage.setItem(storageKey, JSON.stringify(uniqueIds));
+    return uniqueIds;
+}
+
+function isLegacyGoalNotificationId(id) {
+    if (typeof id !== 'string') return false;
+
+    const parts = id.split(':');
+    const hasLegacyCycleKey = /^\d{4}-\d{2}-\d{2}$/.test(parts[1] || '');
+    return (
+        (id.startsWith('goal-progress:') && hasLegacyCycleKey) ||
+        (id.startsWith('goal-deadline:') && hasLegacyCycleKey)
+    );
+}
+
+function isLegacyBudgetNotificationId(id) {
+    if (typeof id !== 'string') return false;
+    return /^budget-expense:\d{4}-\d{2}-\d{2}:95$/.test(id);
+}
+
+function readNotificationFeedStore() {
+    try {
+        const parsed = JSON.parse(localStorage.getItem(NOTIFICATION_FEED_STORAGE_KEY) || '[]');
+        return Array.isArray(parsed)
+            ? parsed.filter((item) => !isLegacyGoalNotificationId(item?.id) && !isLegacyBudgetNotificationId(item?.id))
+            : [];
+    } catch {
+        return [];
+    }
+}
+
+function writeNotificationFeedStore(items = []) {
+    const normalizedItems = items
+        .filter((item) => item && item.id)
+        .sort((left, right) => {
+            const severityDiff = getNotificationSeverityWeight(right.severity) - getNotificationSeverityWeight(left.severity);
+            if (severityDiff !== 0) return severityDiff;
+            return new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+        })
+        .slice(0, 180);
+
+    localStorage.setItem(NOTIFICATION_FEED_STORAGE_KEY, JSON.stringify(normalizedItems));
+    return normalizedItems;
+}
+
+function upsertNotificationFeed(items = []) {
+    const currentFeed = readNotificationFeedStore();
+    const feedMap = new Map(currentFeed.map((item) => [item.id, item]));
+
+    items.forEach((item) => {
+        if (!item?.id) return;
+        const current = feedMap.get(item.id);
+        feedMap.set(item.id, {
+            ...(current || {}),
+            ...item,
+            createdAt: current?.createdAt || item.createdAt || new Date().toISOString()
+        });
+    });
+
+    return writeNotificationFeedStore([...feedMap.values()]);
+}
+
+function parseMetaDeadline(dateString) {
+    if (typeof dateString !== 'string' || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return null;
+
+    const [day, month, year] = dateString.split('/').map(Number);
+    const parsed = new Date(year, month - 1, day, 12, 0, 0, 0);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function normalizeNotificationDate(date) {
+    const normalized = new Date(date);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
+}
+
+function shiftNotificationDate(date, amount, unit) {
+    const shifted = new Date(date);
+
+    if (unit === 'days') {
+        shifted.setDate(shifted.getDate() + amount);
+        return normalizeNotificationDate(shifted);
+    }
+
+    const originalDay = shifted.getDate();
+    shifted.setMonth(shifted.getMonth() + amount);
+    if (shifted.getDate() !== originalDay) {
+        shifted.setDate(0);
+    }
+
+    return normalizeNotificationDate(shifted);
+}
+
+function slugifyNotificationPart(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-zA-Z0-9]+/g, '-')
+        .replace(/^-+|-+$/g, '')
+        .toLowerCase();
+}
+
+function getReachedProgressMilestones(ratio) {
+    if (!Number.isFinite(ratio)) return [];
+
+    return [...NOTIFICATION_PROGRESS_MILESTONES]
+        .filter((milestone) => ratio >= milestone.ratio)
+        .sort((left, right) => left.ratio - right.ratio);
+}
+
+    function getReachedBudgetMilestones(ratio) {
+        if (!Number.isFinite(ratio)) return [];
+
+        return [...NOTIFICATION_BUDGET_MILESTONES]
+        .filter((milestone) => ratio >= milestone.ratio)
+        .sort((left, right) => left.ratio - right.ratio);
+    }
+
+function getBudgetMilestoneDescriptor(milestone) {
+    if (!milestone) return null;
+
+    if (milestone.percentage >= 100) {
+        return {
+            severity: 'critical',
+            title: 'Limite do orçamento atingido',
+            message: 'As despesas do ciclo atual chegaram a 100% do limite estabelecido.'
+        };
+    }
+
+    return {
+        severity: milestone.percentage >= 75 ? 'warning' : 'info',
+        title: `Orcamento em ${milestone.percentage}%`,
+        message: `As despesas do ciclo atual chegaram a ${milestone.percentage}% do limite estabelecido.`
+    };
+}
+
+function getGoalProgressMilestoneDescriptor(milestone, goalName) {
+    if (!milestone) return null;
+
+    if (milestone.percentage >= 100) {
+        return {
+            severity: 'success',
+            title: `Meta concluida: ${goalName}`,
+            message: `Parabens, a meta ${goalName} chegou a 100% e foi concluida.`
+        };
+    }
+
+    return {
+        severity: milestone.percentage >= 75 ? 'warning' : 'info',
+        title: `Meta em ${milestone.percentage}%: ${goalName}`,
+        message: `A meta ${goalName} atingiu ${milestone.percentage}% do valor planejado.`
+    };
+}
+
+function getReachedDeadlineMilestones(deadline, today) {
+    if (!deadline || !today) return [];
+
+    if (today.getTime() > deadline.getTime()) {
+        return [{
+            key: 'overdue',
+            severity: 'critical',
+            label: 'prazo vencido'
+        }];
+    }
+
+    return NOTIFICATION_DEADLINE_MILESTONES.filter((milestone) => {
+        const triggerDate = typeof milestone.days === 'number'
+            ? shiftNotificationDate(deadline, -milestone.days, 'days')
+            : shiftNotificationDate(deadline, -milestone.months, 'months');
+
+        return today.getTime() >= triggerDate.getTime() && today.getTime() <= deadline.getTime();
+    });
+}
+
+function getNotificationSeverityWeight(severity) {
+    return {
+        critical: 3,
+        warning: 2,
+        info: 1,
+        success: 0
+    }[severity] ?? 0;
+}
+
+function formatNotificationRelativeDays(days) {
+    if (days < 0) return `${Math.abs(days)} ${Math.abs(days) === 1 ? 'dia de atraso' : 'dias de atraso'}`;
+    if (days === 0) return 'vence hoje';
+    return `${days} ${days === 1 ? 'dia restante' : 'dias restantes'}`;
+}
+
+function formatNotificationTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return '';
+
+    return new Intl.DateTimeFormat('pt-BR', {
+        day: '2-digit',
+        month: '2-digit',
+        year: 'numeric',
+        hour: '2-digit',
+        minute: '2-digit'
+    }).format(date);
+}
+
+function buildNotificationItem({ id, severity, title, message, category, targetSection, meta, settingKey = 'geral' }) {
+    return {
+        id,
+        severity,
+        title,
+        message,
+        category,
+        targetSection,
+        meta,
+        settingKey,
+        createdAt: new Date().toISOString()
+    };
+}
+
+function buildBudgetNotificationItems(snapshot) {
+    const { cycleInfo, budget, totalUtilizado } = snapshot;
+    if (!(budget > 0)) return [];
+
+    const usageRatio = totalUtilizado / budget;
+    return getReachedBudgetMilestones(usageRatio).map((milestone) => {
+        const descriptor = getBudgetMilestoneDescriptor(milestone);
+        return buildNotificationItem({
+            id: `budget-expense:${cycleInfo.id}:${milestone.key}`,
+            severity: descriptor.severity,
+            category: 'Orçamento',
+            targetSection: 'planejamento',
+            title: descriptor.title,
+            message: `${descriptor.message} Ciclo ${cycleInfo.label}.`,
+            meta: `${formatarMoeda(totalUtilizado)} de ${formatarMoeda(budget)}`,
+            settingKey: 'orcamento'
+        });
+    });
+}
+
+function buildGoalProgressNotificationItems(snapshot) {
+    const { metas } = snapshot;
+
+    return metas.flatMap((meta) => {
+        const targetValue = parseFloat(meta.alvo) || 0;
+        const savedValue = parseFloat(meta.totalHistorico) || parseFloat(meta.guardado) || 0;
+        const progressRatio = targetValue > 0 ? savedValue / targetValue : 0;
+
+        return getReachedProgressMilestones(progressRatio).map((milestone) => {
+            const descriptor = getGoalProgressMilestoneDescriptor(milestone, meta.nome);
+            return buildNotificationItem({
+                id: `goal-progress:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:${milestone.key}`,
+                severity: descriptor.severity,
+                category: 'Meta',
+                targetSection: 'planejamento',
+                title: descriptor.title,
+                message: descriptor.message,
+                meta: `${formatarMoeda(savedValue)} de ${formatarMoeda(targetValue)}`,
+                settingKey: 'orcamentoMeta'
+            });
+        });
+    });
+}
+
+function buildGoalDeadlineNotificationItems(snapshot, today = normalizeNotificationDate(new Date())) {
+    const { metas } = snapshot;
+
+    return metas.flatMap((meta) => {
+        const deadline = parseMetaDeadline(meta.prazo);
+        const savedValue = parseFloat(meta.totalHistorico) || parseFloat(meta.guardado) || 0;
+        const progressRatio = meta.alvo > 0 ? savedValue / meta.alvo : 0;
+        if (!deadline || progressRatio >= 1) return [];
+
+        const remainingValue = Math.max(meta.alvo - savedValue, 0);
+        const diffDays = Math.ceil((deadline.getTime() - today.getTime()) / (1000 * 60 * 60 * 24));
+
+        return getReachedDeadlineMilestones(deadline, today).map((milestone) => {
+            if (milestone.key === 'overdue') {
+                return buildNotificationItem({
+                    id: `goal-deadline:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:overdue`,
+                    severity: 'critical',
+                    category: 'Prazos de metas',
+                    targetSection: 'planejamento',
+                    title: `Meta atrasada: ${meta.nome}`,
+                    message: `O prazo da meta venceu e ainda faltam ${formatarMoeda(remainingValue)} para concluir.`,
+                    meta: formatNotificationRelativeDays(diffDays),
+                    settingKey: 'metas'
+                });
+            }
+
+            return buildNotificationItem({
+                id: `goal-deadline:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:${milestone.key}`,
+                severity: milestone.severity,
+                category: 'Prazos de metas',
+                targetSection: 'planejamento',
+                title: milestone.key === 'due-today' ? `Meta vence hoje: ${meta.nome}` : `Prazo da meta: ${meta.nome}`,
+                message: milestone.key === 'due-today'
+                    ? `Hoje e o ultimo dia da meta ${meta.nome}. Ainda faltam ${formatarMoeda(remainingValue)} para concluir.`
+                    : `Faltam ${milestone.label} para a meta ${meta.nome}. Ainda faltam ${formatarMoeda(remainingValue)} para atingir o objetivo.`,
+                meta: formatNotificationRelativeDays(diffDays),
+                settingKey: 'metas'
+            });
+        });
+    });
+}
+
+function sortNotificationItems(items = []) {
+    return [...items].sort((left, right) => {
+        const severityDiff = getNotificationSeverityWeight(right.severity) - getNotificationSeverityWeight(left.severity);
+        if (severityDiff !== 0) return severityDiff;
+
+        const createdDiff = new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+        if (createdDiff !== 0) return createdDiff;
+
+        return left.title.localeCompare(right.title, 'pt-BR');
+    });
+}
+
+function getNotificationCenterData() {
+    const settings = getThemeSettings();
+    const notificationsEnabled = settings.notificacoes?.geral === true;
+
+    if (!notificationsEnabled) {
+        return {
+            enabled: false,
+            items: [],
+            unreadCount: 0
+        };
+    }
+
+    const snapshot = getCurrentFinancialSnapshot();
+    const candidateItems = [
+        ...(settings.notificacoes?.orcamento ? buildBudgetNotificationItems(snapshot) : []),
+        ...(settings.notificacoes?.orcamentoMeta ? buildGoalProgressNotificationItems(snapshot) : []),
+        ...(settings.notificacoes?.metas ? buildGoalDeadlineNotificationItems(snapshot) : [])
+    ];
+
+    const activeSettingKeys = ['orcamento', 'orcamentoMeta', 'metas'].filter((key) => settings.notificacoes?.[key]);
+    const items = sortNotificationItems(
+        upsertNotificationFeed(candidateItems).filter((item) => activeSettingKeys.includes(item.settingKey))
+    );
+
+    const seenIds = readNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY);
+    const unreadCount = items.filter((item) => !seenIds.includes(item.id)).length;
+
+    return {
+        enabled: true,
+        items,
+        unreadCount
+    };
+}
+
+function getNotificationBellIcon() {
+    return `
+        <span aria-hidden="true" class="dashboard-notification-icon"></span>
+        <span class="notification-btn-badge" hidden>0</span>
+    `;
+}
+
+function renderNotificationPanel(panel, data) {
+    if (!panel) return;
+
+    if (!data.enabled) {
+        panel.innerHTML = `
+            <div class="notification-popover-head">
+                <div>
+                    <span class="notification-popover-eyebrow">Central de notificações</span>
+                    <h3>Notificações desativadas</h3>
+                </div>
+            </div>
+            <div class="notification-empty-state">
+                <strong>Ative as notificações nas configurações</strong>
+                <p>Quando os alertas estiverem habilitados, o sino mostrará avisos sobre orçamento e metas em tempo real.</p>
+                <button type="button" class="notification-action-btn" data-notification-target="configuracoes">Abrir configurações</button>
+            </div>
+        `;
+        return;
+    }
+
+    if (!data.items.length) {
+        panel.innerHTML = `
+            <div class="notification-popover-head">
+                <div>
+                    <span class="notification-popover-eyebrow">Central de notificações</span>
+                    <h3>Tudo em dia</h3>
+                </div>
+                <span class="notification-summary-chip notification-summary-chip-success">Sem alertas</span>
+            </div>
+            <div class="notification-empty-state">
+                <strong>Nenhuma ação pendente no momento</strong>
+                <p>O sistema vai destacar aqui qualquer aviso relevante sobre orçamento, metas e limites do ciclo atual.</p>
+            </div>
+        `;
+        return;
+    }
+
+    panel.innerHTML = `
+        <div class="notification-popover-head">
+            <div>
+                <span class="notification-popover-eyebrow">Central de notificações</span>
+                <h3>${data.unreadCount > 0 ? `${data.unreadCount} ${data.unreadCount === 1 ? 'novo alerta' : 'novos alertas'}` : 'Alertas recentes'}</h3>
+            </div>
+            <span class="notification-summary-chip">${data.items.length} itens</span>
+        </div>
+        <div class="notification-list">
+            ${data.items.map((item) => `
+                <article class="notification-card notification-card-${item.severity}">
+                    <div class="notification-card-top">
+                        <span class="notification-card-category">${item.category}</span>
+                        <span class="notification-card-meta">${item.meta}</span>
+                    </div>
+                    <h4>${item.title}</h4>
+                    <p>${item.message}</p>
+                    <span class="notification-card-timestamp">Notificado em ${formatNotificationTimestamp(item.createdAt)}</span>
+                    <div class="notification-card-actions">
+                        <button type="button" class="notification-action-btn" data-notification-target="${item.targetSection}">Ver detalhes</button>
+                    </div>
+                </article>
+            `).join('')}
+        </div>
+    `;
+}
+
+function markCurrentNotificationsAsSeen(ids = []) {
+    if (!ids.length) return;
+    const seenIds = readNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY);
+    writeNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY, [...seenIds, ...ids]);
+}
+
+function maybeSendBrowserNotifications(data) {
+    if (!data.enabled || !data.items.length) return;
+    if (!('Notification' in window) || Notification.permission !== 'granted') return;
+
+    const sentIds = readNotificationIdStore(NOTIFICATION_BROWSER_SENT_STORAGE_KEY);
+    const candidates = data.items.filter((item) => (
+        !sentIds.includes(item.id)
+    ));
+
+    if (!candidates.length) return;
+
+    candidates.slice(0, 3).forEach((item) => {
+        const notification = new Notification('Vision Finance', {
+            body: `${item.title} • ${item.message}`,
+            icon: './img/logo.png',
+            tag: item.id
+        });
+
+        notification.onclick = () => {
+            window.focus();
+            notification.close();
+            if (item.targetSection) navegar(item.targetSection);
+        };
+    });
+
+    writeNotificationIdStore(NOTIFICATION_BROWSER_SENT_STORAGE_KEY, [...sentIds, ...candidates.map((item) => item.id)]);
+}
+
+function ensureNotificationCenter() {
+    const btn = document.querySelector('.notification-btn');
+    if (!btn) return null;
+
+    btn.id = 'dashboardNotificationBtn';
+    btn.type = 'button';
+    btn.setAttribute('aria-label', 'Abrir central de notificações');
+    btn.setAttribute('aria-haspopup', 'dialog');
+    btn.setAttribute('aria-expanded', String(notificationCenterState.isOpen));
+
+    let wrap = document.getElementById('notificationCenterWrap');
+    if (!wrap) {
+        wrap = document.createElement('div');
+        wrap.id = 'notificationCenterWrap';
+        wrap.className = 'notification-center-wrap';
+        btn.parentNode.insertBefore(wrap, btn);
+        wrap.appendChild(btn);
+    }
+
+    if (!btn.dataset.enhanced) {
+        btn.dataset.enhanced = 'true';
+        btn.innerHTML = getNotificationBellIcon();
+    }
+
+    let panel = document.getElementById('notificationPopover');
+    if (!panel) {
+        panel = document.createElement('section');
+        panel.id = 'notificationPopover';
+        panel.className = 'notification-popover';
+        panel.hidden = true;
+        panel.setAttribute('role', 'dialog');
+        panel.setAttribute('aria-label', 'Central de notificações');
+        wrap.appendChild(panel);
+    }
+
+    if (!btn.dataset.bound) {
+        btn.dataset.bound = 'true';
+        btn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            notificationCenterState.isOpen = !notificationCenterState.isOpen;
+            if (notificationCenterState.isOpen) {
+                markCurrentNotificationsAsSeen(notificationCenterState.currentIds);
+            }
+            refreshNotificationCenter(true);
+        });
+    }
+
+    return { btn, panel };
+}
+
+function refreshNotificationCenter(preserveOpen = false) {
+    const elements = ensureNotificationCenter();
+    if (!elements) return;
+
+    const { btn, panel } = elements;
+    const badge = btn.querySelector('.notification-btn-badge');
+    const data = getNotificationCenterData();
+    notificationCenterState.currentIds = data.items.map((item) => item.id);
+
+    maybeSendBrowserNotifications(data);
+    renderNotificationPanel(panel, data);
+
+    const isOpen = preserveOpen ? notificationCenterState.isOpen : false;
+    notificationCenterState.isOpen = isOpen;
+    panel.hidden = !isOpen;
+    btn.setAttribute('aria-expanded', String(isOpen));
+    btn.classList.toggle('has-unread', data.unreadCount > 0);
+
+    if (badge) {
+        badge.hidden = data.unreadCount <= 0;
+        badge.textContent = data.unreadCount > 9 ? '9+' : String(data.unreadCount);
+    }
+
+    btn.title = data.enabled
+        ? (data.unreadCount > 0 ? `${data.unreadCount} alertas pendentes` : 'Central de notificações')
+        : 'Notificações desativadas';
+}
+
+document.addEventListener('click', (event) => {
+    const panel = document.getElementById('notificationPopover');
+    const wrap = document.getElementById('notificationCenterWrap');
+
+    if (event.target.closest('.notification-action-btn')) {
+        const targetSection = event.target.closest('.notification-action-btn')?.dataset.notificationTarget;
+        notificationCenterState.isOpen = false;
+        refreshNotificationCenter(true);
+        if (targetSection) navegar(targetSection);
+        return;
+    }
+
+    if (!notificationCenterState.isOpen || !wrap || !panel) return;
+    if (!wrap.contains(event.target)) {
+        notificationCenterState.isOpen = false;
+        refreshNotificationCenter(true);
+    }
+});
+
 // 5. EVENT LISTENERS
 document.addEventListener('click', (e) => {
     const navItem = e.target.closest('[data-section]');
@@ -942,6 +1535,8 @@ document.addEventListener('DOMContentLoaded', () => {
     aplicarAvatarPerfil();
     gerenciarBotaoModo();
     gerenciarBotaoOlho();
+    ensureNotificationCenter();
+    refreshNotificationCenter();
     configurarSidebarMobile();
     configurarSaidaDashboard();
     navegar(getSecaoInicial());
@@ -949,6 +1544,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && notificationCenterState.isOpen) {
+        notificationCenterState.isOpen = false;
+        refreshNotificationCenter(true);
+    }
+
     if (e.key === 'Escape' && document.body.classList.contains('dashboard-sidebar-open')) {
         fecharSidebarMobile();
     }
@@ -959,6 +1559,7 @@ window.addEventListener('settingsUpdated', () => {
     ensureFinancialDataIntegrity();
     aplicarTemaGlobal();
     gerenciarBotaoModo();
+    refreshNotificationCenter(true);
     if (getTutorialState().currentStep === TOTAL_TUTORIAL_STEPS && !cacheTutorialElements().overlay?.hidden) {
         renderTutorialStep(TOTAL_TUTORIAL_STEPS);
     }
@@ -972,6 +1573,14 @@ window.navegar = navegar;
 
 window.addEventListener('profileUpdated', () => {
     aplicarAvatarPerfil();
+});
+
+window.addEventListener('visionFinance:dataChanged', () => {
+    refreshNotificationCenter(true);
+});
+
+window.addEventListener('focus', () => {
+    refreshNotificationCenter(true);
 });
 
 window.addEventListener('visionFinance:openTutorial', handleTutorialOpenRequest);

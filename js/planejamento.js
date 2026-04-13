@@ -79,13 +79,58 @@ export const PlanejamentoModulo = {
     },
 
     // --- MODAL DE CONFIRMAÇÃO ---
-    exibirConfirmacao(titulo, texto, onConfirm) {
+    exibirConfirmacao(titulo, texto, onConfirm, options = {}) {
         const modal = document.getElementById('modalConfirmacaoSistema');
         const btnSim = document.getElementById('btn-confirm-yes');
         const btnNao = document.getElementById('btn-confirm-no');
+        const icon = document.getElementById('confirmModalIcon');
+        const iconWrap = document.getElementById('confirmModalIconWrap');
+        const iconStage = document.getElementById('confirmModalIconStage');
+        const card = document.getElementById('confirmModalCard');
+        const valueHighlight = document.getElementById('confirmValueHighlight');
+        const variant = options.variant === 'accent' ? 'accent' : 'danger';
+        const iconSrc = options.iconSrc || (variant === 'accent' ? './img/moedas.png' : './img/lixeira.png');
+        const iconAlt = options.iconAlt || (variant === 'accent' ? 'Confirmar orcamento' : 'Excluir item');
+        const highlightValue = options.highlightValue || '';
         
         document.getElementById('confirm-title').innerText = titulo;
         document.getElementById('confirm-text').innerText = texto;
+
+        if (icon) {
+            icon.src = iconSrc;
+            icon.alt = iconAlt;
+            icon.className = `planning-confirm-icon-image planning-confirm-icon-image-${variant}`;
+        }
+
+        if (iconWrap) {
+            iconWrap.className = `planning-confirm-icon-wrap planning-confirm-icon-wrap-${variant}`;
+        }
+
+        if (iconStage) {
+            iconStage.className = `planning-confirm-icon-stage planning-confirm-icon-stage-${variant}`;
+        }
+
+        if (card) {
+            card.className = `planning-confirm-card planning-confirm-card-${variant}`;
+        }
+
+        if (btnSim) {
+            btnSim.className = `planning-confirm-button planning-confirm-button-${variant}`;
+        }
+
+        if (btnNao) {
+            btnNao.className = 'planning-confirm-button planning-confirm-button-secondary';
+        }
+
+        if (valueHighlight) {
+            if (highlightValue) {
+                valueHighlight.hidden = false;
+                valueHighlight.textContent = highlightValue;
+            } else {
+                valueHighlight.hidden = true;
+                valueHighlight.textContent = '';
+            }
+        }
         
         modal.style.display = 'flex';
 
@@ -115,6 +160,12 @@ export const PlanejamentoModulo = {
                     this.atualizarInterfaceOrcamento();
                     this.atualizarProgressoGlobal();
                     input.value = '';
+                },
+                {
+                    variant: 'accent',
+                    iconSrc: './img/moedas.png',
+                    iconAlt: 'Salvar orcamento',
+                    highlightValue: formatarMoeda(novoValor)
                 }
             );
         } else {
@@ -255,6 +306,11 @@ export const PlanejamentoModulo = {
                 setMetasData(metasAtuais);
                 this.renderizarMetas();
                 this.atualizarProgressoGlobal();
+            },
+            {
+                variant: 'danger',
+                iconSrc: './img/lixeira.png',
+                iconAlt: 'Excluir meta'
             }
         );
     },
@@ -297,41 +353,43 @@ export const PlanejamentoModulo = {
         table.hidden = false;
         emptyState.hidden = true;
 
-        const isLight = document.body.classList.contains('light-theme');
-        const progressBg = isLight ? (getThemeVar('--border-color') || '#dccdb9') : '#1a253a';
-        const rowBorder = isLight ? '#cbd5e1' : '#1e293b';
-        const rowText = isLight ? (getThemeVar('--text-primary') || '#0f172a') : '#ffffff';
-        const percentageColor = isLight ? (getThemeVar('--text-primary') || '#0f172a') : '#ffffff';
-        const actionButtonStyle = isLight
-            ? 'border: none;'
-            : 'background: var(--bg-surface);';
-
         tbody.innerHTML = metasAtuais.map((meta, index) => {
             const guardado = parseFloat(meta.guardado) || 0;
             const alvo = parseFloat(meta.alvo) || 1;
             const porcentagem = Math.min((guardado / alvo) * 100, 100).toFixed(0);
             return `
-                <tr class="planning-goal-row" style="border-bottom: 1px solid ${rowBorder}; color: ${rowText};">
-                    <td class="planning-goal-name" data-label="Meta" style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
-                    <td class="planning-goal-target" data-label="Valor Alvo" style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
-                    <td class="planning-goal-deadline" data-label="Prazo" style="padding: 20px 15px;">${meta.prazo}</td>
-                    <td class="planning-goal-progress-cell" data-label="Progresso" style="padding: 20px 15px;">
-                        <div class="planning-goal-progress">
-                            <div class="planning-goal-progress-track" style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
-                                <div class="planning-goal-progress-fill" style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar('--accent')}; box-shadow: 0 0 10px ${getThemeVar('--accent-soft')};"></div>
-                            </div>
-                            <span class="planning-goal-progress-value" style="font-size: 0.8rem; min-width: 35px; color: ${percentageColor}; font-weight: 700;">${porcentagem}%</span>
+                <tr class="planning-goal-row">
+                    <td class="planning-goal-name" data-label="Meta">
+                        <div class="planning-goal-main">
+                            <span class="planning-goal-title">${meta.nome}</span>
+                            <span class="planning-goal-caption">${formatarMoeda(guardado)} acumulados ate agora</span>
                         </div>
                     </td>
-                    <td class="planning-goal-actions-cell" data-label="Ações" style="padding: 20px 15px; text-align: center;">
+                    <td class="planning-goal-target" data-label="Valor Alvo">
+                        <span class="planning-goal-target-amount">${formatarMoeda(meta.alvo)}</span>
+                        <span class="planning-goal-target-caption">Valor objetivo</span>
+                    </td>
+                    <td class="planning-goal-deadline" data-label="Prazo">
+                        <span class="planning-goal-deadline-badge">${meta.prazo}</span>
+                    </td>
+                    <td class="planning-goal-progress-cell" data-label="Progresso">
+                        <div class="planning-goal-progress">
+                            <div class="planning-goal-progress-track">
+                                <div class="planning-goal-progress-fill" style="width: ${porcentagem}%;"></div>
+                            </div>
+                            <span class="planning-goal-progress-value">${porcentagem}%</span>
+                        </div>
+                        <div class="planning-goal-progress-meta">${formatarMoeda(guardado)} de ${formatarMoeda(meta.alvo)}</div>
+                    </td>
+                    <td class="planning-goal-actions-cell" data-label="Ações">
                         <div class="planning-goal-actions">
-                               <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})">
                                    <img src="${planningAddIconUrl}" class="planning-action-icon planning-action-icon-add" alt="Adicionar valor" title="Adicionar valor">
                             </button>
-                               <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})">
                                    <img src="${planningEditIconUrl}" class="planning-action-icon planning-action-icon-edit" alt="Editar meta" title="Editar meta">
                             </button>
-                               <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})">
                                    <img src="${planningDeleteIconUrl}" class="planning-action-icon planning-action-icon-delete" alt="Excluir meta" title="Excluir meta">
                             </button>
                         </div>

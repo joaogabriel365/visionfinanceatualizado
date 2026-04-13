@@ -4,7 +4,7 @@ if (window.top === window.self) {
 }
 </script>
 
-<div class="section-header-row">
+<div class="section-header-row section-header-row-stacked">
     <div class="section-title-block expense-section-title">
         <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>
         <p class="section-support-text">Organize seus lançamentos, revise categorias e acompanhe cada pagamento com clareza.</p>
@@ -16,6 +16,13 @@ if (window.top === window.self) {
 </div>
 
 <div class="filters-bar">
+    <div class="filter-field">
+        <span class="filter-field-icon"><i class="fas fa-calendar"></i></span>
+        <select id="filterYear" class="filter-select">
+            <option value="todos">Ano</option>
+        </select>
+    </div>
+
     <div class="filter-field">
         <span class="filter-field-icon"><i class="fas fa-calendar-alt"></i></span>
         <select id="filterMonth" class="filter-select">
@@ -57,6 +64,7 @@ if (window.top === window.self) {
             <option value="Dinheiro">Dinheiro</option>
             <option value="VR">VR</option>
             <option value="VA">VA</option>
+            <option value="VT">VT</option>
         </select>
     </div>
 
@@ -127,6 +135,7 @@ if (window.top === window.self) {
                         <option value="Dinheiro">Dinheiro</option>
                         <option value="VR">VR</option>
                         <option value="VA">VA</option>
+                        <option value="VT">VT</option>
                     </select>
                 </div>
             </div>

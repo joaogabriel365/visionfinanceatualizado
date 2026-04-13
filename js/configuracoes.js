@@ -107,7 +107,7 @@ export const ConfiguracoesModulo = {
         return {
             ...saved,
             corTemaClaro: this.selectCorTemaClaro?.value || saved.corTemaClaro || saved.corTema || 'azul',
-            corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || 'azul',
+            corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || 'dourado',
             temaEscuro: isDark === true
         };
     },
@@ -144,7 +144,7 @@ export const ConfiguracoesModulo = {
         const settings = {
             moeda: this.selectMoeda.value,
             corTemaClaro: this.selectCorTemaClaro?.value || 'azul',
-            corTemaEscuro: this.selectCorTemaEscuro?.value || 'azul',
+            corTemaEscuro: this.selectCorTemaEscuro?.value || 'dourado',
             diaViradaMes: Number(this.selectDiaVirada?.value || 1),
             temaEscuro: this.checkTemaEscuro.checked,
             notificacoes: {
@@ -170,7 +170,7 @@ export const ConfiguracoesModulo = {
         if (saved) {
             this.selectMoeda.value = saved.moeda || 'BRL';
             if (this.selectCorTemaClaro) this.selectCorTemaClaro.value = saved.corTemaClaro || saved.corTema || 'azul';
-            if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || 'azul';
+            if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || 'dourado';
             if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
             this.checkTemaEscuro.checked = saved.temaEscuro === true;
             this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;

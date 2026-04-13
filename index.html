@@ -187,9 +187,33 @@
                     <label for="estado">Estado</label>
                     <select id="estado" name="state" autocomplete="address-level1" required>
                         <option value="" disabled selected>Selecione seu estado</option>
+                        <option value="AC">Acre</option>
+                        <option value="AL">Alagoas</option>
+                        <option value="AP">Amapá</option>
+                        <option value="AM">Amazonas</option>
+                        <option value="BA">Bahia</option>
+                        <option value="CE">Ceará</option>
+                        <option value="DF">Distrito Federal</option>
+                        <option value="ES">Espírito Santo</option>
+                        <option value="GO">Goiás</option>
+                        <option value="MA">Maranhão</option>
+                        <option value="MT">Mato Grosso</option>
+                        <option value="MS">Mato Grosso do Sul</option>
                         <option value="SP">São Paulo</option>
-                        <option value="RJ">Rio de Janeiro</option>
                         <option value="MG">Minas Gerais</option>
+                        <option value="PA">Pará</option>
+                        <option value="PB">Paraíba</option>
+                        <option value="PR">Paraná</option>
+                        <option value="PE">Pernambuco</option>
+                        <option value="PI">Piauí</option>
+                        <option value="RJ">Rio de Janeiro</option>
+                        <option value="RN">Rio Grande do Norte</option>
+                        <option value="RS">Rio Grande do Sul</option>
+                        <option value="RO">Rondônia</option>
+                        <option value="RR">Roraima</option>
+                        <option value="SC">Santa Catarina</option>
+                        <option value="SE">Sergipe</option>
+                        <option value="TO">Tocantins</option>
                     </select>
                 </div>
 
@@ -319,8 +343,8 @@
         function getLandingThemeSettings() {
             const settings = JSON.parse(localStorage.getItem('visionFinance_settings')) || {};
             const legacyTheme = normalizeThemeColor(settings.corTema, 'azul');
-            const corTemaClaro = normalizeThemeColor(settings.corTemaClaro, legacyTheme);
-            const corTemaEscuro = normalizeThemeColor(settings.corTemaEscuro, legacyTheme);
+            const corTemaClaro = normalizeThemeColor(settings.corTemaClaro, settings.corTema || 'azul');
+            const corTemaEscuro = normalizeThemeColor(settings.corTemaEscuro, settings.corTema || 'dourado');
             const temaEscuro = settings.temaEscuro === true;
 
             return {
@@ -342,6 +366,12 @@
             body.dataset.colorTheme = colorTheme;
             body.classList.toggle('dark-theme', isDark);
             body.classList.toggle('light-theme', !isDark);
+
+            const themeColorMeta = document.querySelector('meta[name="theme-color"]');
+            if (themeColorMeta) {
+                const accentColor = getComputedStyle(body).getPropertyValue('--accent').trim();
+                themeColorMeta.setAttribute('content', accentColor || (isDark ? '#d4af37' : '#084ca0'));
+            }
         }
 
         document.addEventListener('DOMContentLoaded', function() {

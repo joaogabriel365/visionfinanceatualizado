@@ -1,7 +1,8 @@
 /* --- VARIÁVEIS E CONFIGURAÇÕES GERAIS --- */
 :root {
     --accent-rgb: 8, 76, 160;
-    --primary: #084ca0;
+    --accent: #084ca0;
+    --primary: var(--accent);
     --accent-hover: #063b7d;
     --bg-dark: #f8f4ee;
     --bg-secondary: #eee5d9;
@@ -22,8 +23,8 @@
     --modal-overlay: rgba(15, 23, 42, 0.44);
     --btn-hover: rgba(var(--accent-rgb), 0.12);
     --navbar-bg: #fbf7f1;
-    --shadow: rgba(124, 98, 60, 0.10);
-    --shadow-strong: rgba(124, 98, 60, 0.14);
+    --shadow: rgba(var(--accent-rgb), 0.10);
+    --shadow-strong: rgba(var(--accent-rgb), 0.14);
     
     /* Cores específicas para elementos */
     --success: #10b981;
@@ -32,13 +33,13 @@
     --purple: #8b5cf6;
     --pink: #ec4899;
     --blue: #3b82f6;
-    --cyan-light: #0a5fcb;
-    --cyan-dark: #063b7d;
-    --cyan-lighter: #dcebff;
+    --cyan-light: var(--accent-hover);
+    --cyan-dark: color-mix(in srgb, var(--accent-hover) 72%, black 28%);
+    --cyan-lighter: rgba(var(--accent-rgb), 0.16);
     --landing-box-bg: #efe4d4;
     --landing-box-bg-alt: #f6efe4;
     --landing-box-border: #d7c5ae;
-    --landing-box-shadow: 0 14px 30px rgba(124, 98, 60, 0.12);
+    --landing-box-shadow: 0 14px 30px rgba(var(--accent-rgb), 0.12);
 }
 
 /* Força um padrão de box clean e profissional usado em cards e contêineres */
@@ -63,7 +64,8 @@
 
 body.dark-theme {
     --accent-rgb: 212, 175, 55;
-    --primary: #d4af37;
+    --accent: #d4af37;
+    --primary: var(--accent);
     --accent-hover: #b88a17;
     --bg-dark: #050a0f;
     --bg-secondary: #09111a;
@@ -86,13 +88,95 @@ body.dark-theme {
     --navbar-bg: #050a0f;
     --shadow: rgba(0, 0, 0, 0.24);
     --shadow-strong: rgba(0, 0, 0, 0.35);
-    --cyan-light: #e6c86a;
-    --cyan-dark: #b88a17;
-    --cyan-lighter: #f3de92;
+    --cyan-light: var(--accent-hover);
+    --cyan-dark: color-mix(in srgb, var(--accent-hover) 78%, black 22%);
+    --cyan-lighter: rgba(var(--accent-rgb), 0.18);
     --landing-box-bg: #0d141c;
     --landing-box-bg-alt: #111a24;
     --landing-box-border: #2a3948;
     --landing-box-shadow: 0 16px 34px rgba(0, 0, 0, 0.24);
+}
+
+body[data-color-theme="azul"],
+body[data-color-theme="oceano"] {
+    --accent-rgb: 8, 76, 160;
+    --accent: #084ca0;
+    --primary: var(--accent);
+    --accent-hover: #063b7d;
+    --blue: #3b82f6;
+}
+
+body.dark-theme[data-color-theme="azul"],
+body.dark-theme[data-color-theme="oceano"] {
+    --accent-rgb: 96, 165, 250;
+    --accent: #60a5fa;
+    --primary: var(--accent);
+    --accent-hover: #3b82f6;
+    --blue: #93c5fd;
+}
+
+body[data-color-theme="dourado"] {
+    --accent-rgb: 180, 132, 24;
+    --accent: #b48418;
+    --primary: var(--accent);
+    --accent-hover: #8d6512;
+    --blue: #c7981d;
+}
+
+body.dark-theme[data-color-theme="dourado"] {
+    --accent-rgb: 212, 175, 55;
+    --accent: #d4af37;
+    --primary: var(--accent);
+    --accent-hover: #b88a17;
+    --blue: #f3de92;
+}
+
+body[data-color-theme="grafite"] {
+    --accent-rgb: 71, 85, 105;
+    --accent: #475569;
+    --primary: var(--accent);
+    --accent-hover: #334155;
+    --blue: #64748b;
+}
+
+body.dark-theme[data-color-theme="grafite"] {
+    --accent-rgb: 148, 163, 184;
+    --accent: #94a3b8;
+    --primary: var(--accent);
+    --accent-hover: #cbd5e1;
+    --blue: #cbd5e1;
+}
+
+body[data-color-theme="aurora"] {
+    --accent-rgb: 5, 150, 105;
+    --accent: #059669;
+    --primary: var(--accent);
+    --accent-hover: #047857;
+    --blue: #14b8a6;
+}
+
+body.dark-theme[data-color-theme="aurora"] {
+    --accent-rgb: 52, 211, 153;
+    --accent: #34d399;
+    --primary: var(--accent);
+    --accent-hover: #10b981;
+    --blue: #5eead4;
+}
+
+body[data-color-theme="terracota"] {
+    --accent-rgb: 194, 65, 12;
+    --accent: #c2410c;
+    --primary: var(--accent);
+    --accent-hover: #9a3412;
+    --blue: #f97316;
+}
+
+body.dark-theme[data-color-theme="terracota"] {
+    --accent-rgb: 251, 146, 60;
+    --accent: #fb923c;
+    --primary: var(--accent);
+    --accent-hover: #f97316;
+    --blue: #fdba74;
 }
 
 body.dark-theme {
@@ -317,8 +401,8 @@ textarea:focus-visible {
 
 body.light-theme {
     background:
-    radial-gradient(circle at top left, rgba(191, 160, 95, 0.10), transparent 22%),
-    radial-gradient(circle at top right, rgba(201, 170, 106, 0.06), transparent 20%),
+    radial-gradient(circle at top left, rgba(var(--accent-rgb), 0.12), transparent 22%),
+    radial-gradient(circle at top right, rgba(var(--accent-rgb), 0.07), transparent 20%),
     linear-gradient(180deg, #fcf9f4 0%, var(--bg-dark) 48%, var(--bg-secondary) 100%);
 }
 
@@ -579,8 +663,8 @@ button:hover {
 
 body.light-theme .password-rules-card {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.92) 0%, rgba(241, 236, 227, 0.98) 100%);
-    border-color: rgba(124, 98, 60, 0.16);
-    box-shadow: 0 18px 34px rgba(124, 98, 60, 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    border-color: rgba(var(--accent-rgb), 0.16);
+    box-shadow: 0 18px 34px rgba(var(--accent-rgb), 0.10), inset 0 1px 0 rgba(255, 255, 255, 0.7);
 }
 
 body.light-theme .password-rules-title {
@@ -589,7 +673,7 @@ body.light-theme .password-rules-title {
 
 body.light-theme .password-rules-list li {
     background: rgba(255, 255, 255, 0.74);
-    border-color: rgba(124, 98, 60, 0.10);
+    border-color: rgba(var(--accent-rgb), 0.10);
 }
 
 .form-feedback.is-error {
@@ -695,6 +779,7 @@ body.dark-theme .form-feedback.is-success {
     display: flex; 
     justify-content: space-between; 
     align-items: center;
+    gap: 1rem;
     padding: 1.2rem 5%; 
     position: fixed;
     top: 0;
@@ -709,7 +794,7 @@ body.dark-theme .form-feedback.is-success {
 body.light-theme .navbar {
     background: var(--navbar-bg);
     border-bottom-color: var(--landing-box-border);
-    box-shadow: 0 12px 28px rgba(124, 98, 60, 0.12);
+    box-shadow: 0 12px 28px rgba(var(--accent-rgb), 0.12);
 }
 
 .light-theme .btn-primary {
@@ -831,7 +916,7 @@ body.light-theme .navbar {
 .light-theme.final-cta,
 .light-theme .final-cta {
     background: linear-gradient(180deg, rgba(255, 255, 255, 0.28) 0%, rgba(234, 223, 206, 0.62) 100%) !important;
-    border-bottom: 1px solid rgba(124, 98, 60, 0.12);
+    border-bottom: 1px solid rgba(var(--accent-rgb), 0.12);
 }
 
 .light-theme.footer,
@@ -842,13 +927,13 @@ body.light-theme .navbar {
 }
 
 .light-theme .footer-bottom {
-    border-top-color: rgba(124, 98, 60, 0.12) !important;
+    border-top-color: rgba(var(--accent-rgb), 0.12) !important;
 }
 
 .light-theme .footer-toggle,
 .light-theme .info-modal-content {
     background: rgba(255, 255, 255, 0.68) !important;
-    border-color: rgba(124, 98, 60, 0.14) !important;
+    border-color: rgba(var(--accent-rgb), 0.14) !important;
 }
 
 .light-theme .landing-secondary-box {
@@ -871,7 +956,7 @@ body.light-theme .navbar {
 
 .light-theme .landing-secondary-box:hover {
     border-color: rgba(var(--accent-rgb), 0.24) !important;
-    box-shadow: 0 18px 36px rgba(124, 98, 60, 0.16) !important;
+    box-shadow: 0 18px 36px rgba(var(--accent-rgb), 0.16) !important;
 }
 
 .light-theme .landing-secondary-box .feature-icon {
@@ -1048,7 +1133,7 @@ body.light-theme .navbar {
     transform: translateY(-2px) !important;
 }
 
-.logo-container { display: flex; align-items: center; gap: 12px; }
+.logo-container { display: flex; align-items: center; gap: 12px; min-width: 0; }
 
 /* Ajuste da Logo na Navbar */
 .logo-img {
@@ -1068,7 +1153,12 @@ body.light-theme .navbar {
     letter-spacing: -0.5px;
 }
 
-.nav-links { display: flex; align-items: center; gap: 1.5rem; }
+.nav-links { display: flex; align-items: center; justify-content: flex-end; gap: 1.5rem; min-width: 0; }
+
+.nav-links .btn-login,
+.nav-links .btn-primary {
+    white-space: nowrap;
+}
 
 .theme-toggle-btn {
     display: inline-flex;
@@ -1123,7 +1213,7 @@ body.light-theme .navbar {
 
 body.light-theme .theme-toggle-btn {
     background: rgba(255, 255, 255, 0.56);
-    border-color: rgba(124, 98, 60, 0.16);
+    border-color: rgba(var(--accent-rgb), 0.16);
 }
 
 body.dark-theme .theme-toggle-btn {
@@ -1373,7 +1463,7 @@ body.dark-theme .theme-toggle-icon {
 .feature-card:nth-child(4)::after { content: "04"; }
 
 .feature-icon {
-    background: rgba(34, 211, 238, 0.1);
+    background: rgba(var(--accent-rgb), 0.1);
     color: var(--primary);
     width: 50px;
     height: 50px;
@@ -1812,11 +1902,11 @@ body.dark-theme .showcase-image-light {
 
 .input-group input, .input-group select {
     width: 100%; padding: 12px 15px; background: var(--bg-dark);
-    border: 1px solid var(--border); border-radius: 10px; color: white; font-size: 1rem; outline: none;
+    border: 1px solid var(--border); border-radius: 10px; color: var(--text-primary); font-size: 1rem; outline: none;
 }
 .input-group input:focus { border-color: var(--primary); }
 
-.close-modal { position: absolute; top: 20px; right: 20px; background: none; color: white; font-size: 2rem; cursor: pointer; }
+.close-modal { position: absolute; top: 20px; right: 20px; background: none; color: var(--text-primary); font-size: 2rem; cursor: pointer; }
 
 .link-entrar { color: var(--primary) !important; font-weight: 700; text-decoration: none; transition: 0.3s; }
 .link-entrar:hover { text-decoration: underline; }
@@ -2103,6 +2193,29 @@ body.dark-theme .nav-toggle {
         flex-wrap: wrap;
         gap: 10px;
     }
+
+    .nav-links {
+        gap: 0.85rem;
+    }
+}
+
+@media (max-width: 980px) and (min-width: 769px) {
+    .navbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.85rem 1rem;
+    }
+
+    .theme-toggle-btn-nav {
+        justify-self: end;
+    }
+
+    .nav-links {
+        grid-column: 1 / -1;
+        width: 100%;
+        justify-content: flex-end;
+        gap: 0.85rem;
+    }
 }
 
 @media (max-width: 768px) {
@@ -2138,7 +2251,7 @@ body.dark-theme .nav-toggle {
         top: calc(100% + 10px);
         right: 0;
         left: auto;
-        width: min(250px, calc(100vw - 24px));
+        width: min(280px, calc(100vw - 20px));
         display: grid;
         gap: 12px;
         padding: 16px;
@@ -2181,6 +2294,7 @@ body.dark-theme .nav-toggle {
     .nav-links .btn-primary {
         width: 100%;
         justify-content: center;
+        min-height: 46px;
     }
 
     .hero-section,
@@ -2373,6 +2487,19 @@ body.dark-theme .nav-toggle {
         border-radius: 12px;
     }
 
+    .nav-links {
+        width: min(280px, calc(100vw - 16px));
+        gap: 10px;
+        padding: 14px;
+    }
+
+    .nav-links .btn-login,
+    .nav-links .btn-primary {
+        min-height: 44px;
+        padding: 10px 14px;
+        font-size: 13px;
+    }
+
     .hero-img-floating {
         max-width: 260px;
         margin-top: 0.25rem;
@@ -2384,6 +2511,13 @@ body.dark-theme .nav-toggle {
         font-size: clamp(1.7rem, 8vw, 2.2rem);
     }
 
+
+@media (max-width: 480px) {
+    .modal-content {
+        width: min(100%, 92vw);
+        padding: 20px 16px 22px;
+    }
+}
     .feature-card {
         min-height: 340px;
         padding: 30px 18px 86px;
@@ -2409,6 +2543,55 @@ body.dark-theme .nav-toggle {
         gap: 14px;
     }
 
+
+@media (max-width: 768px) and (hover: hover) and (pointer: fine) {
+    .nav-toggle {
+        display: none;
+    }
+
+    .navbar {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        gap: 0.85rem 1rem;
+        padding: 14px 18px;
+    }
+
+    .theme-toggle-btn-nav {
+        justify-self: end;
+        width: 42px;
+        height: 42px;
+    }
+
+    .nav-links {
+        position: static;
+        grid-column: 1 / -1;
+        width: 100%;
+        display: flex;
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: 0.85rem;
+        padding: 0;
+        border: none;
+        border-radius: 0;
+        background: transparent;
+        box-shadow: none;
+        opacity: 1;
+        pointer-events: auto;
+        transform: none;
+    }
+
+    body.dark-theme .nav-links {
+        background: transparent;
+        border: none;
+        box-shadow: none;
+    }
+
+    .nav-links .btn-login,
+    .nav-links .btn-primary {
+        width: auto;
+        min-height: 42px;
+    }
+}
     .footer-bottom {
         margin-top: 28px;
         padding-top: 20px;

@@ -64,9 +64,10 @@ body.light-theme .charts-grid > :nth-child(2) {
 }
 
 .table-header-flex {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
   align-items: center;
+  gap: 0.75rem 1rem;
   margin-bottom: 1rem;
 }
 
@@ -205,7 +206,49 @@ body.dark-theme .dash-table tbody tr:hover {
   }
 
   .dash-table {
-    min-width: 680px;
+    min-width: 560px;
+  }
+}
+
+@media (max-width: 680px) {
+  .recent-expenses-card {
+    padding: 1rem;
+  }
+
+  .recent-expenses-table {
+    min-width: 100%;
+    table-layout: auto;
+  }
+
+  .recent-expenses-table thead {
+    display: none;
+  }
+
+  .recent-expenses-table tbody {
+    display: grid;
+    gap: 0.8rem;
+  }
+
+  .recent-expenses-table tbody tr {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 0.45rem;
+    border: 1px solid rgba(59, 130, 246, 0.22);
+    border-radius: 16px;
+    background: #071a2d;
+    padding: 1rem;
+    box-shadow: none;
+  }
+
+  .recent-expenses-table tbody td {
+    border: 0;
+    padding: 0.18rem 0;
+    text-align: left;
+    display: grid;
+    grid-template-columns: 1fr;
+    align-items: start;
+    gap: 0.26rem;
+    font-size: 0.9rem;
   }
 }
 

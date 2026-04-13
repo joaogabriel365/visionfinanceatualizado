@@ -13,7 +13,7 @@ const DEFAULT_SETTINGS = {
     moeda: 'BRL',
     corTema: 'azul',
     corTemaClaro: 'azul',
-    corTemaEscuro: 'azul',
+    corTemaEscuro: 'dourado',
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -51,8 +51,8 @@ function normalizarCorTema(valor, fallback = DEFAULT_SETTINGS.corTema) {
 function normalizarSettings(settings = {}) {
     const temaEscuro = settings?.temaEscuro === true;
     const corTemaLegado = normalizarCorTema(settings?.corTema, DEFAULT_SETTINGS.corTema);
-    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, corTemaLegado);
-    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, corTemaLegado);
+    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, settings?.corTema || DEFAULT_SETTINGS.corTemaClaro);
+    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, settings?.corTema || DEFAULT_SETTINGS.corTemaEscuro);
 
     return {
         ...DEFAULT_SETTINGS,
@@ -113,6 +113,11 @@ function parseFlexibleDate(dateInput) {
     if (Number.isNaN(parsed.getTime())) return null;
     parsed.setHours(12, 0, 0, 0);
     return parsed;
+}
+
+function dispatchFinancialDataChanged(detail = {}) {
+    if (typeof window === 'undefined' || typeof window.dispatchEvent !== 'function') return;
+    window.dispatchEvent(new CustomEvent('visionFinance:dataChanged', { detail }));
 }
 
 function buildCycleLabel(startDate, endDate) {
@@ -193,6 +198,7 @@ export function getDespesasData(options = {}) {
 export function setDespesasData(despesas = []) {
     despesasExemplo = despesas;
     localStorage.setItem(DESPESAS_STORAGE_KEY, JSON.stringify(despesas));
+    dispatchFinancialDataChanged({ scope: 'despesas' });
     return despesasExemplo;
 }
 
@@ -250,6 +256,7 @@ export function setMetasData(metasList = [], options = {}) {
     const serializadas = metasList.map((meta) => serializarMeta(meta, cycleInfo));
     metas = serializadas.map((meta) => normalizarMeta(meta, cycleInfo));
     localStorage.setItem(METAS_STORAGE_KEY, JSON.stringify(serializadas));
+    dispatchFinancialDataChanged({ scope: 'metas', cycleId: cycleInfo.id });
     return metas;
 }
 
@@ -336,6 +343,7 @@ export function setCurrentCycleBudget(valor, referenceDate = new Date()) {
     limiteMensal = normalizedValue;
     localStorage.setItem(BUDGET_STORAGE_KEY, String(normalizedValue));
     salvarBudgetHistory(history);
+    dispatchFinancialDataChanged({ scope: 'budget', cycleId: cycleInfo.id });
     return normalizedValue;
 }
 
@@ -360,14 +368,19 @@ export function getCurrentFinancialSnapshot(referenceDate = new Date()) {
     const despesas = getDespesasData({ cycleInfo });
     const metasCiclo = getMetasData({ cycleInfo });
     const budget = getBudgetForCycle(cycleInfo);
+    const totalDespesas = despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0);
+    const totalMetas = metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0);
+    const totalUtilizado = totalDespesas + totalMetas;
 
     return {
         cycleInfo,
         despesas,
         metas: metasCiclo,
         budget,
-        totalDespesas: despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0),
-        totalMetas: metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0)
+        totalDespesas,
+        totalMetas,
+        totalUtilizado,
+        saldo: budget - totalUtilizado
     };
 }
 
@@ -503,7 +516,8 @@ export const applyThemeClasses = (isDark, element = document.body, settingsOverr
 
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', isDark ? '#050a0f' : '#084ca0');
+        const accentColor = getComputedStyle(element).getPropertyValue('--accent').trim();
+        themeColorMeta.setAttribute('content', accentColor || (isDark ? '#d4af37' : '#084ca0'));
     }
 
     return isDark;

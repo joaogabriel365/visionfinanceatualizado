@@ -197,8 +197,8 @@ function getStoredThemeSettings() {
     const availableThemes = ['azul', 'dourado', 'oceano', 'grafite', 'aurora', 'terracota'];
     const normalizeColorTheme = (value, fallback = 'azul') => availableThemes.includes(value) ? value : fallback;
     const legacyTheme = normalizeColorTheme(settings.corTema, 'azul');
-    const corTemaClaro = normalizeColorTheme(settings.corTemaClaro, legacyTheme);
-    const corTemaEscuro = normalizeColorTheme(settings.corTemaEscuro, legacyTheme);
+    const corTemaClaro = normalizeColorTheme(settings.corTemaClaro, settings.corTema || 'azul');
+    const corTemaEscuro = normalizeColorTheme(settings.corTemaEscuro, settings.corTema || 'dourado');
     const temaEscuro = settings.temaEscuro === true;
 
     return {
@@ -230,7 +230,8 @@ function applyLandingTheme() {
 
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-        themeColorMeta.setAttribute('content', isDark ? '#050a0f' : '#084ca0');
+        const accentColor = getComputedStyle(document.body).getPropertyValue('--accent').trim();
+        themeColorMeta.setAttribute('content', accentColor || (isDark ? '#d4af37' : '#084ca0'));
     }
 }
 

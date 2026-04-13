@@ -87,41 +87,13 @@
 }
 
 .filter-field-icon {
-  position: absolute;
-  left: 14px;
-  z-index: 1;
-  width: 18px;
-  height: 18px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  color: var(--accent);
-  font-size: 0.9rem;
-  pointer-events: none;
-}
-
-.filters-bar .filter-field:first-child .filter-field-icon {
-  font-size: 0;
-}
-
-.filters-bar .filter-field:first-child .filter-field-icon i {
-  display: none;
-}
-
-.filters-bar .filter-field:first-child .filter-field-icon::before {
-  content: "\1F4C5";
-  font-size: 0.95rem;
-  line-height: 1;
-}
-
-.filters-bar .filter-field:not(:first-child) .filter-field-icon {
   display: none;
 }
 
 .filter-select {
   width: 100%;
   min-width: 0;
-  padding: 0.92rem 2.6rem 0.92rem 2.65rem;
+  padding: 0.92rem 2.6rem 0.92rem 1rem;
   border-radius: 16px;
   border: 1px solid var(--border-color);
   background: linear-gradient(180deg, var(--card-bg) 0%, var(--bg-surface) 100%);
@@ -130,10 +102,6 @@
   box-shadow: 0 10px 20px rgba(15, 23, 42, 0.05);
   appearance: none;
   text-overflow: ellipsis;
-}
-
-.filters-bar .filter-field:not(:first-child) .filter-select {
-  padding-left: 1rem;
 }
 
 .filter-select:focus {
@@ -226,6 +194,7 @@
   width: var(--expense-actions-width);
   min-width: var(--expense-actions-width);
   text-align: center;
+  overflow: visible;
 }
 
 .expense-table-head-row .expense-head-value,
@@ -449,6 +418,11 @@
   .expense-table {
     --expense-actions-width: 96px;
   }
+  
+  .expense-cycle-group-badge {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 
   .expense-actions {
     gap: 0.35rem;
@@ -499,6 +473,63 @@ body.light-theme .expense-actions .btn-edit .expense-action-image {
 
 .expense-date-group-row td {
   padding: 1rem 1.25rem 0.45rem !important;
+}
+
+.expense-cycle-group-row td {
+  padding: 1.35rem 1.25rem 0.3rem !important;
+}
+
+.expense-cycle-group-row:first-child td {
+  padding-top: 1rem !important;
+}
+
+.expense-cycle-group-badge {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  width: 100%;
+  padding: 0.95rem 1.1rem;
+  border-radius: 18px;
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  background: linear-gradient(135deg, rgba(var(--accent-rgb), 0.18) 0%, rgba(var(--accent-rgb), 0.08) 100%);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.08);
+  box-sizing: border-box;
+}
+
+.expense-cycle-group-copy {
+  display: grid;
+  gap: 0.18rem;
+  min-width: 0;
+}
+
+.expense-cycle-group-eyebrow {
+  color: var(--accent);
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+
+.expense-cycle-group-title {
+  color: var(--text-primary);
+  font-size: 1rem;
+  font-weight: 800;
+  line-height: 1.25;
+}
+
+.expense-cycle-group-meta {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 34px;
+  padding: 0.3rem 0.8rem;
+  border-radius: 999px;
+  background: rgba(15, 23, 42, 0.08);
+  color: var(--text-secondary);
+  font-size: 0.76rem;
+  font-weight: 800;
+  white-space: nowrap;
 }
 
 .expense-date-group-badge {
@@ -672,6 +703,16 @@ body.light-theme .expense-date-group-badge {
   border: 1px solid var(--expense-light-border-strong) !important;
 }
 
+body.light-theme .expense-cycle-group-badge {
+  background: linear-gradient(180deg, #f5ebdc 0%, #ecdfcb 100%) !important;
+  border-color: var(--expense-light-border-strong) !important;
+}
+
+body.light-theme .expense-cycle-group-meta {
+  background: rgba(138, 97, 49, 0.08);
+  color: #8a6131;
+}
+
 body.light-theme .filters-bar .filter-select,
 body.light-theme #modalDespesa .modal-content-card,
 body.light-theme #modalConfirmacao > div,
@@ -728,6 +769,11 @@ body.light-theme .expense-description-icon {
     gap: 1rem;
     flex-direction: column;
     align-items: flex-start !important;
+  }
+
+  .expense-cycle-group-badge {
+    flex-direction: column;
+    align-items: flex-start;
   }
 
   .expense-section-title {
@@ -1060,7 +1106,19 @@ body.light-theme .expense-description-icon {
   }
 }
 
+@media (max-width: 768px) {
+  .expense-table {
+    --expense-actions-width: 108px;
+  }
+}
+
 @media (max-width: 420px) {
+  .expense-modal-card,
+  #modalConfirmacao > div {
+    width: min(100%, 92vw) !important;
+    padding: 1.1rem !important;
+  }
+
   .expense-table-card {
     padding: 1rem !important;
   }
@@ -1074,7 +1132,7 @@ body.light-theme .expense-description-icon {
   }
 
   .filter-select {
-    padding: 0.88rem 2.5rem 0.88rem 2.5rem;
+    padding: 0.88rem 2.5rem 0.88rem 1rem;
     border-radius: 14px;
   }
 

@@ -23,12 +23,12 @@ if (window.top === window.self) {
         </div>
     </div>
 
-    <div class="planning-budget-form">
+    <div class="planning-budget-form" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
         <input type="text" id="orcamentoMensalInput" placeholder="R$ 0,00" 
                class="planning-budget-input"
                style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 12px; color: var(--text-primary); outline: none;">
         <button onclick="PlanejamentoModulo.salvarOrcamento()" class="planning-budget-save"
-            style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            style="margin-left: 2px; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
             SALVAR
         </button>
     </div>
@@ -49,10 +49,11 @@ if (window.top === window.self) {
 </div>
 
 <div class="planning-card-prof planning-goals-card" style="margin-top: 2rem;">
-    <div class="planning-goals-head" style="margin-bottom: 25px;">
-        <div>
+    <div class="planning-goals-head">
+        <div class="planning-goals-copy">
+            <span class="planning-goals-eyebrow">Planejamento de objetivos</span>
             <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de médio e longo prazo.</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de medio e longo prazo com mais clareza sobre prazo, progresso e valor acumulado.</p>
         </div>
         <button onclick="PlanejamentoModulo.abrirModalNovaMeta()" class="planning-goals-cta"
                 style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">
@@ -63,34 +64,52 @@ if (window.top === window.self) {
     <div class="planning-table-wrap">
     <table class="planning-goals-table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Meta</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Valor Alvo</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Prazo</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Progresso</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; text-align: center;">Ações</th>
+            <tr>
+                <th>Meta</th>
+                <th>Valor Alvo</th>
+                <th>Prazo</th>
+                <th>Progresso</th>
+                <th class="planning-goals-actions-head">Ações</th>
             </tr>
         </thead>
         <tbody id="goalsTableBody"></tbody>
     </table>
     <div class="planning-goals-empty-state" id="planningGoalsEmptyState" hidden>
-        <p class="planning-goals-empty-text">Nenhuma meta financeira cadastrada.</p>
+        <div class="planning-goals-empty-card">
+            <div class="planning-goals-empty-icon" aria-hidden="true"></div>
+            <span class="planning-goals-empty-eyebrow">Seu proximo avancao comeca aqui</span>
+            <h4 class="planning-goals-empty-title">Nenhuma meta financeira cadastrada.</h4>
+            <p class="planning-goals-empty-text">Organize reservas, viagens ou compras futuras com uma meta clara, prazo definido e acompanhamento visual do progresso.</p>
+            <button onclick="PlanejamentoModulo.abrirModalNovaMeta()" class="planning-goals-empty-action">Criar primeira meta</button>
+        </div>
     </div>
     </div>
 </div>
 
-<div id="modalAdicionarLimite" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #e0e0e0; border: 1px solid #c0c0c0; border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; color: #1f2937;">
-        <h3 style="margin-top: 0;">Ajustar Orçamento</h3>
-        <p style="color: #475569; font-size: 0.9rem; margin-bottom: 20px;">Insira o valor que deseja somar ao seu limite estabelecido atual.</p>
-        
-        <label style="font-size: 0.8rem; color: #475569;">VALOR A ADICIONAR (R$)</label>
-        <input type="text" id="valorAdicionalInput" placeholder="R$ 0,00" 
-               style="width: 100%; background: #f0f0f0; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; color: #1f2937; margin: 8px 0 25px 0; outline: none; font-size: 1.1rem;">
+<div id="modalAdicionarLimite" class="planning-modal-overlay" style="display: none;">
+    <div class="planning-modal-card planning-limit-modal-card">
+        <div class="planning-modal-hero">
+            <div class="planning-modal-icon-wrap planning-modal-icon-wrap-money">
+                <div class="planning-modal-icon-stage">
+                    <img src="./img/moedas.png" alt="Ajustar orçamento" class="planning-modal-icon-image planning-modal-icon-image-money">
+                </div>
+            </div>
+            <div class="planning-modal-copy">
+                <span class="planning-modal-eyebrow">Limite estabelecido</span>
+                <h3 class="planning-modal-title">Ajustar Orçamento</h3>
+                <p class="planning-modal-text">Insira o valor que deseja somar ao seu limite atual e mantenha seu planejamento alinhado ao tema ativo do painel.</p>
+            </div>
+        </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" style="flex: 1; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">CONFIRMAR</button>
-            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
+        <div class="planning-modal-field">
+            <label class="planning-modal-label" for="valorAdicionalInput">Valor a adicionar (R$)</label>
+            <input type="text" id="valorAdicionalInput" placeholder="R$ 0,00" class="planning-modal-input">
+            <p class="planning-modal-field-help">O valor informado sera somado ao limite atual do ciclo selecionado.</p>
+        </div>
+
+        <div class="planning-modal-actions">
+            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" class="planning-modal-confirm">Confirmar</button>
+            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" class="planning-modal-cancel">Cancelar</button>
         </div>
     </div>
 </div>
@@ -135,15 +154,18 @@ if (window.top === window.self) {
 </div>
 
 <div id="modalConfirmacaoSistema" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
-    <div style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
-        <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.22); display: flex; align-items: center; justify-content: center;">
-            <img src="./img/lixeira.png" alt="Excluir meta" style="width: 24px; height: 24px; filter: brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%);">
+    <div id="confirmModalCard" class="planning-confirm-card planning-confirm-card-danger" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
+        <div id="confirmModalIconWrap" class="planning-confirm-icon-wrap planning-confirm-icon-wrap-danger">
+            <div id="confirmModalIconStage" class="planning-confirm-icon-stage planning-confirm-icon-stage-danger">
+                <img id="confirmModalIcon" src="./img/lixeira.png" alt="Excluir meta" class="planning-confirm-icon-image planning-confirm-icon-image-danger">
+            </div>
         </div>
-        <h3 id="confirm-title" style="color: var(--text-primary); margin: 0 0 10px 0;">Confirmar</h3>
-        <p id="confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta ação?</p>
-        <div style="display: flex; gap: 10px;">
-            <button id="btn-confirm-yes" style="flex: 1; background: #ef4444; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
-            <button id="btn-confirm-no" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+        <h3 id="confirm-title" class="planning-confirm-title" style="color: var(--text-primary); margin: 0 0 10px 0;">Confirmar</h3>
+        <p id="confirm-text" class="planning-confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta ação?</p>
+        <div id="confirmValueHighlight" class="planning-confirm-value-highlight" hidden></div>
+        <div class="planning-confirm-actions" style="display: flex; gap: 10px;">
+            <button id="btn-confirm-yes" class="planning-confirm-button planning-confirm-button-danger" style="flex: 1; background: #ef4444; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
+            <button id="btn-confirm-no" class="planning-confirm-button planning-confirm-button-secondary" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
         </div>
     </div>
 </div>

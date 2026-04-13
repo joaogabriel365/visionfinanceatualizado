@@ -13,7 +13,7 @@
     moeda: "BRL",
     corTema: "azul",
     corTemaClaro: "azul",
-    corTemaEscuro: "azul",
+    corTemaEscuro: "dourado",
     temaEscuro: false,
     diaViradaMes: 1,
     notificacoes: {
@@ -46,8 +46,8 @@
   function normalizarSettings(settings = {}) {
     const temaEscuro = settings?.temaEscuro === true;
     const corTemaLegado = normalizarCorTema(settings?.corTema, DEFAULT_SETTINGS.corTema);
-    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, corTemaLegado);
-    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, corTemaLegado);
+    const corTemaClaro = normalizarCorTema(settings?.corTemaClaro, settings?.corTema || DEFAULT_SETTINGS.corTemaClaro);
+    const corTemaEscuro = normalizarCorTema(settings?.corTemaEscuro, settings?.corTema || DEFAULT_SETTINGS.corTemaEscuro);
     return {
       ...DEFAULT_SETTINGS,
       ...settings,
@@ -99,6 +99,10 @@
     if (Number.isNaN(parsed.getTime())) return null;
     parsed.setHours(12, 0, 0, 0);
     return parsed;
+  }
+  function dispatchFinancialDataChanged(detail = {}) {
+    if (typeof window === "undefined" || typeof window.dispatchEvent !== "function") return;
+    window.dispatchEvent(new CustomEvent("visionFinance:dataChanged", { detail }));
   }
   function buildCycleLabel(startDate, endDate) {
     const startLabel = new Intl.DateTimeFormat("pt-BR", { day: "2-digit", month: "short" }).format(startDate).replace(".", "");
@@ -161,6 +165,7 @@
   function setDespesasData(despesas = []) {
     despesasExemplo = despesas;
     localStorage.setItem(DESPESAS_STORAGE_KEY, JSON.stringify(despesas));
+    dispatchFinancialDataChanged({ scope: "despesas" });
     return despesasExemplo;
   }
   function normalizarAporte(entry, fallbackCycle) {
@@ -205,6 +210,7 @@
     const serializadas = metasList.map((meta) => serializarMeta(meta, cycleInfo));
     metas = serializadas.map((meta) => normalizarMeta(meta, cycleInfo));
     localStorage.setItem(METAS_STORAGE_KEY, JSON.stringify(serializadas));
+    dispatchFinancialDataChanged({ scope: "metas", cycleId: cycleInfo.id });
     return metas;
   }
   function addMetaContribution(metaIndex, valor, referenceDate = /* @__PURE__ */ new Date()) {
@@ -266,6 +272,7 @@
     limiteMensal = normalizedValue;
     localStorage.setItem(BUDGET_STORAGE_KEY, String(normalizedValue));
     salvarBudgetHistory(history);
+    dispatchFinancialDataChanged({ scope: "budget", cycleId: cycleInfo.id });
     return normalizedValue;
   }
   function syncCarteiraGastosDoCiclo(cycleInfo = getCurrentCycleInfo()) {
@@ -286,13 +293,18 @@
     const despesas = getDespesasData({ cycleInfo });
     const metasCiclo = getMetasData({ cycleInfo });
     const budget = getBudgetForCycle(cycleInfo);
+    const totalDespesas = despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0);
+    const totalMetas = metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0);
+    const totalUtilizado = totalDespesas + totalMetas;
     return {
       cycleInfo,
       despesas,
       metas: metasCiclo,
       budget,
-      totalDespesas: despesas.reduce((acc, item) => acc + (parseFloat(item.valor) || 0), 0),
-      totalMetas: metasCiclo.reduce((acc, item) => acc + (parseFloat(item.guardado) || 0), 0)
+      totalDespesas,
+      totalMetas,
+      totalUtilizado,
+      saldo: budget - totalUtilizado
     };
   }
   function getCycleSummariesForYear(year, turnDay = getMonthTurnDay()) {
@@ -395,7 +407,8 @@
     element.classList.toggle("light-theme", !isDark);
     const themeColorMeta = document.querySelector('meta[name="theme-color"]');
     if (themeColorMeta) {
-      themeColorMeta.setAttribute("content", isDark ? "#050a0f" : "#084ca0");
+      const accentColor = getComputedStyle(element).getPropertyValue("--accent").trim();
+      themeColorMeta.setAttribute("content", accentColor || (isDark ? "#d4af37" : "#084ca0"));
     }
     return isDark;
   };
@@ -708,7 +721,8 @@
         "Cart\xE3o de Cr\xE9dito": "Cart\xE3o de Cr\xE9dito",
         "Cart\xE3o de D\xE9bito": "Cart\xE3o de D\xE9bito",
         "VA": "Vale Alimenta\xE7\xE3o",
-        "VR": "Vale Refei\xE7\xE3o"
+        "VR": "Vale Refei\xE7\xE3o",
+        "VT": "Vale Transporte"
       };
       const tipoBusca = mapeamentoTipos[metodo];
       if (tipoBusca) {
@@ -905,10 +919,34 @@
       const hoje = (/* @__PURE__ */ new Date()).toLocaleDateString("pt-BR");
       return hoje === dataFormatada ? `\u{1F4C5} HOJE - ${dataFormatada}` : dataFormatada;
     },
+    obterAnosDisponiveis() {
+      return [...new Set(
+        this.getDespesas().map((item) => String(item?.data || "").split("-")[0]).filter((ano) => /^\d{4}$/.test(ano))
+      )].sort((a, b) => Number(b) - Number(a));
+    },
+    popularFiltroAnos(anoSelecionado = "todos") {
+      const selectAno = document.getElementById("filterYear");
+      if (!selectAno) return;
+      const anosDisponiveis = this.obterAnosDisponiveis();
+      const valorAtual = anosDisponiveis.includes(anoSelecionado) ? anoSelecionado : "todos";
+      selectAno.innerHTML = [
+        '<option value="todos">Ano</option>',
+        ...anosDisponiveis.map((ano) => `<option value="${ano}">${ano}</option>`)
+      ].join("");
+      selectAno.value = valorAtual;
+    },
+    obterResumoCiclo(cycleInfo, despesasDoCiclo) {
+      const quantidade = despesasDoCiclo.length;
+      return {
+        titulo: cycleInfo?.fullLabel || cycleInfo?.label || "Ciclo financeiro",
+        meta: `${quantidade} ${quantidade === 1 ? "despesa" : "despesas"}`
+      };
+    },
     renderizarTabelaCompleta(dadosFiltrados = null) {
       const tbody = document.getElementById("fullExpenseTableBody");
       const totalElement = document.getElementById("totalFiltrado");
       if (!tbody) return;
+      this.popularFiltroAnos(document.getElementById("filterYear")?.value || "todos");
       const isLightTheme = document.body.classList.contains("light-theme");
       const sectionRowBackground = isLightTheme ? getThemeVar("--accent") || "#0b63ce" : "rgba(30, 41, 59, 0.5)";
       const sectionRowText = isLightTheme ? "#ffffff" : getThemeVar("--accent") || "#d4af37";
@@ -923,12 +961,19 @@
         return;
       }
       despesas.sort((a, b) => new Date(b.data) - new Date(a.data));
-      const grupos = despesas.reduce((acc, d) => {
-        acc[d.data] = acc[d.data] || [];
-        acc[d.data].push(d);
+      const gruposPorCiclo = despesas.reduce((acc, d) => {
+        const cycleInfo = getCycleInfo(d.data);
+        const cycleId = cycleInfo.id;
+        if (!acc[cycleId]) {
+          acc[cycleId] = {
+            cycleInfo,
+            despesas: []
+          };
+        }
+        acc[cycleId].despesas.push(d);
         return acc;
       }, {});
-      const datasOrdenadas = Object.keys(grupos).sort((a, b) => new Date(b) - new Date(a));
+      const ciclosOrdenados = Object.values(gruposPorCiclo).sort((a, b) => b.cycleInfo.startDate - a.cycleInfo.startDate);
       let htmlFinal = "";
       const getPaymentIcon = (metodo) => {
         const icons = {
@@ -937,90 +982,112 @@
           "Pix": "fa-bolt",
           "Dinheiro": "fa-money-bill-wave",
           "VR": "fa-utensils",
-          "VA": "fa-basket-shopping"
+          "VA": "fa-basket-shopping",
+          "VT": "fa-bus"
         };
         return icons[metodo] || "fa-wallet";
       };
-      datasOrdenadas.forEach((dataKey) => {
+      ciclosOrdenados.forEach(({ cycleInfo, despesas: despesasDoCiclo }) => {
+        const resumoCiclo = this.obterResumoCiclo(cycleInfo, despesasDoCiclo);
         htmlFinal += `
-                <tr class="expense-date-group-row">
+                <tr class="expense-cycle-group-row">
                     <td colspan="7">
-                        <span class="expense-date-group-badge" style="background: ${sectionRowBackground}; color: ${sectionRowText}; border-bottom: 1px solid ${sectionRowBorder};">
-                            ${this.formatarDataExibicao(dataKey)}
-                        </span>
+                        <div class="expense-cycle-group-badge">
+                            <div class="expense-cycle-group-copy">
+                                <span class="expense-cycle-group-eyebrow">Ciclo financeiro</span>
+                                <span class="expense-cycle-group-title">${resumoCiclo.titulo}</span>
+                            </div>
+                            <span class="expense-cycle-group-meta">${resumoCiclo.meta}</span>
+                        </div>
                     </td>
                 </tr>`;
-        grupos[dataKey].forEach((item) => {
-          const globalIndex = this.getDespesas().findIndex((d) => JSON.stringify(d) === JSON.stringify(item));
-          const estilo = this.obterEstiloCategoria(item.categoria);
-          let infoExtra = "";
-          if (item.parcelas || item.cartao) {
-            infoExtra += `<div class="expense-payment-extra">`;
-            if (item.parcelas) {
-              infoExtra += `<span class="expense-payment-chip expense-payment-chip-installments">${item.parcelas}</span>`;
-            }
-            if (item.cartao) {
-              infoExtra += `<span class="expense-payment-chip expense-payment-chip-card">${item.cartao}</span>`;
-            }
-            infoExtra += `</div>`;
-          }
-          const tituloSeguro = JSON.stringify(item.titulo || "Despesa");
-          const observacaoSegura = JSON.stringify(item.observacao || "");
-          const textoObs = item.observacao ? `<button type="button" class="expense-description-trigger" onclick='window.DespesasModulo.abrirModalDescricao(${tituloSeguro}, ${observacaoSegura})' aria-label="Abrir descri\xE7\xE3o da despesa ${item.titulo}" title="Abrir descri\xE7\xE3o">
-                            <img src="${commentIconUrl}" alt="" class="expense-description-icon">
-                       </button>` : `<div class="expense-description-empty">-</div>`;
-          const valorExibicao = item.valorTotalOriginal || item.valor;
+        const gruposPorData = despesasDoCiclo.reduce((acc, d) => {
+          acc[d.data] = acc[d.data] || [];
+          acc[d.data].push(d);
+          return acc;
+        }, {});
+        const datasOrdenadas = Object.keys(gruposPorData).sort((a, b) => new Date(b) - new Date(a));
+        datasOrdenadas.forEach((dataKey) => {
           htmlFinal += `
-                    <tr class="expense-row">
-                        <td class="expense-cell-title" data-label="Titulo">
-                            <div class="expense-title-block">
-                                <strong class="expense-title-main">${item.titulo}</strong>
-                            </div>
-                        </td>
-                        <td class="expense-cell-category" data-label="Categoria">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-tags"></i><span>Categoria</span></span>
-                                <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px;">
-                                    ${item.categoria}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="expense-cell-payment" data-label="Pagamento">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas ${getPaymentIcon(item.pagamento)}"></i><span>Pagamento</span></span>
-                                <span class="expense-payment-main">${item.pagamento}</span>
-                                ${infoExtra}
-                            </div>
-                        </td>
-                        <td class="expense-cell-value" data-label="Valor">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-money-bill-wave"></i><span>Valor</span></span>
-                                <strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong>
-                            </div>
-                        </td>
-                        <td class="expense-cell-date" data-label="Data">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-calendar-days"></i><span>Data</span></span>
-                                <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace("\u{1F4C5} HOJE - ", "")}</span>
-                            </div>
-                        </td>
-                        <td class="expense-cell-description${item.observacao ? "" : " expense-cell-description-empty-row"}" data-label="Descricao">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descri\xE7\xE3o</span></span>
-                                ${textoObs}
-                            </div>
-                        </td>
-                        <td class="expense-cell-actions" data-label="Acoes">
-                            <div class="expense-actions">
-                                <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})" title="Editar despesa" aria-label="Editar despesa ${item.titulo}">
-                                    <img src="${editIconUrl}" alt="Editar" class="expense-action-image">
-                                </button>
-                                <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})" title="Excluir despesa" aria-label="Excluir despesa ${item.titulo}">
-                                    <img src="${deleteIconUrl}" alt="Excluir" class="expense-action-image">
-                                </button>
-                            </div>
+                    <tr class="expense-date-group-row">
+                        <td colspan="7">
+                            <span class="expense-date-group-badge" style="background: ${sectionRowBackground}; color: ${sectionRowText}; border-bottom: 1px solid ${sectionRowBorder};">
+                                ${this.formatarDataExibicao(dataKey)}
+                            </span>
                         </td>
                     </tr>`;
+          gruposPorData[dataKey].forEach((item) => {
+            const globalIndex = this.getDespesas().findIndex((d) => JSON.stringify(d) === JSON.stringify(item));
+            const estilo = this.obterEstiloCategoria(item.categoria);
+            let infoExtra = "";
+            if (item.parcelas || item.cartao) {
+              infoExtra += `<div class="expense-payment-extra">`;
+              if (item.parcelas) {
+                infoExtra += `<span class="expense-payment-chip expense-payment-chip-installments">${item.parcelas}</span>`;
+              }
+              if (item.cartao) {
+                infoExtra += `<span class="expense-payment-chip expense-payment-chip-card">${item.cartao}</span>`;
+              }
+              infoExtra += `</div>`;
+            }
+            const tituloSeguro = JSON.stringify(item.titulo || "Despesa");
+            const observacaoSegura = JSON.stringify(item.observacao || "");
+            const textoObs = item.observacao ? `<button type="button" class="expense-description-trigger" onclick='window.DespesasModulo.abrirModalDescricao(${tituloSeguro}, ${observacaoSegura})' aria-label="Abrir descri\xE7\xE3o da despesa ${item.titulo}" title="Abrir descri\xE7\xE3o">
+                            <img src="${commentIconUrl}" alt="" class="expense-description-icon">
+                       </button>` : `<div class="expense-description-empty">-</div>`;
+            const valorExibicao = item.valorTotalOriginal || item.valor;
+            htmlFinal += `
+                        <tr class="expense-row">
+                            <td class="expense-cell-title" data-label="Titulo">
+                                <div class="expense-title-block">
+                                    <strong class="expense-title-main">${item.titulo}</strong>
+                                </div>
+                            </td>
+                            <td class="expense-cell-category" data-label="Categoria">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-tags"></i><span>Categoria</span></span>
+                                    <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px;">
+                                        ${item.categoria}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="expense-cell-payment" data-label="Pagamento">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas ${getPaymentIcon(item.pagamento)}"></i><span>Pagamento</span></span>
+                                    <span class="expense-payment-main">${item.pagamento}</span>
+                                    ${infoExtra}
+                                </div>
+                            </td>
+                            <td class="expense-cell-value" data-label="Valor">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-money-bill-wave"></i><span>Valor</span></span>
+                                    <strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong>
+                                </div>
+                            </td>
+                            <td class="expense-cell-date" data-label="Data">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-calendar-days"></i><span>Data</span></span>
+                                    <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace("\u{1F4C5} HOJE - ", "")}</span>
+                                </div>
+                            </td>
+                            <td class="expense-cell-description${item.observacao ? "" : " expense-cell-description-empty-row"}" data-label="Descricao">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descri\xE7\xE3o</span></span>
+                                    ${textoObs}
+                                </div>
+                            </td>
+                            <td class="expense-cell-actions" data-label="Acoes">
+                                <div class="expense-actions">
+                                    <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})" title="Editar despesa" aria-label="Editar despesa ${item.titulo}">
+                                        <img src="${editIconUrl}" alt="Editar" class="expense-action-image">
+                                    </button>
+                                    <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})" title="Excluir despesa" aria-label="Excluir despesa ${item.titulo}">
+                                        <img src="${deleteIconUrl}" alt="Excluir" class="expense-action-image">
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+          });
         });
       });
       tbody.innerHTML = htmlFinal;
@@ -1082,7 +1149,8 @@
         else despesas[index] = novaDespesa;
         setDespesasData(despesas);
         this.sincronizarGastoCarteiras();
-        this.renderizarTabelaCompleta();
+        if (typeof this.aplicarFiltrosAtuais === "function") this.aplicarFiltrosAtuais();
+        else this.renderizarTabelaCompleta();
         this.fecharModal();
       };
     },
@@ -1091,11 +1159,13 @@
       syncCarteiraGastosDoCiclo();
     },
     configurarFiltros() {
-      const filters = ["filterMonth", "filterCategory", "filterPayment", "filterPeriod"].map((id) => document.getElementById(id));
+      const filters = ["filterYear", "filterMonth", "filterCategory", "filterPayment", "filterPeriod"].map((id) => document.getElementById(id));
       const searchInput = document.getElementById("searchExpense");
       const btnLimpar = document.getElementById("btnClearFilters");
+      this.popularFiltroAnos(document.getElementById("filterYear")?.value || "todos");
       const aplicar = () => {
-        const [m, c, p, period] = filters.map((f) => f ? f.value : "todos");
+        this.popularFiltroAnos(document.getElementById("filterYear")?.value || "todos");
+        const [ano, m, c, p, period] = filters.map((f) => f ? f.value : "todos");
         const termoBusca = searchInput ? searchInput.value.toLowerCase() : "";
         const hoje = /* @__PURE__ */ new Date();
         hoje.setHours(23, 59, 59, 999);
@@ -1109,11 +1179,13 @@
             atendePeriodo = diffDias <= parseInt(period);
           }
           const mesD = d.data.split("-")[1];
+          const anoD = d.data.split("-")[0];
           const atendeBusca = d.titulo.toLowerCase().includes(termoBusca) || d.observacao && d.observacao.toLowerCase().includes(termoBusca);
-          return (m === "todos" || mesD === m) && (c === "todos" || d.categoria === c) && (p === "todos" || d.pagamento === p) && atendePeriodo && atendeBusca;
+          return (ano === "todos" || anoD === ano) && (m === "todos" || mesD === m) && (c === "todos" || d.categoria === c) && (p === "todos" || d.pagamento === p) && atendePeriodo && atendeBusca;
         });
         this.renderizarTabelaCompleta(filtradas);
       };
+      this.aplicarFiltrosAtuais = aplicar;
       filters.forEach((f) => {
         if (f) f.addEventListener("change", aplicar);
       });
@@ -1141,7 +1213,8 @@
       despesas.splice(index, 1);
       setDespesasData(despesas);
       DespesasModulo.sincronizarGastoCarteiras();
-      DespesasModulo.renderizarTabelaCompleta();
+      if (typeof DespesasModulo.aplicarFiltrosAtuais === "function") DespesasModulo.aplicarFiltrosAtuais();
+      else DespesasModulo.renderizarTabelaCompleta();
     }
   };
   window.editarDespesa = (index) => DespesasModulo.abrirModal(index);
@@ -1151,6 +1224,7 @@
     monthNames: ["Janeiro", "Fevereiro", "Marco", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"],
     monthVisibilidade: Array(12).fill(true),
     init() {
+      this.popularFiltroAnos();
       this.renderizarOverview();
       this.renderizarResumo();
       this.updateChartContainerMetrics();
@@ -1171,6 +1245,22 @@
           this.configurarControleOcultarMeses();
         };
       }
+    },
+    obterAnosDisponiveis() {
+      return [...new Set(
+        this.getDespesasPorAnoCicloTodos().map((despesa) => String(despesa?.data || "").split("-")[0]).filter((ano) => /^\d{4}$/.test(ano))
+      )].sort((left, right) => Number(right) - Number(left));
+    },
+    popularFiltroAnos(anoSelecionado = null) {
+      const yearSelect = document.getElementById("reportYear");
+      if (!yearSelect) return;
+      const anosDisponiveis = this.obterAnosDisponiveis();
+      const valorAtual = String(anoSelecionado || yearSelect.value || "");
+      const fallbackYear = anosDisponiveis[0] || String((/* @__PURE__ */ new Date()).getFullYear());
+      const valorSelecionado = anosDisponiveis.includes(valorAtual) ? valorAtual : fallbackYear;
+      yearSelect.innerHTML = anosDisponiveis.length ? anosDisponiveis.map((ano) => `<option value="${ano}">${ano}</option>`).join("") : `<option value="${fallbackYear}">${fallbackYear}</option>`;
+      yearSelect.value = valorSelecionado;
+      yearSelect.disabled = anosDisponiveis.length <= 1;
     },
     isMobileViewport() {
       return window.innerWidth <= 640;
@@ -1239,6 +1329,9 @@
       const yearSelect = document.getElementById("reportYear");
       return yearSelect ? Number(yearSelect.value) : (/* @__PURE__ */ new Date()).getFullYear();
     },
+    getDespesasPorAnoCicloTodos() {
+      return getDespesasData();
+    },
     getCycleSummaries() {
       return getCycleSummariesForYear(this.getSelectedYear());
     },
@@ -1246,7 +1339,7 @@
       return this.getCycleSummaries().map((summary) => summary.label);
     },
     getDespesasPorAnoCiclo(year = this.getSelectedYear()) {
-      return getDespesasData().filter((despesa) => getCycleInfo(despesa.data).year === year);
+      return this.getDespesasPorAnoCicloTodos().filter((despesa) => getCycleInfo(despesa.data).year === year);
     },
     getResumoReferencia(summaries) {
       const currentCycle = getCurrentCycleInfo();
@@ -1267,7 +1360,10 @@
         accentRgb: styles.getPropertyValue("--accent-rgb").trim() || (isDark ? "212, 175, 55" : "8, 76, 160"),
         xTickInactive: isDark ? "rgba(182, 194, 208, 0.42)" : "rgba(71, 85, 105, 0.42)",
         hiddenBar: isDark ? "rgba(148, 163, 184, 0.18)" : "rgba(203, 213, 225, 0.35)",
-        tooltipBackground: "#0f172a"
+        tooltipBackground: styles.getPropertyValue("--bg-surface").trim() || (isDark ? "#0b1118" : "#f8f4ee"),
+        tooltipTitle: styles.getPropertyValue("--text-primary").trim() || (isDark ? "#f8fafc" : "#0f172a"),
+        tooltipBody: styles.getPropertyValue("--text-secondary").trim() || (isDark ? "#b6c2d0" : "#475569"),
+        tooltipBorder: `rgba(${styles.getPropertyValue("--accent-rgb").trim() || (isDark ? "212, 175, 55" : "8, 76, 160")}, 0.24)`
       };
     },
     bindResponsiveChart() {
@@ -1777,8 +1873,10 @@
             legend: { display: false },
             tooltip: {
               backgroundColor: theme.tooltipBackground,
-              titleColor: "#ffffff",
-              bodyColor: "#e2e8f0",
+              titleColor: theme.tooltipTitle,
+              bodyColor: theme.tooltipBody,
+              borderColor: theme.tooltipBorder,
+              borderWidth: 1,
               padding: 12,
               cornerRadius: 12,
               displayColors: false,
@@ -1960,12 +2058,50 @@
       return parseFloat(v.replace(/[^\d,]/g, "").replace(",", "."));
     },
     // --- MODAL DE CONFIRMAÇÃO ---
-    exibirConfirmacao(titulo, texto, onConfirm) {
+    exibirConfirmacao(titulo, texto, onConfirm, options = {}) {
       const modal = document.getElementById("modalConfirmacaoSistema");
       const btnSim = document.getElementById("btn-confirm-yes");
       const btnNao = document.getElementById("btn-confirm-no");
+      const icon = document.getElementById("confirmModalIcon");
+      const iconWrap = document.getElementById("confirmModalIconWrap");
+      const iconStage = document.getElementById("confirmModalIconStage");
+      const card = document.getElementById("confirmModalCard");
+      const valueHighlight = document.getElementById("confirmValueHighlight");
+      const variant = options.variant === "accent" ? "accent" : "danger";
+      const iconSrc = options.iconSrc || (variant === "accent" ? "./img/moedas.png" : "./img/lixeira.png");
+      const iconAlt = options.iconAlt || (variant === "accent" ? "Confirmar orcamento" : "Excluir item");
+      const highlightValue = options.highlightValue || "";
       document.getElementById("confirm-title").innerText = titulo;
       document.getElementById("confirm-text").innerText = texto;
+      if (icon) {
+        icon.src = iconSrc;
+        icon.alt = iconAlt;
+        icon.className = `planning-confirm-icon-image planning-confirm-icon-image-${variant}`;
+      }
+      if (iconWrap) {
+        iconWrap.className = `planning-confirm-icon-wrap planning-confirm-icon-wrap-${variant}`;
+      }
+      if (iconStage) {
+        iconStage.className = `planning-confirm-icon-stage planning-confirm-icon-stage-${variant}`;
+      }
+      if (card) {
+        card.className = `planning-confirm-card planning-confirm-card-${variant}`;
+      }
+      if (btnSim) {
+        btnSim.className = `planning-confirm-button planning-confirm-button-${variant}`;
+      }
+      if (btnNao) {
+        btnNao.className = "planning-confirm-button planning-confirm-button-secondary";
+      }
+      if (valueHighlight) {
+        if (highlightValue) {
+          valueHighlight.hidden = false;
+          valueHighlight.textContent = highlightValue;
+        } else {
+          valueHighlight.hidden = true;
+          valueHighlight.textContent = "";
+        }
+      }
       modal.style.display = "flex";
       const fechar = () => modal.style.display = "none";
       btnSim.onclick = () => {
@@ -1992,6 +2128,12 @@
             this.atualizarInterfaceOrcamento();
             this.atualizarProgressoGlobal();
             input.value = "";
+          },
+          {
+            variant: "accent",
+            iconSrc: "./img/moedas.png",
+            iconAlt: "Salvar orcamento",
+            highlightValue: formatarMoeda(novoValor)
           }
         );
       } else {
@@ -2110,6 +2252,11 @@
           setMetasData(metasAtuais);
           this.renderizarMetas();
           this.atualizarProgressoGlobal();
+        },
+        {
+          variant: "danger",
+          iconSrc: "./img/lixeira.png",
+          iconAlt: "Excluir meta"
         }
       );
     },
@@ -2144,38 +2291,43 @@
       }
       table.hidden = false;
       emptyState.hidden = true;
-      const isLight = document.body.classList.contains("light-theme");
-      const progressBg = isLight ? getThemeVar("--border-color") || "#dccdb9" : "#1a253a";
-      const rowBorder = isLight ? "#cbd5e1" : "#1e293b";
-      const rowText = isLight ? getThemeVar("--text-primary") || "#0f172a" : "#ffffff";
-      const percentageColor = isLight ? getThemeVar("--text-primary") || "#0f172a" : "#ffffff";
-      const actionButtonStyle = isLight ? "border: none;" : "background: var(--bg-surface);";
       tbody.innerHTML = metasAtuais.map((meta, index) => {
         const guardado = parseFloat(meta.guardado) || 0;
         const alvo = parseFloat(meta.alvo) || 1;
         const porcentagem = Math.min(guardado / alvo * 100, 100).toFixed(0);
         return `
-                <tr class="planning-goal-row" style="border-bottom: 1px solid ${rowBorder}; color: ${rowText};">
-                    <td class="planning-goal-name" data-label="Meta" style="padding: 20px 15px 20px 25px;">${meta.nome}</td>
-                    <td class="planning-goal-target" data-label="Valor Alvo" style="padding: 20px 15px; font-weight: bold;">${formatarMoeda(meta.alvo)}</td>
-                    <td class="planning-goal-deadline" data-label="Prazo" style="padding: 20px 15px;">${meta.prazo}</td>
-                    <td class="planning-goal-progress-cell" data-label="Progresso" style="padding: 20px 15px;">
-                        <div class="planning-goal-progress">
-                            <div class="planning-goal-progress-track" style="flex: 1; height: 8px; background: ${progressBg}; border-radius: 4px; overflow: hidden;">
-                                <div class="planning-goal-progress-fill" style="width: ${porcentagem}%; height: 100%; background: ${getThemeVar("--accent")}; box-shadow: 0 0 10px ${getThemeVar("--accent-soft")};"></div>
-                            </div>
-                            <span class="planning-goal-progress-value" style="font-size: 0.8rem; min-width: 35px; color: ${percentageColor}; font-weight: 700;">${porcentagem}%</span>
+                <tr class="planning-goal-row">
+                    <td class="planning-goal-name" data-label="Meta">
+                        <div class="planning-goal-main">
+                            <span class="planning-goal-title">${meta.nome}</span>
+                            <span class="planning-goal-caption">${formatarMoeda(guardado)} acumulados ate agora</span>
                         </div>
                     </td>
-                    <td class="planning-goal-actions-cell" data-label="A\xE7\xF5es" style="padding: 20px 15px; text-align: center;">
+                    <td class="planning-goal-target" data-label="Valor Alvo">
+                        <span class="planning-goal-target-amount">${formatarMoeda(meta.alvo)}</span>
+                        <span class="planning-goal-target-caption">Valor objetivo</span>
+                    </td>
+                    <td class="planning-goal-deadline" data-label="Prazo">
+                        <span class="planning-goal-deadline-badge">${meta.prazo}</span>
+                    </td>
+                    <td class="planning-goal-progress-cell" data-label="Progresso">
+                        <div class="planning-goal-progress">
+                            <div class="planning-goal-progress-track">
+                                <div class="planning-goal-progress-fill" style="width: ${porcentagem}%;"></div>
+                            </div>
+                            <span class="planning-goal-progress-value">${porcentagem}%</span>
+                        </div>
+                        <div class="planning-goal-progress-meta">${formatarMoeda(guardado)} de ${formatarMoeda(meta.alvo)}</div>
+                    </td>
+                    <td class="planning-goal-actions-cell" data-label="A\xE7\xF5es">
                         <div class="planning-goal-actions">
-                               <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-add" onclick="window.abrirModalAporte(${index})">
                                    <img src="${planningAddIconUrl}" class="planning-action-icon planning-action-icon-add" alt="Adicionar valor" title="Adicionar valor">
                             </button>
-                               <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-edit" onclick="PlanejamentoModulo.abrirModalEditarMeta(${index})">
                                    <img src="${planningEditIconUrl}" class="planning-action-icon planning-action-icon-edit" alt="Editar meta" title="Editar meta">
                             </button>
-                               <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})" style="${actionButtonStyle}">
+                               <button class="btn-action btn-delete" onclick="PlanejamentoModulo.removerMeta(${index})">
                                    <img src="${planningDeleteIconUrl}" class="planning-action-icon planning-action-icon-delete" alt="Excluir meta" title="Excluir meta">
                             </button>
                         </div>
@@ -3640,7 +3792,7 @@
       return {
         ...saved,
         corTemaClaro: this.selectCorTemaClaro?.value || saved.corTemaClaro || saved.corTema || "azul",
-        corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || "azul",
+        corTemaEscuro: this.selectCorTemaEscuro?.value || saved.corTemaEscuro || saved.corTema || "dourado",
         temaEscuro: isDark === true
       };
     },
@@ -3671,7 +3823,7 @@
       const settings = {
         moeda: this.selectMoeda.value,
         corTemaClaro: this.selectCorTemaClaro?.value || "azul",
-        corTemaEscuro: this.selectCorTemaEscuro?.value || "azul",
+        corTemaEscuro: this.selectCorTemaEscuro?.value || "dourado",
         diaViradaMes: Number(this.selectDiaVirada?.value || 1),
         temaEscuro: this.checkTemaEscuro.checked,
         notificacoes: {
@@ -3693,7 +3845,7 @@
       if (saved) {
         this.selectMoeda.value = saved.moeda || "BRL";
         if (this.selectCorTemaClaro) this.selectCorTemaClaro.value = saved.corTemaClaro || saved.corTema || "azul";
-        if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || "azul";
+        if (this.selectCorTemaEscuro) this.selectCorTemaEscuro.value = saved.corTemaEscuro || saved.corTema || "dourado";
         if (this.selectDiaVirada) this.selectDiaVirada.value = String(saved.diaViradaMes || 1);
         this.checkTemaEscuro.checked = saved.temaEscuro === true;
         this.checkNotificacoesGeral.checked = saved.notificacoes?.geral || false;
@@ -3797,7 +3949,7 @@ if (window.top === window.self) {\r
 }\r
 <\/script>\r
 \r
-<div class="section-header-row">\r
+<div class="section-header-row section-header-row-stacked">\r
     <div class="section-title-block expense-section-title">\r
         <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700;">Gerenciar Despesas</h2>\r
         <p class="section-support-text">Organize seus lan\xE7amentos, revise categorias e acompanhe cada pagamento com clareza.</p>\r
@@ -3809,6 +3961,13 @@ if (window.top === window.self) {\r
 </div>\r
 \r
 <div class="filters-bar">\r
+    <div class="filter-field">\r
+        <span class="filter-field-icon"><i class="fas fa-calendar"></i></span>\r
+        <select id="filterYear" class="filter-select">\r
+            <option value="todos">Ano</option>\r
+        </select>\r
+    </div>\r
+\r
     <div class="filter-field">\r
         <span class="filter-field-icon"><i class="fas fa-calendar-alt"></i></span>\r
         <select id="filterMonth" class="filter-select">\r
@@ -3850,6 +4009,7 @@ if (window.top === window.self) {\r
             <option value="Dinheiro">Dinheiro</option>\r
             <option value="VR">VR</option>\r
             <option value="VA">VA</option>\r
+            <option value="VT">VT</option>\r
         </select>\r
     </div>\r
 \r
@@ -3920,6 +4080,7 @@ if (window.top === window.self) {\r
                         <option value="Dinheiro">Dinheiro</option>\r
                         <option value="VR">VR</option>\r
                         <option value="VA">VA</option>\r
+                        <option value="VT">VT</option>\r
                     </select>\r
                 </div>\r
             </div>\r
@@ -4005,7 +4166,7 @@ if (window.top === window.self) {\r
 }\r
 <\/script>\r
 \r
-<div class="section-header-row">\r
+<div class="section-header-row section-header-row-stacked">\r
     <div class="section-title-block wallet-section-title">\r
         <h2 style="color: var(--text-primary); font-size: 24px; font-weight: 700; margin: 0;">Carteiras e M\xE9todos de Pagamento</h2>\r
         <p class="section-support-text">Gerencie seus cart\xF5es, contas e vales em um s\xF3 lugar.</p>\r
@@ -4139,12 +4300,12 @@ if (window.top === window.self) {
         </div>
     </div>
 
-    <div class="planning-budget-form">
+    <div class="planning-budget-form" style="display: flex; gap: 14px; align-items: center; flex-wrap: wrap;">
         <input type="text" id="orcamentoMensalInput" placeholder="R$ 0,00" 
                class="planning-budget-input"
                style="flex: 1; background: var(--input-bg); border: 1px solid var(--input-border); border-radius: 8px; padding: 12px; color: var(--text-primary); outline: none;">
         <button onclick="PlanejamentoModulo.salvarOrcamento()" class="planning-budget-save"
-            style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
+            style="margin-left: 2px; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 30px; border-radius: 8px; font-weight: 800; cursor: pointer;">
             SALVAR
         </button>
     </div>
@@ -4165,10 +4326,11 @@ if (window.top === window.self) {
 </div>
 
 <div class="planning-card-prof planning-goals-card" style="margin-top: 2rem;">
-    <div class="planning-goals-head" style="margin-bottom: 25px;">
-        <div>
+    <div class="planning-goals-head">
+        <div class="planning-goals-copy">
+            <span class="planning-goals-eyebrow">Planejamento de objetivos</span>
             <h3 style="color: var(--text-primary); margin: 0; font-size: 1.2rem; font-weight: 700;">Metas Financeiras</h3>
-            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de m\xE9dio e longo prazo.</p>
+            <p style="color: var(--text-secondary); font-size: 0.85rem; margin: 5px 0 0 0;">Acompanhe seus objetivos de medio e longo prazo com mais clareza sobre prazo, progresso e valor acumulado.</p>
         </div>
         <button onclick="PlanejamentoModulo.abrirModalNovaMeta()" class="planning-goals-cta"
                 style="background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px 24px; border-radius: 10px; font-weight: 800; cursor: pointer;">
@@ -4179,34 +4341,52 @@ if (window.top === window.self) {
     <div class="planning-table-wrap">
     <table class="planning-goals-table" style="width: 100%; border-collapse: collapse;">
         <thead>
-            <tr style="text-align: left; border-bottom: 1px solid var(--border-color);">
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Meta</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Valor Alvo</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Prazo</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase;">Progresso</th>
-                <th style="padding: 15px; color: var(--text-secondary); font-size: 0.75rem; text-transform: uppercase; text-align: center;">A\xE7\xF5es</th>
+            <tr>
+                <th>Meta</th>
+                <th>Valor Alvo</th>
+                <th>Prazo</th>
+                <th>Progresso</th>
+                <th class="planning-goals-actions-head">A\xE7\xF5es</th>
             </tr>
         </thead>
         <tbody id="goalsTableBody"></tbody>
     </table>
     <div class="planning-goals-empty-state" id="planningGoalsEmptyState" hidden>
-        <p class="planning-goals-empty-text">Nenhuma meta financeira cadastrada.</p>
+        <div class="planning-goals-empty-card">
+            <div class="planning-goals-empty-icon" aria-hidden="true"></div>
+            <span class="planning-goals-empty-eyebrow">Seu proximo avancao comeca aqui</span>
+            <h4 class="planning-goals-empty-title">Nenhuma meta financeira cadastrada.</h4>
+            <p class="planning-goals-empty-text">Organize reservas, viagens ou compras futuras com uma meta clara, prazo definido e acompanhamento visual do progresso.</p>
+            <button onclick="PlanejamentoModulo.abrirModalNovaMeta()" class="planning-goals-empty-action">Criar primeira meta</button>
+        </div>
     </div>
     </div>
 </div>
 
-<div id="modalAdicionarLimite" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); z-index: 1200; align-items: center; justify-content: center; backdrop-filter: blur(4px);">
-    <div style="background: #e0e0e0; border: 1px solid #c0c0c0; border-radius: 16px; padding: 30px; width: 100%; max-width: 400px; color: #1f2937;">
-        <h3 style="margin-top: 0;">Ajustar Or\xE7amento</h3>
-        <p style="color: #475569; font-size: 0.9rem; margin-bottom: 20px;">Insira o valor que deseja somar ao seu limite estabelecido atual.</p>
-        
-        <label style="font-size: 0.8rem; color: #475569;">VALOR A ADICIONAR (R$)</label>
-        <input type="text" id="valorAdicionalInput" placeholder="R$ 0,00" 
-               style="width: 100%; background: #f0f0f0; border: 1px solid #d0d0d0; padding: 12px; border-radius: 8px; color: #1f2937; margin: 8px 0 25px 0; outline: none; font-size: 1.1rem;">
+<div id="modalAdicionarLimite" class="planning-modal-overlay" style="display: none;">
+    <div class="planning-modal-card planning-limit-modal-card">
+        <div class="planning-modal-hero">
+            <div class="planning-modal-icon-wrap planning-modal-icon-wrap-money">
+                <div class="planning-modal-icon-stage">
+                    <img src="./img/moedas.png" alt="Ajustar or\xE7amento" class="planning-modal-icon-image planning-modal-icon-image-money">
+                </div>
+            </div>
+            <div class="planning-modal-copy">
+                <span class="planning-modal-eyebrow">Limite estabelecido</span>
+                <h3 class="planning-modal-title">Ajustar Or\xE7amento</h3>
+                <p class="planning-modal-text">Insira o valor que deseja somar ao seu limite atual e mantenha seu planejamento alinhado ao tema ativo do painel.</p>
+            </div>
+        </div>
 
-        <div style="display: flex; gap: 10px;">
-            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" style="flex: 1; background: var(--accent); color: var(--text-on-accent); border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">CONFIRMAR</button>
-            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">CANCELAR</button>
+        <div class="planning-modal-field">
+            <label class="planning-modal-label" for="valorAdicionalInput">Valor a adicionar (R$)</label>
+            <input type="text" id="valorAdicionalInput" placeholder="R$ 0,00" class="planning-modal-input">
+            <p class="planning-modal-field-help">O valor informado sera somado ao limite atual do ciclo selecionado.</p>
+        </div>
+
+        <div class="planning-modal-actions">
+            <button onclick="PlanejamentoModulo.confirmarSomaLimite()" class="planning-modal-confirm">Confirmar</button>
+            <button onclick="PlanejamentoModulo.fecharModalAdicionarLimite()" class="planning-modal-cancel">Cancelar</button>
         </div>
     </div>
 </div>
@@ -4251,15 +4431,18 @@ if (window.top === window.self) {
 </div>
 
 <div id="modalConfirmacaoSistema" style="display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: var(--modal-overlay); z-index: 2000; align-items: center; justify-content: center; backdrop-filter: blur(6px);">
-    <div style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
-        <div style="width: 64px; height: 64px; margin: 0 auto 18px; border-radius: 50%; background: rgba(239, 68, 68, 0.12); border: 1px solid rgba(239, 68, 68, 0.22); display: flex; align-items: center; justify-content: center;">
-            <img src="./img/lixeira.png" alt="Excluir meta" style="width: 24px; height: 24px; filter: brightness(0) saturate(100%) invert(24%) sepia(87%) saturate(2757%) hue-rotate(340deg) brightness(98%) contrast(93%);">
+    <div id="confirmModalCard" class="planning-confirm-card planning-confirm-card-danger" style="background: var(--modal-bg); border: 1px solid var(--border-color); border-radius: 16px; padding: 30px; width: 90%; max-width: 350px; text-align: center; box-shadow: 0 24px 48px rgba(15, 23, 42, 0.18);">
+        <div id="confirmModalIconWrap" class="planning-confirm-icon-wrap planning-confirm-icon-wrap-danger">
+            <div id="confirmModalIconStage" class="planning-confirm-icon-stage planning-confirm-icon-stage-danger">
+                <img id="confirmModalIcon" src="./img/lixeira.png" alt="Excluir meta" class="planning-confirm-icon-image planning-confirm-icon-image-danger">
+            </div>
         </div>
-        <h3 id="confirm-title" style="color: var(--text-primary); margin: 0 0 10px 0;">Confirmar</h3>
-        <p id="confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta a\xE7\xE3o?</p>
-        <div style="display: flex; gap: 10px;">
-            <button id="btn-confirm-yes" style="flex: 1; background: #ef4444; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
-            <button id="btn-confirm-no" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
+        <h3 id="confirm-title" class="planning-confirm-title" style="color: var(--text-primary); margin: 0 0 10px 0;">Confirmar</h3>
+        <p id="confirm-text" class="planning-confirm-text" style="color: var(--text-secondary); font-size: 0.9rem; margin-bottom: 25px;">Deseja realizar esta a\xE7\xE3o?</p>
+        <div id="confirmValueHighlight" class="planning-confirm-value-highlight" hidden></div>
+        <div class="planning-confirm-actions" style="display: flex; gap: 10px;">
+            <button id="btn-confirm-yes" class="planning-confirm-button planning-confirm-button-danger" style="flex: 1; background: #ef4444; color: #ffffff; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer;">Confirmar</button>
+            <button id="btn-confirm-no" class="planning-confirm-button planning-confirm-button-secondary" style="flex: 1; background: transparent; color: var(--text-secondary); border: 1px solid var(--border-color); padding: 12px; border-radius: 8px; cursor: pointer;">Cancelar</button>
         </div>
     </div>
 </div>
@@ -4584,7 +4767,7 @@ if (window.top === window.self) {
                     <div class="theme-select-card">
                         <label for="selectCorTemaClaro" class="form-label form-label-inline">Tema do modo claro</label>
                         <select id="selectCorTemaClaro" class="select">
-                            <option value="azul">Azul</option>
+                            <option value="azul">azul (padr\xE3o)</option>
                             <option value="dourado">Dourado</option>
                             <option value="oceano">Oceano</option>
                             <option value="grafite">Grafite</option>
@@ -4595,8 +4778,8 @@ if (window.top === window.self) {
                     <div class="theme-select-card">
                         <label for="selectCorTemaEscuro" class="form-label form-label-inline">Tema do modo escuro</label>
                         <select id="selectCorTemaEscuro" class="select">
+                            <option value="dourado">dourado (padr\xE3o)</option>
                             <option value="azul">Azul</option>
-                            <option value="dourado">Dourado</option>
                             <option value="oceano">Oceano</option>
                             <option value="grafite">Grafite</option>
                             <option value="aurora">Aurora</option>
@@ -4722,6 +4905,37 @@ if (window.top === window.self) {
   var secaoAtiva = "painel";
   var LOGIN_SESSION_KEY = "visionFinance_justLoggedIn";
   var TOTAL_TUTORIAL_STEPS = 7;
+  var NOTIFICATION_SEEN_STORAGE_KEY = "visionFinance_notification_seen";
+  var NOTIFICATION_BROWSER_SENT_STORAGE_KEY = "visionFinance_notification_browser_sent";
+  var NOTIFICATION_FEED_STORAGE_KEY = "visionFinance_notification_feed";
+  var NOTIFICATION_BUDGET_MILESTONES = [
+    { key: "100", ratio: 1, percentage: 100 },
+    { key: "90", ratio: 0.9, percentage: 90 },
+    { key: "75", ratio: 0.75, percentage: 75 },
+    { key: "50", ratio: 0.5, percentage: 50 }
+  ];
+  var NOTIFICATION_PROGRESS_MILESTONES = [
+    { key: "100", ratio: 1, percentage: 100 },
+    { key: "95", ratio: 0.95, percentage: 95 },
+    { key: "75", ratio: 0.75, percentage: 75 },
+    { key: "50", ratio: 0.5, percentage: 50 }
+  ];
+  var NOTIFICATION_DEADLINE_MILESTONES = [
+    { key: "due-today", label: "vence hoje", months: 0, severity: "critical" },
+    { key: "1-day", label: "1 dia", days: 1, severity: "critical" },
+    { key: "3-days", label: "3 dias", days: 3, severity: "critical" },
+    { key: "5-days", label: "5 dias", days: 5, severity: "warning" },
+    { key: "10-days", label: "10 dias", days: 10, severity: "warning" },
+    { key: "15-days", label: "15 dias", days: 15, severity: "warning" },
+    { key: "1-month", label: "1 mes", months: 1, severity: "warning" },
+    { key: "2-months", label: "2 meses", months: 2, severity: "info" },
+    { key: "3-months", label: "3 meses", months: 3, severity: "info" },
+    { key: "6-months", label: "6 meses", months: 6, severity: "info" }
+  ];
+  var notificationCenterState = {
+    isOpen: false,
+    currentIds: []
+  };
   var TUTORIAL_SECTIONS = [
     {
       title: "Painel",
@@ -4821,7 +5035,7 @@ if (window.top === window.self) {
     tutorialDraftSettings = {
       moeda: settings.moeda || "BRL",
       corTemaClaro: settings.corTemaClaro || settings.corTema || "azul",
-      corTemaEscuro: settings.corTemaEscuro || settings.corTema || "azul",
+      corTemaEscuro: settings.corTemaEscuro || settings.corTema || "dourado",
       diaViradaMes: Number(settings.diaViradaMes || 1),
       temaEscuro: settings.temaEscuro === true,
       notificacoes: {
@@ -5385,6 +5599,7 @@ if (window.top === window.self) {
           if (modulos[sectionId] && typeof modulos[sectionId].init === "function") {
             modulos[sectionId].init();
           }
+          refreshNotificationCenter(true);
         }, 50);
       });
       if (window.innerWidth <= 960) {
@@ -5414,7 +5629,7 @@ if (window.top === window.self) {
       btn.type = "button";
       btn.className = "theme-toggle-btn theme-toggle-btn-dashboard header-icon-btn";
       btn.setAttribute("aria-label", "Alternar modo claro e escuro");
-      btn.innerHTML = '<img src="./img/modo.png" alt="Alternar modo" class="theme-toggle-icon">';
+      btn.innerHTML = '<span aria-hidden="true" class="dashboard-theme-toggle-icon"></span>';
       quickActions.append(btn);
       btn.addEventListener("click", () => {
         toggleThemePreference();
@@ -5462,6 +5677,457 @@ if (window.top === window.self) {
       }
     });
   }
+  function readNotificationIdStore(storageKey) {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(storageKey) || "[]");
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+  function writeNotificationIdStore(storageKey, ids = []) {
+    const uniqueIds = [...new Set(ids)].slice(-120);
+    localStorage.setItem(storageKey, JSON.stringify(uniqueIds));
+    return uniqueIds;
+  }
+  function isLegacyGoalNotificationId(id) {
+    if (typeof id !== "string") return false;
+    const parts = id.split(":");
+    const hasLegacyCycleKey = /^\d{4}-\d{2}-\d{2}$/.test(parts[1] || "");
+    return id.startsWith("goal-progress:") && hasLegacyCycleKey || id.startsWith("goal-deadline:") && hasLegacyCycleKey;
+  }
+  function isLegacyBudgetNotificationId(id) {
+    if (typeof id !== "string") return false;
+    return /^budget-expense:\d{4}-\d{2}-\d{2}:95$/.test(id);
+  }
+  function readNotificationFeedStore() {
+    try {
+      const parsed = JSON.parse(localStorage.getItem(NOTIFICATION_FEED_STORAGE_KEY) || "[]");
+      return Array.isArray(parsed) ? parsed.filter((item) => !isLegacyGoalNotificationId(item?.id) && !isLegacyBudgetNotificationId(item?.id)) : [];
+    } catch {
+      return [];
+    }
+  }
+  function writeNotificationFeedStore(items = []) {
+    const normalizedItems = items.filter((item) => item && item.id).sort((left, right) => {
+      const severityDiff = getNotificationSeverityWeight(right.severity) - getNotificationSeverityWeight(left.severity);
+      if (severityDiff !== 0) return severityDiff;
+      return new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+    }).slice(0, 180);
+    localStorage.setItem(NOTIFICATION_FEED_STORAGE_KEY, JSON.stringify(normalizedItems));
+    return normalizedItems;
+  }
+  function upsertNotificationFeed(items = []) {
+    const currentFeed = readNotificationFeedStore();
+    const feedMap = new Map(currentFeed.map((item) => [item.id, item]));
+    items.forEach((item) => {
+      if (!item?.id) return;
+      const current = feedMap.get(item.id);
+      feedMap.set(item.id, {
+        ...current || {},
+        ...item,
+        createdAt: current?.createdAt || item.createdAt || (/* @__PURE__ */ new Date()).toISOString()
+      });
+    });
+    return writeNotificationFeedStore([...feedMap.values()]);
+  }
+  function parseMetaDeadline(dateString) {
+    if (typeof dateString !== "string" || !/^\d{2}\/\d{2}\/\d{4}$/.test(dateString)) return null;
+    const [day, month, year] = dateString.split("/").map(Number);
+    const parsed = new Date(year, month - 1, day, 12, 0, 0, 0);
+    return Number.isNaN(parsed.getTime()) ? null : parsed;
+  }
+  function normalizeNotificationDate(date) {
+    const normalized = new Date(date);
+    normalized.setHours(12, 0, 0, 0);
+    return normalized;
+  }
+  function shiftNotificationDate(date, amount, unit) {
+    const shifted = new Date(date);
+    if (unit === "days") {
+      shifted.setDate(shifted.getDate() + amount);
+      return normalizeNotificationDate(shifted);
+    }
+    const originalDay = shifted.getDate();
+    shifted.setMonth(shifted.getMonth() + amount);
+    if (shifted.getDate() !== originalDay) {
+      shifted.setDate(0);
+    }
+    return normalizeNotificationDate(shifted);
+  }
+  function slugifyNotificationPart(value) {
+    return String(value || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-zA-Z0-9]+/g, "-").replace(/^-+|-+$/g, "").toLowerCase();
+  }
+  function getReachedProgressMilestones(ratio) {
+    if (!Number.isFinite(ratio)) return [];
+    return [...NOTIFICATION_PROGRESS_MILESTONES].filter((milestone) => ratio >= milestone.ratio).sort((left, right) => left.ratio - right.ratio);
+  }
+  function getReachedBudgetMilestones(ratio) {
+    if (!Number.isFinite(ratio)) return [];
+    return [...NOTIFICATION_BUDGET_MILESTONES].filter((milestone) => ratio >= milestone.ratio).sort((left, right) => left.ratio - right.ratio);
+  }
+  function getBudgetMilestoneDescriptor(milestone) {
+    if (!milestone) return null;
+    if (milestone.percentage >= 100) {
+      return {
+        severity: "critical",
+        title: "Limite do or\xE7amento atingido",
+        message: "As despesas do ciclo atual chegaram a 100% do limite estabelecido."
+      };
+    }
+    return {
+      severity: milestone.percentage >= 75 ? "warning" : "info",
+      title: `Orcamento em ${milestone.percentage}%`,
+      message: `As despesas do ciclo atual chegaram a ${milestone.percentage}% do limite estabelecido.`
+    };
+  }
+  function getGoalProgressMilestoneDescriptor(milestone, goalName) {
+    if (!milestone) return null;
+    if (milestone.percentage >= 100) {
+      return {
+        severity: "success",
+        title: `Meta concluida: ${goalName}`,
+        message: `Parabens, a meta ${goalName} chegou a 100% e foi concluida.`
+      };
+    }
+    return {
+      severity: milestone.percentage >= 75 ? "warning" : "info",
+      title: `Meta em ${milestone.percentage}%: ${goalName}`,
+      message: `A meta ${goalName} atingiu ${milestone.percentage}% do valor planejado.`
+    };
+  }
+  function getReachedDeadlineMilestones(deadline, today) {
+    if (!deadline || !today) return [];
+    if (today.getTime() > deadline.getTime()) {
+      return [{
+        key: "overdue",
+        severity: "critical",
+        label: "prazo vencido"
+      }];
+    }
+    return NOTIFICATION_DEADLINE_MILESTONES.filter((milestone) => {
+      const triggerDate = typeof milestone.days === "number" ? shiftNotificationDate(deadline, -milestone.days, "days") : shiftNotificationDate(deadline, -milestone.months, "months");
+      return today.getTime() >= triggerDate.getTime() && today.getTime() <= deadline.getTime();
+    });
+  }
+  function getNotificationSeverityWeight(severity) {
+    return {
+      critical: 3,
+      warning: 2,
+      info: 1,
+      success: 0
+    }[severity] ?? 0;
+  }
+  function formatNotificationRelativeDays(days) {
+    if (days < 0) return `${Math.abs(days)} ${Math.abs(days) === 1 ? "dia de atraso" : "dias de atraso"}`;
+    if (days === 0) return "vence hoje";
+    return `${days} ${days === 1 ? "dia restante" : "dias restantes"}`;
+  }
+  function formatNotificationTimestamp(timestamp) {
+    const date = new Date(timestamp);
+    if (Number.isNaN(date.getTime())) return "";
+    return new Intl.DateTimeFormat("pt-BR", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit"
+    }).format(date);
+  }
+  function buildNotificationItem({ id, severity, title, message, category, targetSection, meta, settingKey = "geral" }) {
+    return {
+      id,
+      severity,
+      title,
+      message,
+      category,
+      targetSection,
+      meta,
+      settingKey,
+      createdAt: (/* @__PURE__ */ new Date()).toISOString()
+    };
+  }
+  function buildBudgetNotificationItems(snapshot) {
+    const { cycleInfo, budget, totalUtilizado } = snapshot;
+    if (!(budget > 0)) return [];
+    const usageRatio = totalUtilizado / budget;
+    return getReachedBudgetMilestones(usageRatio).map((milestone) => {
+      const descriptor = getBudgetMilestoneDescriptor(milestone);
+      return buildNotificationItem({
+        id: `budget-expense:${cycleInfo.id}:${milestone.key}`,
+        severity: descriptor.severity,
+        category: "Or\xE7amento",
+        targetSection: "planejamento",
+        title: descriptor.title,
+        message: `${descriptor.message} Ciclo ${cycleInfo.label}.`,
+        meta: `${formatarMoeda(totalUtilizado)} de ${formatarMoeda(budget)}`,
+        settingKey: "orcamento"
+      });
+    });
+  }
+  function buildGoalProgressNotificationItems(snapshot) {
+    const { metas: metas2 } = snapshot;
+    return metas2.flatMap((meta) => {
+      const targetValue = parseFloat(meta.alvo) || 0;
+      const savedValue = parseFloat(meta.totalHistorico) || parseFloat(meta.guardado) || 0;
+      const progressRatio = targetValue > 0 ? savedValue / targetValue : 0;
+      return getReachedProgressMilestones(progressRatio).map((milestone) => {
+        const descriptor = getGoalProgressMilestoneDescriptor(milestone, meta.nome);
+        return buildNotificationItem({
+          id: `goal-progress:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:${milestone.key}`,
+          severity: descriptor.severity,
+          category: "Meta",
+          targetSection: "planejamento",
+          title: descriptor.title,
+          message: descriptor.message,
+          meta: `${formatarMoeda(savedValue)} de ${formatarMoeda(targetValue)}`,
+          settingKey: "orcamentoMeta"
+        });
+      });
+    });
+  }
+  function buildGoalDeadlineNotificationItems(snapshot, today = normalizeNotificationDate(/* @__PURE__ */ new Date())) {
+    const { metas: metas2 } = snapshot;
+    return metas2.flatMap((meta) => {
+      const deadline = parseMetaDeadline(meta.prazo);
+      const savedValue = parseFloat(meta.totalHistorico) || parseFloat(meta.guardado) || 0;
+      const progressRatio = meta.alvo > 0 ? savedValue / meta.alvo : 0;
+      if (!deadline || progressRatio >= 1) return [];
+      const remainingValue = Math.max(meta.alvo - savedValue, 0);
+      const diffDays = Math.ceil((deadline.getTime() - today.getTime()) / (1e3 * 60 * 60 * 24));
+      return getReachedDeadlineMilestones(deadline, today).map((milestone) => {
+        if (milestone.key === "overdue") {
+          return buildNotificationItem({
+            id: `goal-deadline:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:overdue`,
+            severity: "critical",
+            category: "Prazos de metas",
+            targetSection: "planejamento",
+            title: `Meta atrasada: ${meta.nome}`,
+            message: `O prazo da meta venceu e ainda faltam ${formatarMoeda(remainingValue)} para concluir.`,
+            meta: formatNotificationRelativeDays(diffDays),
+            settingKey: "metas"
+          });
+        }
+        return buildNotificationItem({
+          id: `goal-deadline:${slugifyNotificationPart(meta.nome)}:${meta.prazo}:${milestone.key}`,
+          severity: milestone.severity,
+          category: "Prazos de metas",
+          targetSection: "planejamento",
+          title: milestone.key === "due-today" ? `Meta vence hoje: ${meta.nome}` : `Prazo da meta: ${meta.nome}`,
+          message: milestone.key === "due-today" ? `Hoje e o ultimo dia da meta ${meta.nome}. Ainda faltam ${formatarMoeda(remainingValue)} para concluir.` : `Faltam ${milestone.label} para a meta ${meta.nome}. Ainda faltam ${formatarMoeda(remainingValue)} para atingir o objetivo.`,
+          meta: formatNotificationRelativeDays(diffDays),
+          settingKey: "metas"
+        });
+      });
+    });
+  }
+  function sortNotificationItems(items = []) {
+    return [...items].sort((left, right) => {
+      const severityDiff = getNotificationSeverityWeight(right.severity) - getNotificationSeverityWeight(left.severity);
+      if (severityDiff !== 0) return severityDiff;
+      const createdDiff = new Date(right.createdAt || 0).getTime() - new Date(left.createdAt || 0).getTime();
+      if (createdDiff !== 0) return createdDiff;
+      return left.title.localeCompare(right.title, "pt-BR");
+    });
+  }
+  function getNotificationCenterData() {
+    const settings = getThemeSettings();
+    const notificationsEnabled = settings.notificacoes?.geral === true;
+    if (!notificationsEnabled) {
+      return {
+        enabled: false,
+        items: [],
+        unreadCount: 0
+      };
+    }
+    const snapshot = getCurrentFinancialSnapshot();
+    const candidateItems = [
+      ...settings.notificacoes?.orcamento ? buildBudgetNotificationItems(snapshot) : [],
+      ...settings.notificacoes?.orcamentoMeta ? buildGoalProgressNotificationItems(snapshot) : [],
+      ...settings.notificacoes?.metas ? buildGoalDeadlineNotificationItems(snapshot) : []
+    ];
+    const activeSettingKeys = ["orcamento", "orcamentoMeta", "metas"].filter((key) => settings.notificacoes?.[key]);
+    const items = sortNotificationItems(
+      upsertNotificationFeed(candidateItems).filter((item) => activeSettingKeys.includes(item.settingKey))
+    );
+    const seenIds = readNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY);
+    const unreadCount = items.filter((item) => !seenIds.includes(item.id)).length;
+    return {
+      enabled: true,
+      items,
+      unreadCount
+    };
+  }
+  function getNotificationBellIcon() {
+    return `
+        <span aria-hidden="true" class="dashboard-notification-icon"></span>
+        <span class="notification-btn-badge" hidden>0</span>
+    `;
+  }
+  function renderNotificationPanel(panel, data) {
+    if (!panel) return;
+    if (!data.enabled) {
+      panel.innerHTML = `
+            <div class="notification-popover-head">
+                <div>
+                    <span class="notification-popover-eyebrow">Central de notifica\xE7\xF5es</span>
+                    <h3>Notifica\xE7\xF5es desativadas</h3>
+                </div>
+            </div>
+            <div class="notification-empty-state">
+                <strong>Ative as notifica\xE7\xF5es nas configura\xE7\xF5es</strong>
+                <p>Quando os alertas estiverem habilitados, o sino mostrar\xE1 avisos sobre or\xE7amento e metas em tempo real.</p>
+                <button type="button" class="notification-action-btn" data-notification-target="configuracoes">Abrir configura\xE7\xF5es</button>
+            </div>
+        `;
+      return;
+    }
+    if (!data.items.length) {
+      panel.innerHTML = `
+            <div class="notification-popover-head">
+                <div>
+                    <span class="notification-popover-eyebrow">Central de notifica\xE7\xF5es</span>
+                    <h3>Tudo em dia</h3>
+                </div>
+                <span class="notification-summary-chip notification-summary-chip-success">Sem alertas</span>
+            </div>
+            <div class="notification-empty-state">
+                <strong>Nenhuma a\xE7\xE3o pendente no momento</strong>
+                <p>O sistema vai destacar aqui qualquer aviso relevante sobre or\xE7amento, metas e limites do ciclo atual.</p>
+            </div>
+        `;
+      return;
+    }
+    panel.innerHTML = `
+        <div class="notification-popover-head">
+            <div>
+                <span class="notification-popover-eyebrow">Central de notifica\xE7\xF5es</span>
+                <h3>${data.unreadCount > 0 ? `${data.unreadCount} ${data.unreadCount === 1 ? "novo alerta" : "novos alertas"}` : "Alertas recentes"}</h3>
+            </div>
+            <span class="notification-summary-chip">${data.items.length} itens</span>
+        </div>
+        <div class="notification-list">
+            ${data.items.map((item) => `
+                <article class="notification-card notification-card-${item.severity}">
+                    <div class="notification-card-top">
+                        <span class="notification-card-category">${item.category}</span>
+                        <span class="notification-card-meta">${item.meta}</span>
+                    </div>
+                    <h4>${item.title}</h4>
+                    <p>${item.message}</p>
+                    <span class="notification-card-timestamp">Notificado em ${formatNotificationTimestamp(item.createdAt)}</span>
+                    <div class="notification-card-actions">
+                        <button type="button" class="notification-action-btn" data-notification-target="${item.targetSection}">Ver detalhes</button>
+                    </div>
+                </article>
+            `).join("")}
+        </div>
+    `;
+  }
+  function markCurrentNotificationsAsSeen(ids = []) {
+    if (!ids.length) return;
+    const seenIds = readNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY);
+    writeNotificationIdStore(NOTIFICATION_SEEN_STORAGE_KEY, [...seenIds, ...ids]);
+  }
+  function maybeSendBrowserNotifications(data) {
+    if (!data.enabled || !data.items.length) return;
+    if (!("Notification" in window) || Notification.permission !== "granted") return;
+    const sentIds = readNotificationIdStore(NOTIFICATION_BROWSER_SENT_STORAGE_KEY);
+    const candidates = data.items.filter((item) => !sentIds.includes(item.id));
+    if (!candidates.length) return;
+    candidates.slice(0, 3).forEach((item) => {
+      const notification = new Notification("Vision Finance", {
+        body: `${item.title} \u2022 ${item.message}`,
+        icon: "./img/logo.png",
+        tag: item.id
+      });
+      notification.onclick = () => {
+        window.focus();
+        notification.close();
+        if (item.targetSection) navegar(item.targetSection);
+      };
+    });
+    writeNotificationIdStore(NOTIFICATION_BROWSER_SENT_STORAGE_KEY, [...sentIds, ...candidates.map((item) => item.id)]);
+  }
+  function ensureNotificationCenter() {
+    const btn = document.querySelector(".notification-btn");
+    if (!btn) return null;
+    btn.id = "dashboardNotificationBtn";
+    btn.type = "button";
+    btn.setAttribute("aria-label", "Abrir central de notifica\xE7\xF5es");
+    btn.setAttribute("aria-haspopup", "dialog");
+    btn.setAttribute("aria-expanded", String(notificationCenterState.isOpen));
+    let wrap = document.getElementById("notificationCenterWrap");
+    if (!wrap) {
+      wrap = document.createElement("div");
+      wrap.id = "notificationCenterWrap";
+      wrap.className = "notification-center-wrap";
+      btn.parentNode.insertBefore(wrap, btn);
+      wrap.appendChild(btn);
+    }
+    if (!btn.dataset.enhanced) {
+      btn.dataset.enhanced = "true";
+      btn.innerHTML = getNotificationBellIcon();
+    }
+    let panel = document.getElementById("notificationPopover");
+    if (!panel) {
+      panel = document.createElement("section");
+      panel.id = "notificationPopover";
+      panel.className = "notification-popover";
+      panel.hidden = true;
+      panel.setAttribute("role", "dialog");
+      panel.setAttribute("aria-label", "Central de notifica\xE7\xF5es");
+      wrap.appendChild(panel);
+    }
+    if (!btn.dataset.bound) {
+      btn.dataset.bound = "true";
+      btn.addEventListener("click", (event) => {
+        event.stopPropagation();
+        notificationCenterState.isOpen = !notificationCenterState.isOpen;
+        if (notificationCenterState.isOpen) {
+          markCurrentNotificationsAsSeen(notificationCenterState.currentIds);
+        }
+        refreshNotificationCenter(true);
+      });
+    }
+    return { btn, panel };
+  }
+  function refreshNotificationCenter(preserveOpen = false) {
+    const elements = ensureNotificationCenter();
+    if (!elements) return;
+    const { btn, panel } = elements;
+    const badge = btn.querySelector(".notification-btn-badge");
+    const data = getNotificationCenterData();
+    notificationCenterState.currentIds = data.items.map((item) => item.id);
+    maybeSendBrowserNotifications(data);
+    renderNotificationPanel(panel, data);
+    const isOpen = preserveOpen ? notificationCenterState.isOpen : false;
+    notificationCenterState.isOpen = isOpen;
+    panel.hidden = !isOpen;
+    btn.setAttribute("aria-expanded", String(isOpen));
+    btn.classList.toggle("has-unread", data.unreadCount > 0);
+    if (badge) {
+      badge.hidden = data.unreadCount <= 0;
+      badge.textContent = data.unreadCount > 9 ? "9+" : String(data.unreadCount);
+    }
+    btn.title = data.enabled ? data.unreadCount > 0 ? `${data.unreadCount} alertas pendentes` : "Central de notifica\xE7\xF5es" : "Notifica\xE7\xF5es desativadas";
+  }
+  document.addEventListener("click", (event) => {
+    const panel = document.getElementById("notificationPopover");
+    const wrap = document.getElementById("notificationCenterWrap");
+    if (event.target.closest(".notification-action-btn")) {
+      const targetSection = event.target.closest(".notification-action-btn")?.dataset.notificationTarget;
+      notificationCenterState.isOpen = false;
+      refreshNotificationCenter(true);
+      if (targetSection) navegar(targetSection);
+      return;
+    }
+    if (!notificationCenterState.isOpen || !wrap || !panel) return;
+    if (!wrap.contains(event.target)) {
+      notificationCenterState.isOpen = false;
+      refreshNotificationCenter(true);
+    }
+  });
   document.addEventListener("click", (e) => {
     const navItem = e.target.closest("[data-section]");
     if (navItem) {
@@ -5476,12 +6142,18 @@ if (window.top === window.self) {
     aplicarAvatarPerfil();
     gerenciarBotaoModo();
     gerenciarBotaoOlho();
+    ensureNotificationCenter();
+    refreshNotificationCenter();
     configurarSidebarMobile();
     configurarSaidaDashboard();
     navegar(getSecaoInicial());
     maybeOpenTutorialOnLogin();
   });
   window.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && notificationCenterState.isOpen) {
+      notificationCenterState.isOpen = false;
+      refreshNotificationCenter(true);
+    }
     if (e.key === "Escape" && document.body.classList.contains("dashboard-sidebar-open")) {
       fecharSidebarMobile();
     }
@@ -5490,6 +6162,7 @@ if (window.top === window.self) {
     ensureFinancialDataIntegrity();
     aplicarTemaGlobal();
     gerenciarBotaoModo();
+    refreshNotificationCenter(true);
     if (getTutorialState().currentStep === TOTAL_TUTORIAL_STEPS && !cacheTutorialElements().overlay?.hidden) {
       renderTutorialStep(TOTAL_TUTORIAL_STEPS);
     }
@@ -5500,6 +6173,12 @@ if (window.top === window.self) {
   window.navegar = navegar;
   window.addEventListener("profileUpdated", () => {
     aplicarAvatarPerfil();
+  });
+  window.addEventListener("visionFinance:dataChanged", () => {
+    refreshNotificationCenter(true);
+  });
+  window.addEventListener("focus", () => {
+    refreshNotificationCenter(true);
   });
   window.addEventListener("visionFinance:openTutorial", handleTutorialOpenRequest);
 })();

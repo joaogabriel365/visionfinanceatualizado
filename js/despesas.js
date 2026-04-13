@@ -1,4 +1,4 @@
-import { formatarMoeda, confirmarAcao, getCarteirasData, getCategoryBadgeStyle, getDespesasData, getThemeVar, setDespesasData, syncCarteiraGastosDoCiclo } from './common.js';
+import { formatarMoeda, confirmarAcao, getCarteirasData, getCategoryBadgeStyle, getCycleInfo, getDespesasData, getThemeVar, setDespesasData, syncCarteiraGastosDoCiclo } from './common.js';
 
 const editIconUrl = './img/lapis.png';
 const deleteIconUrl = './img/lixeira.png';
@@ -52,7 +52,8 @@ export const DespesasModulo = {
             'Cartão de Crédito': 'Cartão de Crédito',
             'Cartão de Débito': 'Cartão de Débito',
             'VA': 'Vale Alimentação',
-            'VR': 'Vale Refeição'
+            'VR': 'Vale Refeição',
+            'VT': 'Vale Transporte'
         };
 
         const tipoBusca = mapeamentoTipos[metodo];
@@ -288,10 +289,42 @@ export const DespesasModulo = {
         return (hoje === dataFormatada) ? `📅 HOJE - ${dataFormatada}` : dataFormatada;
     },
 
+    obterAnosDisponiveis() {
+        return [...new Set(
+            this.getDespesas()
+                .map((item) => String(item?.data || '').split('-')[0])
+                .filter((ano) => /^\d{4}$/.test(ano))
+        )].sort((a, b) => Number(b) - Number(a));
+    },
+
+    popularFiltroAnos(anoSelecionado = 'todos') {
+        const selectAno = document.getElementById('filterYear');
+        if (!selectAno) return;
+
+        const anosDisponiveis = this.obterAnosDisponiveis();
+        const valorAtual = anosDisponiveis.includes(anoSelecionado) ? anoSelecionado : 'todos';
+
+        selectAno.innerHTML = [
+            '<option value="todos">Ano</option>',
+            ...anosDisponiveis.map((ano) => `<option value="${ano}">${ano}</option>`)
+        ].join('');
+
+        selectAno.value = valorAtual;
+    },
+
+    obterResumoCiclo(cycleInfo, despesasDoCiclo) {
+        const quantidade = despesasDoCiclo.length;
+        return {
+            titulo: cycleInfo?.fullLabel || cycleInfo?.label || 'Ciclo financeiro',
+            meta: `${quantidade} ${quantidade === 1 ? 'despesa' : 'despesas'}`
+        };
+    },
+
     renderizarTabelaCompleta(dadosFiltrados = null) {
         const tbody = document.getElementById('fullExpenseTableBody');
         const totalElement = document.getElementById('totalFiltrado');
         if (!tbody) return;
+        this.popularFiltroAnos(document.getElementById('filterYear')?.value || 'todos');
         const isLightTheme = document.body.classList.contains('light-theme');
         const sectionRowBackground = isLightTheme ? (getThemeVar('--accent') || '#0b63ce') : 'rgba(30, 41, 59, 0.5)';
         const sectionRowText = isLightTheme ? '#ffffff' : (getThemeVar('--accent') || '#d4af37');
@@ -311,13 +344,22 @@ export const DespesasModulo = {
 
         despesas.sort((a, b) => new Date(b.data) - new Date(a.data));
 
-        const grupos = despesas.reduce((acc, d) => {
-            acc[d.data] = acc[d.data] || [];
-            acc[d.data].push(d);
+        const gruposPorCiclo = despesas.reduce((acc, d) => {
+            const cycleInfo = getCycleInfo(d.data);
+            const cycleId = cycleInfo.id;
+
+            if (!acc[cycleId]) {
+                acc[cycleId] = {
+                    cycleInfo,
+                    despesas: []
+                };
+            }
+
+            acc[cycleId].despesas.push(d);
             return acc;
         }, {});
 
-        const datasOrdenadas = Object.keys(grupos).sort((a, b) => new Date(b) - new Date(a));
+        const ciclosOrdenados = Object.values(gruposPorCiclo).sort((a, b) => b.cycleInfo.startDate - a.cycleInfo.startDate);
         let htmlFinal = '';
 
         const getPaymentIcon = (metodo) => {
@@ -327,23 +369,47 @@ export const DespesasModulo = {
                 'Pix': 'fa-bolt',
                 'Dinheiro': 'fa-money-bill-wave',
                 'VR': 'fa-utensils',
-                'VA': 'fa-basket-shopping'
+                'VA': 'fa-basket-shopping',
+                'VT': 'fa-bus'
             };
 
             return icons[metodo] || 'fa-wallet';
         };
 
-        datasOrdenadas.forEach(dataKey => {
+        ciclosOrdenados.forEach(({ cycleInfo, despesas: despesasDoCiclo }) => {
+            const resumoCiclo = this.obterResumoCiclo(cycleInfo, despesasDoCiclo);
             htmlFinal += `
-                <tr class="expense-date-group-row">
+                <tr class="expense-cycle-group-row">
                     <td colspan="7">
-                        <span class="expense-date-group-badge" style="background: ${sectionRowBackground}; color: ${sectionRowText}; border-bottom: 1px solid ${sectionRowBorder};">
-                            ${this.formatarDataExibicao(dataKey)}
-                        </span>
+                        <div class="expense-cycle-group-badge">
+                            <div class="expense-cycle-group-copy">
+                                <span class="expense-cycle-group-eyebrow">Ciclo financeiro</span>
+                                <span class="expense-cycle-group-title">${resumoCiclo.titulo}</span>
+                            </div>
+                            <span class="expense-cycle-group-meta">${resumoCiclo.meta}</span>
+                        </div>
                     </td>
                 </tr>`;
 
-            grupos[dataKey].forEach((item) => {
+            const gruposPorData = despesasDoCiclo.reduce((acc, d) => {
+                acc[d.data] = acc[d.data] || [];
+                acc[d.data].push(d);
+                return acc;
+            }, {});
+
+            const datasOrdenadas = Object.keys(gruposPorData).sort((a, b) => new Date(b) - new Date(a));
+
+            datasOrdenadas.forEach((dataKey) => {
+                htmlFinal += `
+                    <tr class="expense-date-group-row">
+                        <td colspan="7">
+                            <span class="expense-date-group-badge" style="background: ${sectionRowBackground}; color: ${sectionRowText}; border-bottom: 1px solid ${sectionRowBorder};">
+                                ${this.formatarDataExibicao(dataKey)}
+                            </span>
+                        </td>
+                    </tr>`;
+
+                gruposPorData[dataKey].forEach((item) => {
                 const globalIndex = this.getDespesas().findIndex(d => JSON.stringify(d) === JSON.stringify(item));
                 const estilo = this.obterEstiloCategoria(item.categoria);
                 
@@ -370,57 +436,58 @@ export const DespesasModulo = {
                 // Alteração Solicitada: Mostrar valor cheio na tabela (usando o valorTotalOriginal)
                 const valorExibicao = item.valorTotalOriginal || item.valor;
 
-                htmlFinal += `
-                    <tr class="expense-row">
-                        <td class="expense-cell-title" data-label="Titulo">
-                            <div class="expense-title-block">
-                                <strong class="expense-title-main">${item.titulo}</strong>
-                            </div>
-                        </td>
-                        <td class="expense-cell-category" data-label="Categoria">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-tags"></i><span>Categoria</span></span>
-                                <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px;">
-                                    ${item.categoria}
-                                </span>
-                            </div>
-                        </td>
-                        <td class="expense-cell-payment" data-label="Pagamento">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas ${getPaymentIcon(item.pagamento)}"></i><span>Pagamento</span></span>
-                                <span class="expense-payment-main">${item.pagamento}</span>
-                                ${infoExtra}
-                            </div>
-                        </td>
-                        <td class="expense-cell-value" data-label="Valor">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-money-bill-wave"></i><span>Valor</span></span>
-                                <strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong>
-                            </div>
-                        </td>
-                        <td class="expense-cell-date" data-label="Data">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-calendar-days"></i><span>Data</span></span>
-                                <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</span>
-                            </div>
-                        </td>
-                        <td class="expense-cell-description${item.observacao ? '' : ' expense-cell-description-empty-row'}" data-label="Descricao">
-                            <div class="expense-field-stack">
-                                <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descrição</span></span>
-                                ${textoObs}
-                            </div>
-                        </td>
-                        <td class="expense-cell-actions" data-label="Acoes">
-                            <div class="expense-actions">
-                                <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})" title="Editar despesa" aria-label="Editar despesa ${item.titulo}">
-                                    <img src="${editIconUrl}" alt="Editar" class="expense-action-image">
-                                </button>
-                                <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})" title="Excluir despesa" aria-label="Excluir despesa ${item.titulo}">
-                                    <img src="${deleteIconUrl}" alt="Excluir" class="expense-action-image">
-                                </button>
-                            </div>
-                        </td>
-                    </tr>`;
+                    htmlFinal += `
+                        <tr class="expense-row">
+                            <td class="expense-cell-title" data-label="Titulo">
+                                <div class="expense-title-block">
+                                    <strong class="expense-title-main">${item.titulo}</strong>
+                                </div>
+                            </td>
+                            <td class="expense-cell-category" data-label="Categoria">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-tags"></i><span>Categoria</span></span>
+                                    <span class="category-tag category-tag-strong" style="--tag-bg: ${estilo.bg}; --tag-text: ${estilo.text}; --tag-border: ${estilo.border}; min-width: 110px;">
+                                        ${item.categoria}
+                                    </span>
+                                </div>
+                            </td>
+                            <td class="expense-cell-payment" data-label="Pagamento">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas ${getPaymentIcon(item.pagamento)}"></i><span>Pagamento</span></span>
+                                    <span class="expense-payment-main">${item.pagamento}</span>
+                                    ${infoExtra}
+                                </div>
+                            </td>
+                            <td class="expense-cell-value" data-label="Valor">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-money-bill-wave"></i><span>Valor</span></span>
+                                    <strong class="expense-value-strong">${formatarMoeda(valorExibicao)}</strong>
+                                </div>
+                            </td>
+                            <td class="expense-cell-date" data-label="Data">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-calendar-days"></i><span>Data</span></span>
+                                    <span class="expense-date-text">${this.formatarDataExibicao(item.data).replace('📅 HOJE - ', '')}</span>
+                                </div>
+                            </td>
+                            <td class="expense-cell-description${item.observacao ? '' : ' expense-cell-description-empty-row'}" data-label="Descricao">
+                                <div class="expense-field-stack">
+                                    <span class="expense-field-label"><i class="fas fa-align-left"></i><span>Descrição</span></span>
+                                    ${textoObs}
+                                </div>
+                            </td>
+                            <td class="expense-cell-actions" data-label="Acoes">
+                                <div class="expense-actions">
+                                    <button class="btn-action btn-edit" onclick="window.editarDespesa(${globalIndex})" title="Editar despesa" aria-label="Editar despesa ${item.titulo}">
+                                        <img src="${editIconUrl}" alt="Editar" class="expense-action-image">
+                                    </button>
+                                    <button class="btn-action btn-delete" onclick="window.deletarDespesa(${globalIndex})" title="Excluir despesa" aria-label="Excluir despesa ${item.titulo}">
+                                        <img src="${deleteIconUrl}" alt="Excluir" class="expense-action-image">
+                                    </button>
+                                </div>
+                            </td>
+                        </tr>`;
+                });
             });
         });
         tbody.innerHTML = htmlFinal;
@@ -495,7 +562,8 @@ export const DespesasModulo = {
             // Forçar atualização das carteiras (limite) imediatamente após salvar
             this.sincronizarGastoCarteiras();
 
-            this.renderizarTabelaCompleta();
+            if (typeof this.aplicarFiltrosAtuais === 'function') this.aplicarFiltrosAtuais();
+            else this.renderizarTabelaCompleta();
             this.fecharModal();
         };
     },
@@ -506,12 +574,15 @@ export const DespesasModulo = {
     },
 
     configurarFiltros() {
-        const filters = ['filterMonth', 'filterCategory', 'filterPayment', 'filterPeriod'].map(id => document.getElementById(id));
+        const filters = ['filterYear', 'filterMonth', 'filterCategory', 'filterPayment', 'filterPeriod'].map(id => document.getElementById(id));
         const searchInput = document.getElementById('searchExpense');
         const btnLimpar = document.getElementById('btnClearFilters');
 
+        this.popularFiltroAnos(document.getElementById('filterYear')?.value || 'todos');
+
         const aplicar = () => {
-            const [m, c, p, period] = filters.map(f => f ? f.value : 'todos');
+            this.popularFiltroAnos(document.getElementById('filterYear')?.value || 'todos');
+            const [ano, m, c, p, period] = filters.map(f => f ? f.value : 'todos');
             const termoBusca = searchInput ? searchInput.value.toLowerCase() : '';
             const hoje = new Date();
             hoje.setHours(23, 59, 59, 999);
@@ -528,16 +599,20 @@ export const DespesasModulo = {
                 }
 
                 const mesD = d.data.split('-')[1];
+          const anoD = d.data.split('-')[0];
                 const atendeBusca = d.titulo.toLowerCase().includes(termoBusca) || 
                                    (d.observacao && d.observacao.toLowerCase().includes(termoBusca));
 
-                return (m === 'todos' || mesD === m) && 
+          return (ano === 'todos' || anoD === ano) &&
+              (m === 'todos' || mesD === m) && 
                        (c === 'todos' || d.categoria === c) && 
                        (p === 'todos' || d.pagamento === p) &&
                        atendePeriodo && atendeBusca;
             });
             this.renderizarTabelaCompleta(filtradas);
         };
+
+     this.aplicarFiltrosAtuais = aplicar;
 
         filters.forEach(f => { if(f) f.addEventListener('change', aplicar); });
         
@@ -566,7 +641,8 @@ window.deletarDespesa = async (index) => {
         despesas.splice(index, 1);
         setDespesasData(despesas);
         DespesasModulo.sincronizarGastoCarteiras();
-        DespesasModulo.renderizarTabelaCompleta();
+        if (typeof DespesasModulo.aplicarFiltrosAtuais === 'function') DespesasModulo.aplicarFiltrosAtuais();
+        else DespesasModulo.renderizarTabelaCompleta();
     }
 };
 

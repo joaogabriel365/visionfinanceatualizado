@@ -5,6 +5,7 @@ export const RelatoriosModulo = {
     monthVisibilidade: Array(12).fill(true),
 
     init() {
+        this.popularFiltroAnos();
         this.renderizarOverview();
         this.renderizarResumo();
         this.updateChartContainerMetrics();
@@ -26,6 +27,31 @@ export const RelatoriosModulo = {
                 this.configurarControleOcultarMeses();
             };
         }
+    },
+
+    obterAnosDisponiveis() {
+        return [...new Set(
+            this.getDespesasPorAnoCicloTodos()
+                .map((despesa) => String(despesa?.data || '').split('-')[0])
+                .filter((ano) => /^\d{4}$/.test(ano))
+        )].sort((left, right) => Number(right) - Number(left));
+    },
+
+    popularFiltroAnos(anoSelecionado = null) {
+        const yearSelect = document.getElementById('reportYear');
+        if (!yearSelect) return;
+
+        const anosDisponiveis = this.obterAnosDisponiveis();
+        const valorAtual = String(anoSelecionado || yearSelect.value || '');
+        const fallbackYear = anosDisponiveis[0] || String(new Date().getFullYear());
+        const valorSelecionado = anosDisponiveis.includes(valorAtual) ? valorAtual : fallbackYear;
+
+        yearSelect.innerHTML = anosDisponiveis.length
+            ? anosDisponiveis.map((ano) => `<option value="${ano}">${ano}</option>`).join('')
+            : `<option value="${fallbackYear}">${fallbackYear}</option>`;
+
+        yearSelect.value = valorSelecionado;
+        yearSelect.disabled = anosDisponiveis.length <= 1;
     },
 
     isMobileViewport() {
@@ -111,6 +137,10 @@ export const RelatoriosModulo = {
         return yearSelect ? Number(yearSelect.value) : new Date().getFullYear();
     },
 
+    getDespesasPorAnoCicloTodos() {
+        return getDespesasData();
+    },
+
     getCycleSummaries() {
         return getCycleSummariesForYear(this.getSelectedYear());
     },
@@ -120,7 +150,7 @@ export const RelatoriosModulo = {
     },
 
     getDespesasPorAnoCiclo(year = this.getSelectedYear()) {
-        return getDespesasData().filter((despesa) => getCycleInfo(despesa.data).year === year);
+        return this.getDespesasPorAnoCicloTodos().filter((despesa) => getCycleInfo(despesa.data).year === year);
     },
 
     getResumoReferencia(summaries) {
@@ -146,7 +176,10 @@ export const RelatoriosModulo = {
             accentRgb: styles.getPropertyValue('--accent-rgb').trim() || (isDark ? '212, 175, 55' : '8, 76, 160'),
             xTickInactive: isDark ? 'rgba(182, 194, 208, 0.42)' : 'rgba(71, 85, 105, 0.42)',
             hiddenBar: isDark ? 'rgba(148, 163, 184, 0.18)' : 'rgba(203, 213, 225, 0.35)',
-            tooltipBackground: '#0f172a'
+            tooltipBackground: styles.getPropertyValue('--bg-surface').trim() || (isDark ? '#0b1118' : '#f8f4ee'),
+            tooltipTitle: styles.getPropertyValue('--text-primary').trim() || (isDark ? '#f8fafc' : '#0f172a'),
+            tooltipBody: styles.getPropertyValue('--text-secondary').trim() || (isDark ? '#b6c2d0' : '#475569'),
+            tooltipBorder: `rgba(${styles.getPropertyValue('--accent-rgb').trim() || (isDark ? '212, 175, 55' : '8, 76, 160')}, 0.24)`
         };
     },
 
@@ -717,8 +750,10 @@ export const RelatoriosModulo = {
                     legend: { display: false },
                     tooltip: {
                         backgroundColor: theme.tooltipBackground,
-                        titleColor: '#ffffff',
-                        bodyColor: '#e2e8f0',
+                        titleColor: theme.tooltipTitle,
+                        bodyColor: theme.tooltipBody,
+                        borderColor: theme.tooltipBorder,
+                        borderWidth: 1,
                         padding: 12,
                         cornerRadius: 12,
                         displayColors: false,
