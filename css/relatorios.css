@@ -91,6 +91,7 @@
   position: relative;
   display: grid;
   gap: 0.38rem;
+  min-width: 0;
   min-height: 124px;
   padding: 1rem 1rem 0.95rem;
   border-radius: 18px;
@@ -324,6 +325,8 @@
   left: 0;
   z-index: 15;
   width: min(320px, calc(100vw - 4rem));
+  max-height: min(60vh, 420px);
+  overflow: auto;
   padding: 1rem;
   border: 1px solid var(--dashboard-box-border);
   border-radius: 16px;
@@ -733,10 +736,12 @@
   min-height: clamp(460px, 56vh, 540px);
   padding: 1.6rem 1.55rem 1.4rem;
   background: var(--dashboard-box-bg);
+  min-width: 0;
 }
 
 .reports-sidebar {
   min-height: clamp(460px, 56vh, 540px);
+  min-width: 0;
 }
 
 .relatorios-section {
@@ -1213,6 +1218,7 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
 .reports-chart-container canvas {
   width: 100% !important;
   height: 100% !important;
+  touch-action: manipulation;
 }
 
 .reports-chart-container .chartjs-render-monitor {
@@ -1236,7 +1242,8 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
 
   .reports-year-field {
     justify-items: start;
-    max-width: 240px;
+    width: min(100%, 320px);
+    max-width: 320px;
   }
 
   .reports-overview-metrics {
@@ -1269,6 +1276,11 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
 }
 
 @media (max-width: 768px) {
+  .reports-year-field {
+    width: 100%;
+    max-width: none;
+  }
+
   .filter-actions,
   .report-card-header,
   .reports-chart-head,
@@ -1330,6 +1342,15 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
   .reports-chart-container {
     min-height: 360px;
     padding: 0.65rem 0.45rem 0.3rem;
+  }
+
+  .reports-chart-tools {
+    width: 100%;
+  }
+
+  .report-header-chip {
+    width: fit-content;
+    max-width: 100%;
   }
 
   .filter-container {
@@ -1501,6 +1522,7 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
     left: 50%;
     transform: translateX(-50%);
     width: min(100vw - 2rem, 340px);
+    max-height: min(65vh, 460px);
   }
 
   .filter-container {
@@ -1533,7 +1555,7 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
   }
 
   .reports-chart-tools {
-    justify-content: center;
+    justify-content: stretch;
   }
 
   .month-visibility-control,
@@ -1548,6 +1570,10 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
   .reports-chart-container {
     min-height: 400px;
     border-radius: 16px;
+  }
+
+  .report-header-chip {
+    align-self: flex-start;
   }
 
   .filter-group {
@@ -1673,6 +1699,12 @@ body.light-theme .reports-sidebar .resumo-info:not(.highlight) {
   .reports-chart-head {
     gap: 0.7rem;
     margin-bottom: 0.75rem;
+  }
+
+  .month-visibility-popover {
+    width: calc(100vw - 1.4rem);
+    padding: 0.85rem;
+    border-radius: 14px;
   }
 
   .reports-motion-header {

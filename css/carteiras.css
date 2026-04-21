@@ -45,11 +45,13 @@ body.dark-theme .wallet-primary-action i {
 
 .wallets-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  grid-template-columns: minmax(0, 1fr);
   justify-content: stretch;
   gap: 1rem;
   padding: 0.75rem 0.1rem 0.25rem;
   align-items: stretch;
+  width: min(100%, 1080px);
+  margin-inline: 0;
 }
 
 .wallets-grid.wallets-grid-empty {
@@ -922,7 +924,7 @@ body.dark-theme .wallet-expense-side {
 
 @media (max-width: 1180px) {
   .wallets-grid {
-    grid-template-columns: minmax(320px, 1fr);
+    grid-template-columns: minmax(0, 1fr);
   }
 }
 
@@ -957,6 +959,7 @@ body.dark-theme .wallet-expense-side {
     grid-template-columns: 1fr;
     gap: 1rem;
     padding-inline: 0;
+    width: 100%;
   }
 
   .wallets-grid.wallets-grid-empty {

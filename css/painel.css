@@ -1,3 +1,71 @@
+.painel-cycle-bar {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  align-items: end;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
+  padding: 1rem 1.2rem;
+  background: var(--card-bg);
+  border: 1px solid var(--border-color);
+  border-radius: var(--border-radius);
+  box-shadow: var(--shadow-soft);
+}
+
+.painel-cycle-copy {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.painel-cycle-copy h3 {
+  margin: 0;
+  color: var(--text-primary);
+  font-size: 1.05rem;
+}
+
+.painel-cycle-label {
+  display: inline-flex;
+  width: fit-content;
+  align-items: center;
+  padding: 0.3rem 0.7rem;
+  border-radius: 999px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.painel-cycle-control {
+  display: grid;
+  gap: 0.45rem;
+}
+
+.painel-cycle-control label {
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.painel-cycle-select {
+  width: 100%;
+  min-height: 46px;
+  padding: 0 0.95rem;
+  border-radius: 14px;
+  border: 1px solid var(--border-color);
+  background: var(--bg-surface);
+  color: var(--text-primary);
+  font-size: 0.92rem;
+  font-weight: 700;
+  outline: none;
+  transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
+}
+
+.painel-cycle-select:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.14);
+}
+
 .dashboard-top-cards {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr)) !important;
@@ -175,6 +243,11 @@ body.dark-theme .dash-table tbody tr:hover {
 }
 
 @media (max-width: 1024px) {
+  .painel-cycle-bar {
+    grid-template-columns: 1fr;
+    align-items: stretch;
+  }
+
   .dashboard-top-cards,
   .stats-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
@@ -190,6 +263,10 @@ body.dark-theme .dash-table tbody tr:hover {
 }
 
 @media (max-width: 768px) {
+  .painel-cycle-bar {
+    padding: 1rem;
+  }
+
   .dashboard-top-cards {
     grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
   }
@@ -253,6 +330,10 @@ body.dark-theme .dash-table tbody tr:hover {
 }
 
 @media (max-width: 560px) {
+  .painel-cycle-copy h3 {
+    font-size: 0.96rem;
+  }
+
   .dashboard-top-cards {
     grid-template-columns: 1fr !important;
   }

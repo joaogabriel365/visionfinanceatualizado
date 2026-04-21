@@ -1,21 +1,84 @@
-import { formatarMoeda, getCategoryBadgeStyle, getCurrentFinancialSnapshot, getThemeVar } from './common.js';
+import { formatarMoeda, getBudgetHistory, getCategoryBadgeStyle, getCurrentCycleInfo, getCurrentFinancialSnapshot, getCycleInfo, getDespesasData, getThemeVar } from './common.js';
+
+const PAINEL_CYCLE_FILTER_STORAGE_KEY = 'visionFinance_painel_cycle_filter';
 
 export const Painel = {
     init() {
-        const snapshot = getCurrentFinancialSnapshot();
+        const cycleOptions = this.obterCiclosDisponiveis();
+        const cycleInfo = this.obterCicloSelecionado(cycleOptions);
+        const snapshot = getCurrentFinancialSnapshot(cycleInfo.startDate);
         const despesas = snapshot.despesas;
         const metas = snapshot.metas;
         const limite = snapshot.budget;
         const ocultarAtivo = localStorage.getItem('visionFinance_olhoOculto') === 'true';
 
+        this.renderizarFiltroCiclos(cycleOptions, cycleInfo.id);
+
         const badge = document.getElementById('dataAtualBadge');
         if (badge) badge.innerText = `Ciclo ${snapshot.cycleInfo.label}`;
 
         this.renderizarCards(despesas, metas, limite);
-        this.renderizarTabelaHoje(despesas);
+        this.renderizarTabelaCiclo(despesas, snapshot.cycleInfo);
         this.gerarGraficoPizza(despesas, ocultarAtivo);    
         this.gerarGraficoBarras(despesas, ocultarAtivo);
         this.melhorarBotaoOlho();
+    },
+
+    obterCiclosDisponiveis() {
+        const cycleIds = new Set([getCurrentCycleInfo().id]);
+
+        getDespesasData().forEach((despesa) => {
+            if (despesa?.cycleId) cycleIds.add(despesa.cycleId);
+        });
+
+        getBudgetHistory().forEach((entry) => {
+            if (entry?.cycleId) cycleIds.add(entry.cycleId);
+        });
+
+        this.obterCiclosHistoricosMetas().forEach((cycleId) => cycleIds.add(cycleId));
+
+        return Array.from(cycleIds)
+            .map((cycleId) => getCycleInfo(cycleId))
+            .sort((left, right) => right.startDate.getTime() - left.startDate.getTime());
+    },
+
+    obterCiclosHistoricosMetas() {
+        try {
+            const metas = JSON.parse(localStorage.getItem('visionFinance_metas') || '[]');
+            return metas.flatMap((meta) => Array.isArray(meta?.aporteHistorico)
+                ? meta.aporteHistorico.map((entry) => entry?.cycleId).filter(Boolean)
+                : []);
+        } catch {
+            return [];
+        }
+    },
+
+    obterCicloSelecionado(cycleOptions = []) {
+        const currentCycle = getCurrentCycleInfo();
+        const storedCycleId = localStorage.getItem(PAINEL_CYCLE_FILTER_STORAGE_KEY);
+        const selectedCycle = cycleOptions.find((cycle) => cycle.id === storedCycleId);
+
+        if (selectedCycle) {
+            return selectedCycle;
+        }
+
+        localStorage.setItem(PAINEL_CYCLE_FILTER_STORAGE_KEY, currentCycle.id);
+        return cycleOptions.find((cycle) => cycle.id === currentCycle.id) || currentCycle;
+    },
+
+    renderizarFiltroCiclos(cycleOptions, selectedCycleId) {
+        const select = document.getElementById('painelCycleFilter');
+        if (!select) return;
+
+        select.innerHTML = cycleOptions.map((cycle) => `
+            <option value="${cycle.id}" ${cycle.id === selectedCycleId ? 'selected' : ''}>${cycle.fullLabel}</option>
+        `).join('');
+
+        select.onchange = (event) => {
+            const nextCycleId = event.target.value;
+            localStorage.setItem(PAINEL_CYCLE_FILTER_STORAGE_KEY, nextCycleId);
+            this.init();
+        };
     },
 
     renderizarCards(despesas, metas, limite) {
@@ -50,26 +113,20 @@ export const Painel = {
         }
     },
 
-    renderizarTabelaHoje(despesas) {
+    renderizarTabelaCiclo(despesas, cycleInfo) {
         const tbody = document.getElementById('expenseTableBody');
         if (!tbody) return;
 
-        const hoje = new Date();
-        hoje.setHours(0, 0, 0, 0);
+        const despesasCiclo = [...despesas]
+            .sort((left, right) => new Date(`${right.data}T00:00:00`).getTime() - new Date(`${left.data}T00:00:00`).getTime())
+            .slice(0, 6);
 
-        const despesasHoje = despesas.filter(d => {
-            if (!d.data) return false;
-            const data = new Date(`${d.data}T00:00:00`);
-            data.setHours(0, 0, 0, 0);
-            return data.getTime() === hoje.getTime();
-        }).reverse();
-
-        if (despesasHoje.length === 0) {
-            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px; color:#94a3b8;">Nenhuma despesa para hoje.</td></tr>`;
+        if (despesasCiclo.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px; color:#94a3b8;">Nenhuma despesa registrada no ciclo ${cycleInfo.label}.</td></tr>`;
             return;
         }
 
-        tbody.innerHTML = despesasHoje.map(d => {
+        tbody.innerHTML = despesasCiclo.map(d => {
             const cor = getCategoryBadgeStyle(d.categoria);
             return `
             <tr>

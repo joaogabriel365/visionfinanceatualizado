@@ -32,9 +32,20 @@ export const RelatoriosModulo = {
     obterAnosDisponiveis() {
         return [...new Set(
             this.getDespesasPorAnoCicloTodos()
-                .map((despesa) => String(despesa?.data || '').split('-')[0])
-                .filter((ano) => /^\d{4}$/.test(ano))
+                .map((despesa) => this.getAnoDespesa(despesa))
+                .filter((ano) => Number.isInteger(ano) && ano >= 1900 && ano <= 2100)
+                .map((ano) => String(ano))
         )].sort((left, right) => Number(right) - Number(left));
+    },
+
+    getAnoDespesa(despesa) {
+        if (!despesa?.data) return null;
+
+        try {
+            return getCycleInfo(despesa.data).year;
+        } catch {
+            return null;
+        }
     },
 
     popularFiltroAnos(anoSelecionado = null) {
@@ -184,25 +195,36 @@ export const RelatoriosModulo = {
     },
 
     bindResponsiveChart() {
-        if (this._responsiveChartBound) return;
-        this._responsiveChartBound = true;
+        if (!this._scheduleResponsiveRefresh) {
+            let resizeTimer = null;
+            this._scheduleResponsiveRefresh = (forceRegenerate = false) => {
+                clearTimeout(resizeTimer);
+                resizeTimer = window.setTimeout(() => {
+                    if (!document.getElementById('comparisonChart')) return;
+                    this.refreshResponsiveChartLayout(forceRegenerate);
+                }, 140);
+            };
+        }
 
-        let resizeTimer = null;
-        const scheduleRefresh = (forceRegenerate = false) => {
-            clearTimeout(resizeTimer);
-            resizeTimer = window.setTimeout(() => {
-                if (!document.getElementById('comparisonChart')) return;
-                this.refreshResponsiveChartLayout(forceRegenerate);
-            }, 140);
-        };
+        if (!this._responsiveChartBound) {
+            this._responsiveChartBound = true;
+            window.addEventListener('resize', () => this._scheduleResponsiveRefresh(false));
+            window.addEventListener('orientationchange', () => this._scheduleResponsiveRefresh(true));
 
-        window.addEventListener('resize', () => scheduleRefresh(false));
-        window.addEventListener('orientationchange', () => scheduleRefresh(true));
+            if (window.visualViewport) {
+                window.visualViewport.addEventListener('resize', () => this._scheduleResponsiveRefresh(true));
+            }
+        }
+
+        if (this._reportsResizeObserver) {
+            this._reportsResizeObserver.disconnect();
+            this._reportsResizeObserver = null;
+        }
 
         if ('ResizeObserver' in window) {
             const observedCard = document.querySelector('.chart-card-large');
             if (observedCard) {
-                this._reportsResizeObserver = new ResizeObserver(() => scheduleRefresh(false));
+                this._reportsResizeObserver = new ResizeObserver(() => this._scheduleResponsiveRefresh(false));
                 this._reportsResizeObserver.observe(observedCard);
             }
         }

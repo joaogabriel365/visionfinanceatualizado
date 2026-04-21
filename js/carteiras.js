@@ -1,4 +1,4 @@
-import { formatarMoeda, getCarteirasData, getCurrentCycleInfo, getDespesasData, getThemeVar, syncCarteiraGastosDoCiclo } from './common.js';
+import { doesDespesaMatchCarteira, formatarMoeda, getCarteirasData, getCurrentCycleInfo, getDespesasData, getThemeVar, syncCarteiraGastosDoCiclo } from './common.js';
 
 const walletCommentIconUrl = './img/comentario.png';
 const walletEditIconUrl = './img/lapis.png';
@@ -201,8 +201,8 @@ export const CarteirasModulo = {
         if (modal) modal.style.display = 'none';
     },
 
-    obterDespesasDaCarteira(nomeCarteira) {
-        return this.getDespesas().filter((despesa) => despesa.cartao === nomeCarteira);
+    obterDespesasDaCarteira(nomeCarteira, tipoCarteira = '') {
+        return this.getDespesas().filter((despesa) => doesDespesaMatchCarteira(despesa, { nome: nomeCarteira, tipo: tipoCarteira }));
     },
 
     obterDataDespesa(dataString) {
@@ -258,7 +258,7 @@ export const CarteirasModulo = {
         if (!wallet || !title || !subtitle || !summary || !list || !monthFilter) return;
 
         const selectedMonth = monthFilter.value;
-        const allExpenses = this.obterDespesasDaCarteira(wallet.nome)
+        const allExpenses = this.obterDespesasDaCarteira(wallet.nome, wallet.tipo)
             .sort((a, b) => new Date(b.data) - new Date(a.data));
 
         const filteredExpenses = allExpenses.filter((despesa) => {
@@ -375,10 +375,10 @@ export const CarteirasModulo = {
         }
     },
 
-    calcularGastoCartao(nomeCartao) {
+    calcularGastoCartao(nomeCartao, tipoCartao = '') {
         const despesas = getDespesasData({ cycleInfo: getCurrentCycleInfo() });
         return despesas
-            .filter((despesa) => despesa.cartao === nomeCartao)
+            .filter((despesa) => doesDespesaMatchCarteira(despesa, { nome: nomeCartao, tipo: tipoCartao }))
             .reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
     },
 
@@ -432,7 +432,7 @@ export const CarteirasModulo = {
         grid.classList.remove('wallets-grid-empty');
 
         grid.innerHTML = this.lista.map((wallet, index) => {
-            const gastoAtual = this.calcularGastoCartao(wallet.nome);
+            const gastoAtual = this.calcularGastoCartao(wallet.nome, wallet.tipo);
             const displayValue = wallet.ilimitado ? 'Sem Limite' : formatarMoeda(wallet.limite);
             const porcentagem = wallet.ilimitado ? 0 : Math.min((gastoAtual / wallet.limite) * 100, 100).toFixed(0);
             const corFundo = wallet.cor || '#1e293b';

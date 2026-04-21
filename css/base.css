@@ -21,7 +21,7 @@ body {
   line-height: 1.6;
   color: var(--text-color);
   background: var(--bg-primary);
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 img,
@@ -689,8 +689,9 @@ body.dark-theme .sidebar-footer .logout:hover {
   --main-content-padding-x: 2.4rem;
   margin-left: 292px;
   padding: 2.4rem;
-  min-height: 100vh;
+  height: 100vh;
   background: var(--bg-primary);
+  overflow-y: auto;
 }
 
 body.light-theme .sidebar,
@@ -886,6 +887,7 @@ body.dark-theme .btn-edit img {
   align-items: center;
   gap: 1rem 1.2rem;
   padding: 1rem 1.2rem;
+  background: var(--bg-tertiary);
   margin-bottom: 1.5rem;
   border-radius: 0 0 18px 18px;
   border-bottom: 1px solid var(--border-color);

@@ -1,4 +1,4 @@
-import { formatarMoeda, confirmarAcao, getCarteirasData, getCategoryBadgeStyle, getCycleInfo, getDespesasData, getThemeVar, setDespesasData, syncCarteiraGastosDoCiclo } from './common.js';
+import { buildCarteiraReferenceKey, formatarMoeda, confirmarAcao, getCarteirasData, getCategoryBadgeStyle, getCycleInfo, getDespesaCarteiraTipo, getDespesasData, getThemeVar, setDespesasData, syncCarteiraGastosDoCiclo } from './common.js';
 
 const editIconUrl = './img/lapis.png';
 const deleteIconUrl = './img/lixeira.png';
@@ -72,7 +72,9 @@ export const DespesasModulo = {
 
                 cartoesDisponiveis.forEach(c => {
                     const option = document.createElement('option');
-                    option.value = c.nome;
+                    option.value = buildCarteiraReferenceKey(c.nome, c.tipo);
+                    option.dataset.walletName = c.nome;
+                    option.dataset.walletType = c.tipo;
                     option.textContent = c.bandeira ? `${c.nome} (${c.bandeira})` : c.nome;
                     option.style.color = textPrimary;
                     selectCartao.appendChild(option);
@@ -255,7 +257,14 @@ export const DespesasModulo = {
             this.verificarMetodoPagamento();
             
             if (despesa.cartao) {
-                document.getElementById('cartaoSelecionado').value = despesa.cartao;
+                const selectCartao = document.getElementById('cartaoSelecionado');
+                const carteiraRef = despesa.carteiraRef || buildCarteiraReferenceKey(despesa.cartao, getDespesaCarteiraTipo(despesa));
+                selectCartao.value = carteiraRef;
+
+                if (!selectCartao.value) {
+                    const legacyOption = Array.from(selectCartao.options).find((option) => option.dataset.walletName === despesa.cartao);
+                    if (legacyOption) selectCartao.value = legacyOption.value;
+                }
             }
 
             if (despesa.pagamento === 'Cartão de Crédito' && despesa.parcelas) {
@@ -529,6 +538,7 @@ export const DespesasModulo = {
             const metodo = document.getElementById('metodo').value;
             const foiParcelado = document.getElementById('foiParcelado').value;
             const cartaoSel = document.getElementById('cartaoSelecionado').value;
+            const cartaoSelecionadoOption = document.getElementById('cartaoSelecionado').selectedOptions?.[0] || null;
             const parcelasInput = (metodo === 'Cartão de Crédito' && foiParcelado === 'sim') ? document.getElementById('numParcelas').value : null;
 
             const valorTotalOriginal = parseFloat(valorLimpo);
@@ -547,7 +557,9 @@ export const DespesasModulo = {
                 valorTotalOriginal: valorTotalOriginal, // Valor cheio para exibição
                 categoria: document.getElementById('categoria').value,
                 pagamento: metodo,
-                cartao: (cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO") ? cartaoSel : null,
+                cartao: (cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO") ? (cartaoSelecionadoOption?.dataset.walletName || null) : null,
+                cartaoTipo: (cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO") ? (cartaoSelecionadoOption?.dataset.walletType || metodo) : null,
+                carteiraRef: (cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO") ? cartaoSel : null,
                 parcelas: parcelasInput,
                 data: `${a}-${m}-${d}`,
                 observacao: document.getElementById('observacao').value

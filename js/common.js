@@ -285,6 +285,39 @@ export function getCarteirasData() {
     return lerJsonStorage(CARTEIRAS_STORAGE_KEY, []);
 }
 
+export function buildCarteiraReferenceKey(nome = '', tipo = '') {
+    const normalizedName = String(nome || '').trim().toLowerCase();
+    const normalizedType = String(tipo || '').trim().toLowerCase();
+
+    if (!normalizedName || !normalizedType) return '';
+    return `${normalizedName}::${normalizedType}`;
+}
+
+export function getDespesaCarteiraTipo(despesa = {}) {
+    if (despesa?.cartaoTipo) return despesa.cartaoTipo;
+
+    const paymentTypeMap = {
+        'Cartão de Crédito': 'Cartão de Crédito',
+        'Cartão de Débito': 'Cartão de Débito',
+        'VA': 'Vale Alimentação',
+        'VR': 'Vale Refeição',
+        'VT': 'Vale Transporte'
+    };
+
+    return paymentTypeMap[despesa?.pagamento] || '';
+}
+
+export function doesDespesaMatchCarteira(despesa = {}, carteira = {}) {
+    const despesaReference = despesa?.carteiraRef || buildCarteiraReferenceKey(despesa?.cartao, getDespesaCarteiraTipo(despesa));
+    const carteiraReference = buildCarteiraReferenceKey(carteira?.nome, carteira?.tipo);
+
+    if (despesaReference && carteiraReference) {
+        return despesaReference === carteiraReference;
+    }
+
+    return Boolean(despesa?.cartao) && Boolean(carteira?.nome) && despesa.cartao === carteira.nome;
+}
+
 export function setCarteirasData(carteiras = []) {
     localStorage.setItem(CARTEIRAS_STORAGE_KEY, JSON.stringify(carteiras));
     return carteiras;
@@ -353,7 +386,7 @@ export function syncCarteiraGastosDoCiclo(cycleInfo = getCurrentCycleInfo()) {
 
     despesas.forEach((despesa) => {
         if (!despesa.cartao) return;
-        const carteira = carteiras.find((item) => item.nome === despesa.cartao);
+        const carteira = carteiras.find((item) => doesDespesaMatchCarteira(despesa, item));
         if (carteira) {
             carteira.gasto += parseFloat(despesa.valor) || 0;
         }

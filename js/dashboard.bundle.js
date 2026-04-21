@@ -230,6 +230,31 @@
   function getCarteirasData() {
     return lerJsonStorage(CARTEIRAS_STORAGE_KEY, []);
   }
+  function buildCarteiraReferenceKey(nome = "", tipo = "") {
+    const normalizedName = String(nome || "").trim().toLowerCase();
+    const normalizedType = String(tipo || "").trim().toLowerCase();
+    if (!normalizedName || !normalizedType) return "";
+    return `${normalizedName}::${normalizedType}`;
+  }
+  function getDespesaCarteiraTipo(despesa = {}) {
+    if (despesa?.cartaoTipo) return despesa.cartaoTipo;
+    const paymentTypeMap = {
+      "Cart\xE3o de Cr\xE9dito": "Cart\xE3o de Cr\xE9dito",
+      "Cart\xE3o de D\xE9bito": "Cart\xE3o de D\xE9bito",
+      "VA": "Vale Alimenta\xE7\xE3o",
+      "VR": "Vale Refei\xE7\xE3o",
+      "VT": "Vale Transporte"
+    };
+    return paymentTypeMap[despesa?.pagamento] || "";
+  }
+  function doesDespesaMatchCarteira(despesa = {}, carteira = {}) {
+    const despesaReference = despesa?.carteiraRef || buildCarteiraReferenceKey(despesa?.cartao, getDespesaCarteiraTipo(despesa));
+    const carteiraReference = buildCarteiraReferenceKey(carteira?.nome, carteira?.tipo);
+    if (despesaReference && carteiraReference) {
+      return despesaReference === carteiraReference;
+    }
+    return Boolean(despesa?.cartao) && Boolean(carteira?.nome) && despesa.cartao === carteira.nome;
+  }
   function setCarteirasData(carteiras = []) {
     localStorage.setItem(CARTEIRAS_STORAGE_KEY, JSON.stringify(carteiras));
     return carteiras;
@@ -246,6 +271,9 @@
   function salvarBudgetHistory(history) {
     localStorage.setItem(BUDGET_HISTORY_STORAGE_KEY, JSON.stringify(history));
     return history;
+  }
+  function getBudgetHistory() {
+    return getBudgetHistorySorted();
   }
   function getBudgetForCycle(cycleInfo = getCurrentCycleInfo()) {
     const history = getBudgetHistorySorted();
@@ -280,7 +308,7 @@
     const carteiras = getCarteirasData().map((carteira) => ({ ...carteira, gasto: 0 }));
     despesas.forEach((despesa) => {
       if (!despesa.cartao) return;
-      const carteira = carteiras.find((item) => item.nome === despesa.cartao);
+      const carteira = carteiras.find((item) => doesDespesaMatchCarteira(despesa, item));
       if (carteira) {
         carteira.gasto += parseFloat(despesa.valor) || 0;
       }
@@ -501,20 +529,65 @@
   };
 
   // js/painel.js
+  var PAINEL_CYCLE_FILTER_STORAGE_KEY = "visionFinance_painel_cycle_filter";
   var Painel = {
     init() {
-      const snapshot = getCurrentFinancialSnapshot();
+      const cycleOptions = this.obterCiclosDisponiveis();
+      const cycleInfo = this.obterCicloSelecionado(cycleOptions);
+      const snapshot = getCurrentFinancialSnapshot(cycleInfo.startDate);
       const despesas = snapshot.despesas;
       const metas2 = snapshot.metas;
       const limite = snapshot.budget;
       const ocultarAtivo = localStorage.getItem("visionFinance_olhoOculto") === "true";
+      this.renderizarFiltroCiclos(cycleOptions, cycleInfo.id);
       const badge = document.getElementById("dataAtualBadge");
       if (badge) badge.innerText = `Ciclo ${snapshot.cycleInfo.label}`;
       this.renderizarCards(despesas, metas2, limite);
-      this.renderizarTabelaHoje(despesas);
+      this.renderizarTabelaCiclo(despesas, snapshot.cycleInfo);
       this.gerarGraficoPizza(despesas, ocultarAtivo);
       this.gerarGraficoBarras(despesas, ocultarAtivo);
       this.melhorarBotaoOlho();
+    },
+    obterCiclosDisponiveis() {
+      const cycleIds = /* @__PURE__ */ new Set([getCurrentCycleInfo().id]);
+      getDespesasData().forEach((despesa) => {
+        if (despesa?.cycleId) cycleIds.add(despesa.cycleId);
+      });
+      getBudgetHistory().forEach((entry) => {
+        if (entry?.cycleId) cycleIds.add(entry.cycleId);
+      });
+      this.obterCiclosHistoricosMetas().forEach((cycleId) => cycleIds.add(cycleId));
+      return Array.from(cycleIds).map((cycleId) => getCycleInfo(cycleId)).sort((left, right) => right.startDate.getTime() - left.startDate.getTime());
+    },
+    obterCiclosHistoricosMetas() {
+      try {
+        const metas2 = JSON.parse(localStorage.getItem("visionFinance_metas") || "[]");
+        return metas2.flatMap((meta) => Array.isArray(meta?.aporteHistorico) ? meta.aporteHistorico.map((entry) => entry?.cycleId).filter(Boolean) : []);
+      } catch {
+        return [];
+      }
+    },
+    obterCicloSelecionado(cycleOptions = []) {
+      const currentCycle = getCurrentCycleInfo();
+      const storedCycleId = localStorage.getItem(PAINEL_CYCLE_FILTER_STORAGE_KEY);
+      const selectedCycle = cycleOptions.find((cycle) => cycle.id === storedCycleId);
+      if (selectedCycle) {
+        return selectedCycle;
+      }
+      localStorage.setItem(PAINEL_CYCLE_FILTER_STORAGE_KEY, currentCycle.id);
+      return cycleOptions.find((cycle) => cycle.id === currentCycle.id) || currentCycle;
+    },
+    renderizarFiltroCiclos(cycleOptions, selectedCycleId) {
+      const select = document.getElementById("painelCycleFilter");
+      if (!select) return;
+      select.innerHTML = cycleOptions.map((cycle) => `
+            <option value="${cycle.id}" ${cycle.id === selectedCycleId ? "selected" : ""}>${cycle.fullLabel}</option>
+        `).join("");
+      select.onchange = (event) => {
+        const nextCycleId = event.target.value;
+        localStorage.setItem(PAINEL_CYCLE_FILTER_STORAGE_KEY, nextCycleId);
+        this.init();
+      };
     },
     renderizarCards(despesas, metas2, limite) {
       const totalDespesas = despesas.reduce((acc, d) => acc + d.valor, 0);
@@ -541,22 +614,15 @@
         }
       }
     },
-    renderizarTabelaHoje(despesas) {
+    renderizarTabelaCiclo(despesas, cycleInfo) {
       const tbody = document.getElementById("expenseTableBody");
       if (!tbody) return;
-      const hoje = /* @__PURE__ */ new Date();
-      hoje.setHours(0, 0, 0, 0);
-      const despesasHoje = despesas.filter((d) => {
-        if (!d.data) return false;
-        const data = /* @__PURE__ */ new Date(`${d.data}T00:00:00`);
-        data.setHours(0, 0, 0, 0);
-        return data.getTime() === hoje.getTime();
-      }).reverse();
-      if (despesasHoje.length === 0) {
-        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px; color:#94a3b8;">Nenhuma despesa para hoje.</td></tr>`;
+      const despesasCiclo = [...despesas].sort((left, right) => (/* @__PURE__ */ new Date(`${right.data}T00:00:00`)).getTime() - (/* @__PURE__ */ new Date(`${left.data}T00:00:00`)).getTime()).slice(0, 6);
+      if (despesasCiclo.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="5" style="text-align:center; padding: 30px; color:#94a3b8;">Nenhuma despesa registrada no ciclo ${cycleInfo.label}.</td></tr>`;
         return;
       }
-      tbody.innerHTML = despesasHoje.map((d) => {
+      tbody.innerHTML = despesasCiclo.map((d) => {
         const cor = getCategoryBadgeStyle(d.categoria);
         return `
             <tr>
@@ -736,7 +802,9 @@
           selectCartao.appendChild(optDefault);
           cartoesDisponiveis.forEach((c) => {
             const option = document.createElement("option");
-            option.value = c.nome;
+            option.value = buildCarteiraReferenceKey(c.nome, c.tipo);
+            option.dataset.walletName = c.nome;
+            option.dataset.walletType = c.tipo;
             option.textContent = c.bandeira ? `${c.nome} (${c.bandeira})` : c.nome;
             option.style.color = textPrimary;
             selectCartao.appendChild(option);
@@ -890,7 +958,13 @@
         document.getElementById("metodo").value = despesa.pagamento;
         this.verificarMetodoPagamento();
         if (despesa.cartao) {
-          document.getElementById("cartaoSelecionado").value = despesa.cartao;
+          const selectCartao = document.getElementById("cartaoSelecionado");
+          const carteiraRef = despesa.carteiraRef || buildCarteiraReferenceKey(despesa.cartao, getDespesaCarteiraTipo(despesa));
+          selectCartao.value = carteiraRef;
+          if (!selectCartao.value) {
+            const legacyOption = Array.from(selectCartao.options).find((option) => option.dataset.walletName === despesa.cartao);
+            if (legacyOption) selectCartao.value = legacyOption.value;
+          }
         }
         if (despesa.pagamento === "Cart\xE3o de Cr\xE9dito" && despesa.parcelas) {
           document.getElementById("foiParcelado").value = "sim";
@@ -1123,6 +1197,7 @@
         const metodo = document.getElementById("metodo").value;
         const foiParcelado = document.getElementById("foiParcelado").value;
         const cartaoSel = document.getElementById("cartaoSelecionado").value;
+        const cartaoSelecionadoOption = document.getElementById("cartaoSelecionado").selectedOptions?.[0] || null;
         const parcelasInput = metodo === "Cart\xE3o de Cr\xE9dito" && foiParcelado === "sim" ? document.getElementById("numParcelas").value : null;
         const valorTotalOriginal = parseFloat(valorLimpo);
         let valorFinalParaCalculo = valorTotalOriginal;
@@ -1139,7 +1214,9 @@
           // Valor cheio para exibição
           categoria: document.getElementById("categoria").value,
           pagamento: metodo,
-          cartao: cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO" ? cartaoSel : null,
+          cartao: cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO" ? cartaoSelecionadoOption?.dataset.walletName || null : null,
+          cartaoTipo: cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO" ? cartaoSelecionadoOption?.dataset.walletType || metodo : null,
+          carteiraRef: cartaoSel && cartaoSel !== "ADICIONAR_NOVO_ACAO" ? cartaoSel : null,
           parcelas: parcelasInput,
           data: `${a}-${m}-${d}`,
           observacao: document.getElementById("observacao").value
@@ -1248,8 +1325,16 @@
     },
     obterAnosDisponiveis() {
       return [...new Set(
-        this.getDespesasPorAnoCicloTodos().map((despesa) => String(despesa?.data || "").split("-")[0]).filter((ano) => /^\d{4}$/.test(ano))
+        this.getDespesasPorAnoCicloTodos().map((despesa) => this.getAnoDespesa(despesa)).filter((ano) => Number.isInteger(ano) && ano >= 1900 && ano <= 2100).map((ano) => String(ano))
       )].sort((left, right) => Number(right) - Number(left));
+    },
+    getAnoDespesa(despesa) {
+      if (!despesa?.data) return null;
+      try {
+        return getCycleInfo(despesa.data).year;
+      } catch {
+        return null;
+      }
     },
     popularFiltroAnos(anoSelecionado = null) {
       const yearSelect = document.getElementById("reportYear");
@@ -1367,22 +1452,32 @@
       };
     },
     bindResponsiveChart() {
-      if (this._responsiveChartBound) return;
-      this._responsiveChartBound = true;
-      let resizeTimer = null;
-      const scheduleRefresh = (forceRegenerate = false) => {
-        clearTimeout(resizeTimer);
-        resizeTimer = window.setTimeout(() => {
-          if (!document.getElementById("comparisonChart")) return;
-          this.refreshResponsiveChartLayout(forceRegenerate);
-        }, 140);
-      };
-      window.addEventListener("resize", () => scheduleRefresh(false));
-      window.addEventListener("orientationchange", () => scheduleRefresh(true));
+      if (!this._scheduleResponsiveRefresh) {
+        let resizeTimer = null;
+        this._scheduleResponsiveRefresh = (forceRegenerate = false) => {
+          clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(() => {
+            if (!document.getElementById("comparisonChart")) return;
+            this.refreshResponsiveChartLayout(forceRegenerate);
+          }, 140);
+        };
+      }
+      if (!this._responsiveChartBound) {
+        this._responsiveChartBound = true;
+        window.addEventListener("resize", () => this._scheduleResponsiveRefresh(false));
+        window.addEventListener("orientationchange", () => this._scheduleResponsiveRefresh(true));
+        if (window.visualViewport) {
+          window.visualViewport.addEventListener("resize", () => this._scheduleResponsiveRefresh(true));
+        }
+      }
+      if (this._reportsResizeObserver) {
+        this._reportsResizeObserver.disconnect();
+        this._reportsResizeObserver = null;
+      }
       if ("ResizeObserver" in window) {
         const observedCard = document.querySelector(".chart-card-large");
         if (observedCard) {
-          this._reportsResizeObserver = new ResizeObserver(() => scheduleRefresh(false));
+          this._reportsResizeObserver = new ResizeObserver(() => this._scheduleResponsiveRefresh(false));
           this._reportsResizeObserver.observe(observedCard);
         }
       }
@@ -2553,8 +2648,8 @@
       const modal = document.getElementById("walletDescriptionModal");
       if (modal) modal.style.display = "none";
     },
-    obterDespesasDaCarteira(nomeCarteira) {
-      return this.getDespesas().filter((despesa) => despesa.cartao === nomeCarteira);
+    obterDespesasDaCarteira(nomeCarteira, tipoCarteira = "") {
+      return this.getDespesas().filter((despesa) => doesDespesaMatchCarteira(despesa, { nome: nomeCarteira, tipo: tipoCarteira }));
     },
     obterDataDespesa(dataString) {
       if (!dataString || typeof dataString !== "string") return null;
@@ -2601,7 +2696,7 @@
       const monthFilter = document.getElementById("walletExpenseMonthFilter");
       if (!wallet || !title || !subtitle || !summary || !list || !monthFilter) return;
       const selectedMonth = monthFilter.value;
-      const allExpenses = this.obterDespesasDaCarteira(wallet.nome).sort((a, b) => new Date(b.data) - new Date(a.data));
+      const allExpenses = this.obterDespesasDaCarteira(wallet.nome, wallet.tipo).sort((a, b) => new Date(b.data) - new Date(a.data));
       const filteredExpenses = allExpenses.filter((despesa) => {
         if (selectedMonth === "all") return true;
         const data = this.obterDataDespesa(despesa.data);
@@ -2700,9 +2795,9 @@
         });
       }
     },
-    calcularGastoCartao(nomeCartao) {
+    calcularGastoCartao(nomeCartao, tipoCartao = "") {
       const despesas = getDespesasData({ cycleInfo: getCurrentCycleInfo() });
-      return despesas.filter((despesa) => despesa.cartao === nomeCartao).reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
+      return despesas.filter((despesa) => doesDespesaMatchCarteira(despesa, { nome: nomeCartao, tipo: tipoCartao })).reduce((acc, despesa) => acc + (parseFloat(despesa.valor) || 0), 0);
     },
     abrirModalEdicao(index) {
       const wallet = this.lista[index];
@@ -2746,7 +2841,7 @@
       }
       grid.classList.remove("wallets-grid-empty");
       grid.innerHTML = this.lista.map((wallet, index) => {
-        const gastoAtual = this.calcularGastoCartao(wallet.nome);
+        const gastoAtual = this.calcularGastoCartao(wallet.nome, wallet.tipo);
         const displayValue = wallet.ilimitado ? "Sem Limite" : formatarMoeda(wallet.limite);
         const porcentagem = wallet.ilimitado ? 0 : Math.min(gastoAtual / wallet.limite * 100, 100).toFixed(0);
         const corFundo = wallet.cor || "#1e293b";
@@ -3879,6 +3974,17 @@ if (window.top === window.self) {\r
     window.location.replace('../dashboard.html?section=painel#painel');\r
 }\r
 <\/script>\r
+\r
+<div class="painel-cycle-bar">\r
+    <div class="painel-cycle-copy">\r
+        <span class="painel-cycle-label">Filtro do painel</span>\r
+        <h3>Visualize os indicadores por ciclo financeiro</h3>\r
+    </div>\r
+    <div class="painel-cycle-control">\r
+        <label for="painelCycleFilter">Ciclo</label>\r
+        <select id="painelCycleFilter" class="painel-cycle-select" aria-label="Filtrar painel por ciclo financeiro"></select>\r
+    </div>\r
+</div>\r
 \r
 <div class="dashboard-top-cards">\r
     <div class="stat-card small-card">\r
