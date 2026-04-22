@@ -169,17 +169,24 @@
   background: rgba(var(--accent-rgb), 0.08);
   border: 1px solid rgba(var(--accent-rgb), 0.2);
   box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+  isolation: isolate;
 }
 
 .chart-empty-icon::before {
   content: '';
+  display: block;
+  box-sizing: border-box;
   width: 22px;
   height: 22px;
   border-radius: 50%;
   border: 3px solid rgba(var(--accent-rgb), 0.22);
   border-top-color: var(--accent);
   border-right-color: var(--accent);
-  animation: emptyChartSpin 7s linear infinite;
+  border-bottom-color: rgba(var(--accent-rgb), 0.5);
+  animation: emptyChartSpin 1.45s linear infinite;
+  will-change: transform;
+  transform: translateZ(0);
+  backface-visibility: hidden;
 }
 
 .chart-card,
