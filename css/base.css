@@ -88,7 +88,7 @@ button,
   --accent-rgb: 8, 76, 160;
   --accent: #084ca0;
   --accent-hover: #063b7d;
-  --accent-soft: rgba(var(--accent-rgb), 0.12);
+  --accent-soft: rgba(var(--accent-rgb), 0.08);
   --primary: var(--accent);
   --secondary: #bfa877;
   --success: #10b981;
@@ -96,21 +96,21 @@ button,
   --warning: #f59e0b;
   --info: #3b82f6;
 
-  --bg-primary: #f8f4ee;
-  --bg-surface: #f4eee5;
-  --bg-secondary: #eee5d9;
-  --bg-tertiary: #fbf8f2;
-  --card-bg: #efe4d4;
-  --card-bg-alt: #efe4d4;
-  --panel-bg: #eadfce;
-  --modal-bg: #fbf7f1;
+  --bg-primary: #f3ede3;
+  --bg-surface: #eadfce;
+  --bg-secondary: #e1d2bc;
+  --bg-tertiary: #f2e8d9;
+  --card-bg: #e7d7c1;
+  --card-bg-alt: #ecdfcd;
+  --panel-bg: #dfceb6;
+  --modal-bg: #f1e7d8;
   --modal-overlay: rgba(15, 23, 42, 0.44);
   --input-bg: #f8f3ec;
   --input-border: #d6c6b2;
   --text-primary: #0f172a;
   --text-color: #0f172a;
-  --text-secondary: #475569;
-  --text-muted: #64748b;
+  --text-secondary: #334155;
+  --text-muted: #526173;
   --text-on-accent: #ffffff;
   --border-color: #dccdb9;
   --border-light: #eadfce;
@@ -118,11 +118,11 @@ button,
   --box-border-width: 1px;
   --card-outline: rgba(124, 98, 60, 0.10);
   --shadow-color: rgba(124, 98, 60, 0.10);
-  --dashboard-box-bg: #efe4d4;
-  --dashboard-box-surface: #f6efe4;
-  --dashboard-box-border: #d7c1a5;
-  --dashboard-box-shadow: 0 14px 30px rgba(124, 98, 60, 0.12);
-  --dashboard-box-shadow-hover: 0 18px 36px rgba(124, 98, 60, 0.16);
+  --dashboard-box-bg: #e7d7c1;
+  --dashboard-box-surface: #efe3d1;
+  --dashboard-box-border: #cdb393;
+  --dashboard-box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  --dashboard-box-shadow-hover: 0 14px 30px rgba(15, 23, 42, 0.12);
   --dashboard-box-radius: 18px;
   --dashboard-box-padding: 1.3rem;
   --dashboard-box-padding-tight: 1rem;
@@ -161,7 +161,7 @@ body.dark-theme {
   --accent-rgb: 212, 175, 55;
   --accent: #d4af37;
   --accent-hover: #b88a17;
-  --accent-soft: rgba(var(--accent-rgb), 0.14);
+  --accent-soft: rgba(var(--accent-rgb), 0.1);
   --primary: var(--accent);
   --dashboard-box-bg: var(--card-bg);
   --dashboard-box-surface: var(--panel-bg);
@@ -266,6 +266,25 @@ p, span, label, a, li {
   color: var(--text-color);
 }
 
+body.light-theme p,
+body.light-theme span,
+body.light-theme label,
+body.light-theme a,
+body.light-theme li,
+body.light-theme td,
+body.light-theme th {
+  font-weight: 500;
+}
+
+body.light-theme .nav-item,
+body.light-theme .reports-filter-note,
+body.light-theme .reports-toolbar-description,
+body.light-theme .chart-empty-state p,
+body.light-theme .dash-table td,
+body.light-theme .dash-table th {
+  color: var(--text-secondary);
+}
+
 a {
   color: var(--accent);
   text-decoration: none;
@@ -355,6 +374,40 @@ button:hover {
   filter: brightness(0.95);
 }
 
+#dynamic-content [data-animate],
+#dynamic-content .section-animate {
+  opacity: 0;
+  transform: translateY(20px) scale(0.985);
+  filter: blur(10px);
+  transition:
+    opacity 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.55s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform, filter;
+}
+
+#dynamic-content [data-animate].is-visible,
+#dynamic-content .section-animate.is-visible {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+  filter: blur(0);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  #dynamic-content [data-animate],
+  #dynamic-content .section-animate {
+    opacity: 1;
+    transform: none;
+    filter: none;
+    transition: none;
+  }
+
+  .painel-cycle-bar::after,
+  .chart-empty-icon::before {
+    animation: none !important;
+  }
+}
+
 .card,
 .planning-card-prof,
 .chart-card-large,
@@ -426,7 +479,7 @@ body.light-theme .modal-card:hover,
 body.light-theme .config-card:hover,
 body.light-theme .filter-container:hover,
 body.light-theme .wallet-empty-card:hover {
-  border-color: rgba(var(--accent-rgb), 0.28) !important;
+  border-color: var(--border-strong) !important;
   box-shadow: var(--dashboard-box-shadow-hover) !important;
 }
 
@@ -446,7 +499,7 @@ body.light-theme .wallet-empty-card:hover {
 .textarea:focus {
   border-color: var(--accent);
   outline: 0;
-  box-shadow: 0 0 0 3px var(--accent-soft);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.14);
 }
 
 body.dark-theme select,
@@ -516,8 +569,8 @@ body.dark-theme .planning-card-prof select:focus,
 body.dark-theme .wallet-modal-form .select:focus,
 body.dark-theme input:focus,
 body.dark-theme textarea:focus {
-  border-color: rgba(var(--accent-rgb), 0.7) !important;
-  box-shadow: 0 0 0 3px rgba(var(--accent-rgb), 0.14), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.16), inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
 }
 
 .category-tag {
@@ -565,7 +618,7 @@ body.light-theme .category-tag {
   left: 0;
   bottom: 0;
   width: clamp(240px, 20vw, 272px);
-  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--bg-surface) 100%);
+  background: var(--bg-surface);
   border-right: var(--box-border-width) solid var(--border-color);
   padding: 1.4rem 1rem 1.1rem;
   display: flex;
@@ -573,7 +626,7 @@ body.light-theme .category-tag {
   justify-content: space-between;
   overflow-y: auto;
   overscroll-behavior: contain;
-  box-shadow: 2px 0 20px rgba(0,0,0,0.05), -1px 0 0 var(--card-outline) inset;
+  box-shadow: 2px 0 18px rgba(0,0,0,0.08), -1px 0 0 var(--card-outline) inset;
 }
 
 .sidebar .sidebar-header {
@@ -616,21 +669,21 @@ body.light-theme .category-tag {
   margin: 0;
   border-radius: 14px;
   color: var(--text-secondary);
-  font-weight: 700;
+  font-weight: 800;
   font-size: 1rem;
   text-decoration: none;
   border: var(--box-border-width) solid transparent;
-  background: linear-gradient(180deg, var(--bg-tertiary) 0%, var(--card-bg) 100%);
-  box-shadow: 0 8px 16px rgba(15, 23, 42, 0.045);
+  background: var(--card-bg);
+  box-shadow: 0 6px 14px rgba(15, 23, 42, 0.05);
   transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
 }
 
 .nav-item:hover,
 .nav-item.active {
-  background: rgba(var(--accent-rgb), 0.14);
+  background: var(--bg-secondary);
   color: var(--accent);
-  border-color: rgba(var(--accent-rgb), 0.25);
-  box-shadow: 0 10px 22px rgba(var(--accent-rgb), 0.12);
+  border-color: rgba(var(--accent-rgb), 0.18);
+  box-shadow: 0 10px 22px rgba(15, 23, 42, 0.08);
   transform: translateX(2px);
 }
 

@@ -548,6 +548,20 @@
       this.gerarGraficoBarras(despesas, ocultarAtivo);
       this.melhorarBotaoOlho();
     },
+    atualizarEstadoVazioGrafico({ canvasId, emptyStateId, hasData }) {
+      const canvas = document.getElementById(canvasId);
+      const emptyState = document.getElementById(emptyStateId);
+      const container = canvas?.closest(".chart-container");
+      if (container) {
+        container.classList.toggle("is-empty", !hasData);
+      }
+      if (canvas) {
+        canvas.setAttribute("aria-hidden", hasData ? "false" : "true");
+      }
+      if (emptyState) {
+        emptyState.hidden = hasData;
+      }
+    },
     obterCiclosDisponiveis() {
       const cycleIds = /* @__PURE__ */ new Set([getCurrentCycleInfo().id]);
       getDespesasData().forEach((despesa) => {
@@ -670,6 +684,19 @@
       const categories = Object.keys(dadosCat);
       const values = Object.values(dadosCat);
       const backgroundColor = categories.map((cat) => coresCategoria[cat] || "#c9aa6a");
+      if (!categories.length || values.every((value) => value <= 0)) {
+        this.atualizarEstadoVazioGrafico({
+          canvasId: "categoryChart",
+          emptyStateId: "categoryChartEmpty",
+          hasData: false
+        });
+        return;
+      }
+      this.atualizarEstadoVazioGrafico({
+        canvasId: "categoryChart",
+        emptyStateId: "categoryChartEmpty",
+        hasData: true
+      });
       new Chart(canvas, {
         type: "doughnut",
         data: {
@@ -706,13 +733,27 @@
         if (chave.toLowerCase() === "pix") chave = "Pix";
         if (metodos.hasOwnProperty(chave)) metodos[chave] += d.valor;
       });
+      const paymentValues = Object.values(metodos);
+      if (paymentValues.every((value) => value <= 0)) {
+        this.atualizarEstadoVazioGrafico({
+          canvasId: "paymentChart",
+          emptyStateId: "paymentChartEmpty",
+          hasData: false
+        });
+        return;
+      }
+      this.atualizarEstadoVazioGrafico({
+        canvasId: "paymentChart",
+        emptyStateId: "paymentChartEmpty",
+        hasData: true
+      });
       new Chart(canvas, {
         type: "bar",
         data: {
           labels: Object.keys(metodos),
           datasets: [{
             label: "Total por M\xE9todo",
-            data: Object.values(metodos),
+            data: paymentValues,
             backgroundColor: accentColor,
             borderColor: accentColor,
             borderWidth: 1,
@@ -3975,7 +4016,7 @@ if (window.top === window.self) {\r
 }\r
 <\/script>\r
 \r
-<div class="painel-cycle-bar">\r
+<div class="painel-cycle-bar" data-animate>\r
     <div class="painel-cycle-copy">\r
         <span class="painel-cycle-label">Filtro do painel</span>\r
         <h3>Visualize os indicadores por ciclo financeiro</h3>\r
@@ -3987,25 +4028,25 @@ if (window.top === window.self) {\r
 </div>\r
 \r
 <div class="dashboard-top-cards">\r
-    <div class="stat-card small-card">\r
+    <div class="stat-card small-card" data-animate>\r
         <div class="stat-info">\r
             <p>Total Gasto</p>\r
             <h3 id="totalGastoText">R$ 0,00</h3>\r
         </div>\r
     </div>\r
-    <div class="stat-card small-card">\r
+    <div class="stat-card small-card" data-animate>\r
         <div class="stat-info">\r
             <p>Limite Mensal</p>\r
             <h3 id="limiteText">R$ 0,00</h3>\r
         </div>\r
     </div>\r
-    <div class="stat-card small-card">\r
+    <div class="stat-card small-card" data-animate>\r
         <div class="stat-info">\r
             <p>Saldo Restante</p>\r
             <h3 id="saldoText">R$ 0,00</h3>\r
         </div>\r
     </div>\r
-    <div class="stat-card small-card">\r
+    <div class="stat-card small-card" data-animate>\r
         <div class="stat-info">\r
             <p>Pagamento mais usado</p>\r
             <h3 id="metodoPrincipalText">---</h3>\r
@@ -4014,21 +4055,31 @@ if (window.top === window.self) {\r
 </div>\r
 \r
 <div class="charts-grid">\r
-    <div class="chart-card">\r
+    <div class="chart-card" data-animate>\r
         <h3>Gastos por Categoria</h3>\r
         <div class="chart-container">\r
             <canvas id="categoryChart"></canvas>\r
+            <div id="categoryChartEmpty" class="chart-empty-state" hidden>\r
+                <span class="chart-empty-icon" aria-hidden="true"></span>\r
+                <strong>Nenhuma despesa no ciclo selecionado</strong>\r
+                <p>Cadastre despesas para visualizar como seus gastos se distribuem por categoria.</p>\r
+            </div>\r
         </div>\r
     </div>\r
-    <div class="chart-card">\r
+    <div class="chart-card" data-animate>\r
         <h3>Gastos por M\xE9todo de Pagamento</h3>\r
         <div class="chart-container">\r
             <canvas id="paymentChart"></canvas>\r
+            <div id="paymentChartEmpty" class="chart-empty-state" hidden>\r
+                <span class="chart-empty-icon" aria-hidden="true"></span>\r
+                <strong>Sem movimenta\xE7\xF5es para comparar</strong>\r
+                <p>Assim que houver lan\xE7amentos, o painel mostrar\xE1 os m\xE9todos de pagamento mais usados.</p>\r
+            </div>\r
         </div>\r
     </div>\r
 </div>\r
 \r
-<div class="table-card recent-expenses-card">\r
+<div class="table-card recent-expenses-card" data-animate>\r
     <div class="table-header-flex">\r
         <h3>Despesas Recentes</h3>\r
         <span id="dataAtualBadge" class="date-badge"></span>\r
@@ -5129,6 +5180,22 @@ if (window.top === window.self) {
   }
   var tutorialElements = null;
   var tutorialDraftSettings = null;
+  function animarEntradaSecao(container) {
+    if (!container) return;
+    const explicitItems = Array.from(container.querySelectorAll("[data-animate]"));
+    const animatedItems = explicitItems.length ? explicitItems : Array.from(container.children).filter((element) => element instanceof HTMLElement);
+    if (!explicitItems.length) {
+      animatedItems.forEach((element) => element.classList.add("section-animate"));
+    }
+    if (!animatedItems.length) return;
+    animatedItems.forEach((element, index) => {
+      element.classList.remove("is-visible");
+      element.style.transitionDelay = `${Math.min(index * 55, 260)}ms`;
+    });
+    requestAnimationFrame(() => {
+      animatedItems.forEach((element) => element.classList.add("is-visible"));
+    });
+  }
   function getTutorialCurrentStep() {
     return getTutorialState().currentStep ?? 0;
   }
@@ -5682,7 +5749,10 @@ if (window.top === window.self) {
       secaoAtiva = sectionId;
       const html = await carregarHtmlSecao(sectionId);
       const container = document.getElementById("dynamic-content");
-      if (container) container.innerHTML = html;
+      if (container) {
+        container.innerHTML = html;
+        animarEntradaSecao(container);
+      }
       const titulo = document.getElementById("sectionTitle");
       if (titulo) {
         const nomesTitulos = {

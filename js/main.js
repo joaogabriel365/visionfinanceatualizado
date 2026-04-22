@@ -174,6 +174,30 @@ function renderTutorialColorChoices(setting, selectedValue) {
 let tutorialElements = null;
 let tutorialDraftSettings = null;
 
+function animarEntradaSecao(container) {
+    if (!container) return;
+
+    const explicitItems = Array.from(container.querySelectorAll('[data-animate]'));
+    const animatedItems = explicitItems.length
+        ? explicitItems
+        : Array.from(container.children).filter((element) => element instanceof HTMLElement);
+
+    if (!explicitItems.length) {
+        animatedItems.forEach((element) => element.classList.add('section-animate'));
+    }
+
+    if (!animatedItems.length) return;
+
+    animatedItems.forEach((element, index) => {
+        element.classList.remove('is-visible');
+        element.style.transitionDelay = `${Math.min(index * 55, 260)}ms`;
+    });
+
+    requestAnimationFrame(() => {
+        animatedItems.forEach((element) => element.classList.add('is-visible'));
+    });
+}
+
 function getTutorialCurrentStep() {
     return getTutorialState().currentStep ?? 0;
 }
@@ -831,7 +855,10 @@ async function navegar(sectionId) {
         secaoAtiva = sectionId;
         const html = await carregarHtmlSecao(sectionId);
         const container = document.getElementById('dynamic-content');
-        if (container) container.innerHTML = html;
+        if (container) {
+            container.innerHTML = html;
+            animarEntradaSecao(container);
+        }
 
         const titulo = document.getElementById('sectionTitle');
         if (titulo) {

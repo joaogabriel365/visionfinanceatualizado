@@ -24,6 +24,24 @@ export const Painel = {
         this.melhorarBotaoOlho();
     },
 
+    atualizarEstadoVazioGrafico({ canvasId, emptyStateId, hasData }) {
+        const canvas = document.getElementById(canvasId);
+        const emptyState = document.getElementById(emptyStateId);
+        const container = canvas?.closest('.chart-container');
+
+        if (container) {
+            container.classList.toggle('is-empty', !hasData);
+        }
+
+        if (canvas) {
+            canvas.setAttribute('aria-hidden', hasData ? 'false' : 'true');
+        }
+
+        if (emptyState) {
+            emptyState.hidden = hasData;
+        }
+    },
+
     obterCiclosDisponiveis() {
         const cycleIds = new Set([getCurrentCycleInfo().id]);
 
@@ -183,6 +201,21 @@ export const Painel = {
         const values = Object.values(dadosCat);
         const backgroundColor = categories.map(cat => coresCategoria[cat] || '#c9aa6a');
 
+        if (!categories.length || values.every((value) => value <= 0)) {
+            this.atualizarEstadoVazioGrafico({
+                canvasId: 'categoryChart',
+                emptyStateId: 'categoryChartEmpty',
+                hasData: false
+            });
+            return;
+        }
+
+        this.atualizarEstadoVazioGrafico({
+            canvasId: 'categoryChart',
+            emptyStateId: 'categoryChartEmpty',
+            hasData: true
+        });
+
         new Chart(canvas, {
             type: 'doughnut',
             data: {
@@ -220,13 +253,31 @@ export const Painel = {
             if (chave.toLowerCase() === 'pix') chave = 'Pix';
             if (metodos.hasOwnProperty(chave)) metodos[chave] += d.valor;
         });
+
+        const paymentValues = Object.values(metodos);
+
+        if (paymentValues.every((value) => value <= 0)) {
+            this.atualizarEstadoVazioGrafico({
+                canvasId: 'paymentChart',
+                emptyStateId: 'paymentChartEmpty',
+                hasData: false
+            });
+            return;
+        }
+
+        this.atualizarEstadoVazioGrafico({
+            canvasId: 'paymentChart',
+            emptyStateId: 'paymentChartEmpty',
+            hasData: true
+        });
+
         new Chart(canvas, {
             type: 'bar',
             data: {
                 labels: Object.keys(metodos),
                 datasets: [{
                     label: 'Total por Método',
-                    data: Object.values(metodos),
+                    data: paymentValues,
                     backgroundColor: accentColor,
                     borderColor: accentColor,
                     borderWidth: 1,

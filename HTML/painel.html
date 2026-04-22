@@ -4,7 +4,7 @@ if (window.top === window.self) {
 }
 </script>
 
-<div class="painel-cycle-bar">
+<div class="painel-cycle-bar" data-animate>
     <div class="painel-cycle-copy">
         <span class="painel-cycle-label">Filtro do painel</span>
         <h3>Visualize os indicadores por ciclo financeiro</h3>
@@ -16,25 +16,25 @@ if (window.top === window.self) {
 </div>
 
 <div class="dashboard-top-cards">
-    <div class="stat-card small-card">
+    <div class="stat-card small-card" data-animate>
         <div class="stat-info">
             <p>Total Gasto</p>
             <h3 id="totalGastoText">R$ 0,00</h3>
         </div>
     </div>
-    <div class="stat-card small-card">
+    <div class="stat-card small-card" data-animate>
         <div class="stat-info">
             <p>Limite Mensal</p>
             <h3 id="limiteText">R$ 0,00</h3>
         </div>
     </div>
-    <div class="stat-card small-card">
+    <div class="stat-card small-card" data-animate>
         <div class="stat-info">
             <p>Saldo Restante</p>
             <h3 id="saldoText">R$ 0,00</h3>
         </div>
     </div>
-    <div class="stat-card small-card">
+    <div class="stat-card small-card" data-animate>
         <div class="stat-info">
             <p>Pagamento mais usado</p>
             <h3 id="metodoPrincipalText">---</h3>
@@ -43,21 +43,31 @@ if (window.top === window.self) {
 </div>
 
 <div class="charts-grid">
-    <div class="chart-card">
+    <div class="chart-card" data-animate>
         <h3>Gastos por Categoria</h3>
         <div class="chart-container">
             <canvas id="categoryChart"></canvas>
+            <div id="categoryChartEmpty" class="chart-empty-state" hidden>
+                <span class="chart-empty-icon" aria-hidden="true"></span>
+                <strong>Nenhuma despesa no ciclo selecionado</strong>
+                <p>Cadastre despesas para visualizar como seus gastos se distribuem por categoria.</p>
+            </div>
         </div>
     </div>
-    <div class="chart-card">
+    <div class="chart-card" data-animate>
         <h3>Gastos por Método de Pagamento</h3>
         <div class="chart-container">
             <canvas id="paymentChart"></canvas>
+            <div id="paymentChartEmpty" class="chart-empty-state" hidden>
+                <span class="chart-empty-icon" aria-hidden="true"></span>
+                <strong>Sem movimentações para comparar</strong>
+                <p>Assim que houver lançamentos, o painel mostrará os métodos de pagamento mais usados.</p>
+            </div>
         </div>
     </div>
 </div>
 
-<div class="table-card recent-expenses-card">
+<div class="table-card recent-expenses-card" data-animate>
     <div class="table-header-flex">
         <h3>Despesas Recentes</h3>
         <span id="dataAtualBadge" class="date-badge"></span>

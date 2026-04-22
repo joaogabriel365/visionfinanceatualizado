@@ -1,6 +1,7 @@
 .painel-cycle-bar {
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(240px, 320px);
+  position: relative;
   align-items: end;
   gap: 1rem;
   margin-bottom: 1.25rem;
@@ -9,6 +10,11 @@
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   box-shadow: var(--shadow-soft);
+  overflow: hidden;
+}
+
+.painel-cycle-bar::after {
+  content: none;
 }
 
 .painel-cycle-copy {
@@ -63,7 +69,7 @@
 
 .painel-cycle-select:focus {
   border-color: var(--accent);
-  box-shadow: 0 0 0 4px rgba(var(--accent-rgb), 0.14);
+  box-shadow: 0 0 0 2px rgba(var(--accent-rgb), 0.14);
 }
 
 .dashboard-top-cards {
@@ -74,12 +80,22 @@
 }
 
 .stat-card.small-card {
-  
   padding: 1rem;
   background: var(--card-bg);
   border: 1px solid var(--border-color);
   border-radius: var(--border-radius);
   box-shadow: 0 10px 24px rgba(15, 23, 42, 0.05);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card.small-card::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto;
+  height: 3px;
+  background: rgba(var(--accent-rgb), 0.55);
+  opacity: 0.55;
 }
 
 .stats-grid {
@@ -102,9 +118,68 @@
   position: relative;
 }
 
+.chart-container.is-empty canvas {
+  opacity: 0;
+  pointer-events: none;
+}
+
 .chart-container canvas {
   width: 100% !important;
   height: 100% !important;
+  transition: opacity var(--transition-normal);
+}
+
+.chart-empty-state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.7rem;
+  padding: 1.5rem;
+  text-align: center;
+  border: 1px dashed rgba(var(--accent-rgb), 0.26);
+  border-radius: calc(var(--border-radius) + 2px);
+  background: var(--card-bg);
+}
+
+.chart-empty-state[hidden] {
+  display: none !important;
+}
+
+.chart-empty-state strong {
+  color: var(--text-primary);
+  font-size: 1rem;
+  line-height: 1.35;
+}
+
+.chart-empty-state p {
+  max-width: 28ch;
+  color: var(--text-secondary);
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.chart-empty-icon {
+  width: 54px;
+  height: 54px;
+  display: inline-grid;
+  place-items: center;
+  border-radius: 18px;
+  background: rgba(var(--accent-rgb), 0.08);
+  border: 1px solid rgba(var(--accent-rgb), 0.2);
+  box-shadow: 0 14px 28px rgba(15, 23, 42, 0.1);
+}
+
+.chart-empty-icon::before {
+  content: '';
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  border: 3px solid rgba(var(--accent-rgb), 0.22);
+  border-top-color: var(--accent);
+  border-right-color: var(--accent);
+  animation: emptyChartSpin 7s linear infinite;
 }
 
 .chart-card,
@@ -150,8 +225,12 @@ body.light-theme .charts-grid > :nth-child(2) {
 }
 
 body.light-theme .date-badge {
-  background: linear-gradient(180deg, rgba(var(--accent-rgb), 0.12) 0%, rgba(var(--accent-rgb), 0.06) 100%);
+  background: rgba(var(--accent-rgb), 0.08);
   border-color: rgba(var(--accent-rgb), 0.16);
+}
+
+body.light-theme .chart-empty-state {
+  background: rgba(255, 249, 242, 0.96);
 }
 
 .dash-table {
@@ -187,6 +266,10 @@ body.light-theme .dash-table tbody tr:hover {
 
 body.dark-theme .dash-table thead tr {
   background: linear-gradient(180deg, rgba(17, 26, 36, 0.92) 0%, rgba(12, 19, 27, 0.92) 100%);
+}
+
+body.dark-theme .chart-empty-state {
+  background: rgba(15, 23, 34, 0.96);
 }
 
 body.dark-theme .dash-table th {
@@ -240,6 +323,29 @@ body.dark-theme .dash-table tbody tr:hover {
 
 .expense-col-category .category-tag {
   margin-inline: auto;
+}
+
+@keyframes painelPulse {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+    opacity: 0.82;
+  }
+
+  50% {
+    transform: translate3d(-8px, -10px, 0) scale(1.08);
+    opacity: 1;
+  }
+}
+
+@keyframes emptyChartSpin {
+  from {
+    transform: rotate(0deg);
+  }
+
+  to {
+    transform: rotate(360deg);
+  }
 }
 
 @media (max-width: 1024px) {
@@ -332,6 +438,18 @@ body.dark-theme .dash-table tbody tr:hover {
 @media (max-width: 560px) {
   .painel-cycle-copy h3 {
     font-size: 0.96rem;
+  }
+
+  .chart-empty-state {
+    padding: 1.15rem;
+  }
+
+  .chart-empty-state strong {
+    font-size: 0.95rem;
+  }
+
+  .chart-empty-state p {
+    font-size: 0.88rem;
   }
 
   .dashboard-top-cards {
